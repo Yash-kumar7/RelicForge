@@ -85,6 +85,7 @@ export function PreFightBriefing() {
               ["Right click", "heavy attack"],
               ["Space", "dodge · brief invulnerability"],
               ["Q", "heal · 2 charges"],
+              ["V", "first or third person"],
             ].map(([key, action]) => (
               <div key={key} className="flex justify-between gap-4 border-b border-ash-800 pb-1">
                 <dt className="text-stone-300">{key}</dt>

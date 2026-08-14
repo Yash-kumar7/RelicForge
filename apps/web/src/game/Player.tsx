@@ -51,6 +51,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
 
   const phase = useGameStore((s) => s.phase);
   const combatActive = useGameStore((s) => s.combatActive);
+  const view = useGameStore((s) => s.view);
   const recordDodge = useGameStore((s) => s.recordDodge);
 
   /* ------------------------------------------------------------- input */
@@ -82,6 +83,8 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
         recordDodge();
         sfx.dodge();
       }
+
+      if (e.code === "KeyV") useGameStore.getState().toggleView();
 
       if (e.code === "KeyQ" && healCharges.current > 0) {
         healCharges.current -= 1;
@@ -203,7 +206,18 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
       }
     }
 
-    camera.position.copy(playerHandle.position);
+    /**
+     * playerHandle.position stays the authoritative eye position and is what
+     * every hit test uses. Third person only moves the camera off it, so
+     * switching view can never change what a swing can reach.
+     */
+    if (view === "third") {
+      const back = new Vector3(0, 0, 1).applyAxisAngle(new Vector3(0, 1, 0), yaw.current);
+      camera.position.copy(playerHandle.position).addScaledVector(back, 4.2);
+      camera.position.y = playerHandle.position.y + 1.15;
+    } else {
+      camera.position.copy(playerHandle.position);
+    }
     camera.getWorldDirection(playerHandle.forward);
   });
 

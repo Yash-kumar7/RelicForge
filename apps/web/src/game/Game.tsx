@@ -12,6 +12,7 @@ import { RelicPedestal } from "./RelicPedestal";
 import { Embers } from "./Embers";
 import { StarterWeapon } from "./StarterWeapon";
 import { PlayerHands } from "./PlayerHands";
+import { PlayerAvatar } from "./PlayerAvatar";
 import { CameraShake } from "./CameraShake";
 import { registerHit, resetFeedback } from "./feedback";
 import { recordClear } from "./bosses";
@@ -25,6 +26,7 @@ import { PauseOverlay } from "../ui/PauseOverlay";
 import { LiveRelicPanel } from "../ui/LiveRelicPanel";
 import { DebugOverlay } from "../debug/DebugOverlay";
 import { DamageNumbers } from "../ui/DamageNumbers";
+import { DamageFlash } from "../ui/DamageFlash";
 import { LoadoutPanel } from "../ui/LoadoutPanel";
 import { useLoadout } from "../state/useLoadout";
 import { useProgress } from "../state/useProgress";
@@ -40,6 +42,7 @@ import { sfx, unlockAudio } from "../audio/sfx";
 export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   const boss = useRef<BossHandle>(null);
   const phase = useGameStore((s) => s.phase);
+  const view = useGameStore((s) => s.view);
   const forge = useGameStore((s) => s.forge);
   const damageBoss = useGameStore((s) => s.damageBoss);
   const setPhase = useGameStore((s) => s.setPhase);
@@ -170,11 +173,14 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
           <Boss ref={boss} />
           <Player bossPosition={bossPosition} onHitBoss={onHitBoss} />
           <CameraShake />
-          <PlayerHands />
+          {/* Hands and a first-person blade, or the champion itself. Never
+              both: two copies of the same weapon in frame. */}
+          {view === "first" && <PlayerHands />}
+          {view === "third" && <PlayerAvatar />}
           {/* The blade you arrive with: plain, mass-produced, and exactly the
               thing a generated relic is meant to replace. */}
-          {!showCarried && <StarterWeapon />}
-          {showCarried && carried && (
+          {view === "first" && !showCarried && <StarterWeapon />}
+          {view === "first" && showCarried && carried && (
             <WeaponSocket
               modelUrl={carried.modelUrl}
               weaponClass={carried.dna.weaponClass}
@@ -185,7 +191,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
           {showPedestal && (
             <RelicPedestal modelUrl={forge.modelUrl!} weaponClass={forge.dna!.weaponClass} />
           )}
-          {showEquipped && (
+          {showEquipped && view === "first" && (
             <WeaponSocket
               modelUrl={forge.modelUrl!}
               weaponClass={forge.dna!.weaponClass}
@@ -209,6 +215,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
       <PreFightBriefing />
       <PauseOverlay />
       <DamageNumbers />
+      <DamageFlash />
       <LoadoutPanel />
       <DebugOverlay />
 

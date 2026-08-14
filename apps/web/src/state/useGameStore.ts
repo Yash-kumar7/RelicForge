@@ -73,6 +73,12 @@ interface GameState {
    */
   combatActive: boolean;
   /**
+   * Third person exists because choosing a champion you never see makes the
+   * choice pointless. First person stays available: it frames the relic larger
+   * and is the better shot for the reveal.
+   */
+  view: "first" | "third";
+  /**
    * Milliseconds spent paused. Subtracted from the elapsed clock so that
    * stepping away mid-fight does not read as a slow, cautious victory and
    * change which relic is forged.
@@ -90,6 +96,7 @@ interface GameState {
   boss: () => BossLevel;
   startFight: () => void;
   armCombat: () => void;
+  toggleView: () => void;
   pauseCombat: () => void;
   damageBoss: (amount: number, kind: "light" | "heavy" | "ability") => void;
   damagePlayer: (amount: number) => void;
@@ -134,6 +141,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   bossMaxHp: BOSS_MAX_HP,
   fightStartedAt: null,
   combatActive: false,
+  view: "third",
   pausedTotalMs: 0,
   pausedAt: null,
   telemetry: { ...EMPTY_TELEMETRY },
@@ -182,6 +190,9 @@ export const useGameStore = create<GameState>((set, get) => ({
         pausedAt: null,
       };
     }),
+
+  toggleView: () => set((state) => ({ view: state.view === "first" ? "third" : "first" })),
+
 
   pauseCombat: () =>
     set((state) =>

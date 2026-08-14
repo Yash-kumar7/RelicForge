@@ -1,8 +1,7 @@
-import { useMemo } from "react";
-import { useGLTF } from "@react-three/drei";
-import { Quaternion, Vector3 } from "three";
-import { normalizeRelic, type WeaponClass } from "@relic/core";
-import { meshSampleFrom } from "../lib/meshSample";
+import type { WeaponClass } from "@relic/core";
+import { IronSwordMesh } from "../game/IronSwordMesh";
+import { HeldRelicMesh } from "../game/HeldRelicMesh";
+import type { HeldWeaponSpec } from "./CharacterViewer";
 
 /**
  * A weapon placed in a static champion's hand.
@@ -27,47 +26,44 @@ export interface HandSocket {
 const DEG = Math.PI / 180;
 
 export function HeldWeapon({
-  url,
-  weaponClass,
+  weapon,
+  accent,
   socket,
 }: {
-  url: string;
-  weaponClass: WeaponClass;
+  weapon: HeldWeaponSpec;
+  accent: string;
   socket: HandSocket;
 }) {
-  const { scene } = useGLTF(url);
-  const model = useMemo(() => scene.clone(true), [scene]);
-
-  // Canonicalized exactly as the game does it, so the grip really is the grip.
-  const canonical = useMemo(
-    () => normalizeRelic(meshSampleFrom(model), weaponClass),
-    [model, weaponClass],
-  );
-
-  const quaternion = useMemo(() => {
-    const [x, y, z, w] = canonical.quaternion;
-    return new Quaternion(x, y, z, w);
-  }, [canonical]);
-
-  const gripOffset = useMemo(() => new Vector3(...canonical.gripOffset), [canonical]);
-
   // Right hand, from the character's own proportions rather than magic numbers.
   const hand: [number, number, number] = [socket.width * 0.4, socket.height * 0.46, 0.1];
-
   // Held slightly out and angled back, the way a fighter rests a blade at ease.
   const tilt: [number, number, number] = [12 * DEG, 0, -18 * DEG];
 
-  // Spears are long enough that the canonical length would tower over the
-  // champion, so held weapons are scaled to the wielder.
-  const wieldScale = weaponClass === "spear" ? 0.72 : 0.85;
-
-  return (
-    <group position={hand} rotation={tilt} scale={wieldScale}>
-      <group position={gripOffset}>
-        <group quaternion={quaternion} scale={canonical.scale}>
-          <primitive object={model} />
-        </group>
+  if (weapon.kind === "iron") {
+    return (
+      <group position={hand} rotation={tilt} scale={1.15}>
+        <IronSwordMesh accent={accent} />
       </group>
+    );
+  }
+
+  return <HeldRelic url={weapon.url} weaponClass={weapon.weaponClass} hand={hand} tilt={tilt} />;
+}
+
+function HeldRelic({
+  url,
+  weaponClass,
+  hand,
+  tilt,
+}: {
+  url: string;
+  weaponClass: WeaponClass;
+  hand: [number, number, number];
+  tilt: [number, number, number];
+}) {
+  return (
+    <group position={hand} rotation={tilt}>
+      <HeldRelicMesh url={url} weaponClass={weaponClass} />
     </group>
   );
 }

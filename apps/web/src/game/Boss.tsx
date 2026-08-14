@@ -168,7 +168,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
           if (hit && now >= playerHandle.invulnerableUntil) {
             useGameStore.getState().damagePlayer(tuning.damage);
             sfx.playerHurt();
-            registerPlayerHurt();
+            registerPlayerHurt(tuning.damage);
           }
         }
         break;

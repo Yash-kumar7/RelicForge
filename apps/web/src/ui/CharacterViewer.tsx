@@ -6,10 +6,13 @@ import { fitCharacter } from "../lib/characterFit";
 import { HeldWeapon } from "./HeldWeapon";
 import type { WeaponClass } from "@relic/core";
 
-export interface HeldWeaponSpec {
-  url: string;
-  weaponClass: WeaponClass;
-}
+/**
+ * Either the primitive starter blade or a generated relic. The iron sword has
+ * no GLB by design, so it cannot be expressed as a url.
+ */
+export type HeldWeaponSpec =
+  | { kind: "iron" }
+  | { kind: "relic"; url: string; weaponClass: WeaponClass };
 
 /**
  * Interactive viewer for a generated character.
@@ -39,10 +42,12 @@ function Model({
   url,
   height,
   weapon,
+  accent,
 }: {
   url: string;
   height: number;
   weapon?: HeldWeaponSpec | undefined;
+  accent: string;
 }) {
   const { scene } = useGLTF(url);
   const model = useMemo(() => scene.clone(true), [scene]);
@@ -67,11 +72,7 @@ function Model({
 
       {weapon && (
         <Suspense fallback={null}>
-          <HeldWeapon
-            url={weapon.url}
-            weaponClass={weapon.weaponClass}
-            socket={{ height, width }}
-          />
+          <HeldWeapon weapon={weapon} accent={accent} socket={{ height, width }} />
         </Suspense>
       )}
     </group>
@@ -118,7 +119,7 @@ export function CharacterViewer({
           <directionalLight position={[3, 5, 4]} intensity={2.1} />
           <directionalLight position={[-3, 2, -2]} intensity={0.9} color={accent} />
           <Suspense fallback={null}>
-            <Model url={url} height={height} weapon={weapon} />
+            <Model url={url} height={height} weapon={weapon} accent={accent} />
             <Environment preset="night" />
           </Suspense>
           {/*

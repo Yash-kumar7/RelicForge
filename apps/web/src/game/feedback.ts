@@ -49,8 +49,26 @@ export function registerHit(amount: number, kind: "light" | "heavy"): void {
   popListeners.forEach((listener) => listener([...pops]));
 }
 
-export function registerPlayerHurt(): void {
+/**
+ * Taking damage had no signal beyond a bar shrinking, so players watched their
+ * health fall without knowing what caused it. This drives a red flash, and the
+ * amount is surfaced so the cost of a mistake is legible.
+ */
+export const playerHurt = { at: 0, amount: 0 };
+const hurtListeners = new Set<(hit: { at: number; amount: number }) => void>();
+
+export function registerPlayerHurt(amount = 0): void {
   shake.magnitude = Math.min(0.45, shake.magnitude + 0.3);
+  playerHurt.at = performance.now();
+  playerHurt.amount = amount;
+  hurtListeners.forEach((listener) => listener({ ...playerHurt }));
+}
+
+export function subscribePlayerHurt(
+  listener: (hit: { at: number; amount: number }) => void,
+): () => void {
+  hurtListeners.add(listener);
+  return () => hurtListeners.delete(listener);
 }
 
 export function prunePops(now: number, lifetimeMs = 900): void {
@@ -66,6 +84,8 @@ export function subscribePops(listener: (pops: DamagePop[]) => void): () => void
 
 export function resetFeedback(): void {
   pops.length = 0;
+  playerHurt.at = 0;
+  playerHurt.amount = 0;
   shake.magnitude = 0;
   hitstop.until = 0;
   popListeners.forEach((listener) => listener([]));
