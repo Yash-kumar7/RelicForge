@@ -71,7 +71,7 @@ describe("champions", () => {
     // better than no stat.
     for (const affinity of AFFINITIES) {
       const stats = describeChampion(championFor(affinity));
-      expect(stats.length).toBeGreaterThanOrEqual(2);
+      expect(stats.length).toBeGreaterThanOrEqual(1);
       for (const stat of stats) {
         expect(stat.label.length).toBeGreaterThan(2);
         expect(stat.value.length).toBeGreaterThan(0);
@@ -90,6 +90,9 @@ describe("champions", () => {
       for (const stat of stats) {
         expect(stat.label).not.toMatch(/damage|swing|attack|hit/);
         expect(stat.value).not.toContain("damage");
+        // No timers either. A cooldown in seconds is not a skill, and sitting
+        // where a player looks for abilities it invites being read as one.
+        expect(stat.value).not.toMatch(/\ds$/);
       }
     }
   });

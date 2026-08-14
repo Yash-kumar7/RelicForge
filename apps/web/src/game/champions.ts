@@ -145,15 +145,16 @@ export function describeChampion(champion: Champion): { label: string; value: st
    * rounds of relabelling went into making those rows readable when the real
    * problem was that they should not have been there.
    *
-   * The champion is now only what a character is: how much you can take, how
-   * often you can move, and what you can do that nobody else can. What you hit
-   * for is on the weapon panel, once, already including this champion's
-   * strength.
+   * Dodge cooldown is gone too. It is a timer, not a skill, and a row of
+   * seconds sitting where a player looks for abilities invites them to read it
+   * as one. It is still tuned and still the reason Storm feels different to
+   * play; the card carries the signature move instead, which is the thing a
+   * player would actually name when asked what a champion does.
+   *
+   * What is left is one number and one move. What you hit for lives on the
+   * weapon panel, once, already including this champion's strength.
    */
-  return [
-    { label: "health", value: `${stats.health}` },
-    { label: "dodge every", value: `${stats.dodgeSeconds}s` },
-  ];
+  return [{ label: "health", value: `${stats.health}` }];
   /*
    * Dodge cooldown is deliberately not a row.
    *

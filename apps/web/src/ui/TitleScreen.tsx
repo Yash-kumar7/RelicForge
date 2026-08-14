@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { Affinity } from "@relic/core";
+import { abilityFor } from "../game/abilities";
 import { championFor, describeChampion } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
@@ -271,6 +272,22 @@ export function TitleScreen() {
                       </div>
                     ))}
                   </dl>
+
+                  {/*
+                    The move, named on the card.
+                    With the dodge timer gone, health alone leaves two of the
+                    three champions looking identical. The signature move is
+                    also the honest answer to "why would I pick this one": it is
+                    what a player would name if asked what a champion does.
+                  */}
+                  <div className="mt-3 border-t border-ash-800 pt-2">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-stone-500">
+                      e · {abilityFor(a.id).name}
+                    </p>
+                    <p className="mt-1 text-[10px] leading-relaxed text-stone-600">
+                      {abilityFor(a.id).blurb}
+                    </p>
+                  </div>
                 </button>
               ))}
             </div>
