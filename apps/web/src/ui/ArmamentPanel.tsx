@@ -61,8 +61,10 @@ export function ArmamentPanel() {
   const equippedId = useLoadout((s) => s.equippedId);
   const equip = useLoadout((s) => s.equip);
 
+  // No auto-select: equippedId null means the iron sword is in hand, which is
+  // a real choice rather than an absence of one.
   const selected = useMemo(
-    () => owned.find((r) => r.relicId === equippedId) ?? owned[0] ?? null,
+    () => owned.find((r) => r.relicId === equippedId) ?? null,
     [owned, equippedId],
   );
 
@@ -83,10 +85,19 @@ export function ArmamentPanel() {
       <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Your armament</p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        {/* Always in hand. */}
-        <div className="border border-ash-700 px-4 py-3">
+        {/* The blade you always have. Selecting it unequips the relic. */}
+        <button
+          type="button"
+          onClick={() => equip(null)}
+          className={[
+            "border px-4 py-3 text-left transition",
+            selected === null
+              ? "border-stone-500 bg-stone-500/5"
+              : "border-ash-700 hover:border-stone-600",
+          ].join(" ")}
+        >
           <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
-            in hand
+            {selected === null ? "in hand" : "common"}
           </p>
           <p className="mt-1 font-display text-base tracking-[0.12em] text-stone-300">
             Iron Arming Sword
@@ -94,18 +105,24 @@ export function ArmamentPanel() {
           <p className="mt-1 text-[11px] leading-relaxed text-stone-600">
             25 light · 60 heavy · one of eleven million
           </p>
-        </div>
+        </button>
 
         {/* Earned, or an honest empty state. */}
-        <div
-          className={
+        <button
+          type="button"
+          disabled={owned.length === 0}
+          onClick={() => owned[0] && equip(owned[0].relicId)}
+          className={[
+            "px-4 py-3 text-left transition",
             selected
-              ? "border border-ember-500/50 px-4 py-3"
-              : "border border-dashed border-ash-700 px-4 py-3"
-          }
+              ? "border border-ember-500/50 bg-ember-500/5"
+              : owned.length > 0
+                ? "border border-ash-700 hover:border-ember-500/40"
+                : "cursor-not-allowed border border-dashed border-ash-700",
+          ].join(" ")}
         >
           <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
-            relic
+            {selected ? "in hand" : "relic"}
           </p>
           {selected ? (
             <>
@@ -124,7 +141,7 @@ export function ArmamentPanel() {
               </p>
             </>
           )}
-        </div>
+        </button>
       </div>
 
       {/* The relic itself, turning. */}
@@ -143,7 +160,7 @@ export function ArmamentPanel() {
       )}
 
       {/* Switching between relics you have kept. */}
-      {owned.length > 1 && (
+      {owned.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {owned.map((relic) => (
             <button

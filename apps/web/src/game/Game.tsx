@@ -145,6 +145,18 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   const showPedestal = relicReady && forge.stage === "COMPLETE" && phase !== "EQUIPPED";
   const showEquipped = relicReady && phase === "EQUIPPED";
 
+  /**
+   * A relic equipped in the loadout is carried into the fight.
+   *
+   * Selecting a weapon that then failed to appear in your hands would make the
+   * loadout decorative. The starter blade only shows when nothing is equipped.
+   */
+  const carried = useLoadout((s) => {
+    const relic = s.owned.find((r) => r.relicId === s.equippedId);
+    return relic ?? null;
+  });
+  const showCarried = phase === "FIGHTING" && carried !== null;
+
   return (
     <div className="relative h-full w-full">
       <Canvas
@@ -159,9 +171,15 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
           <Player bossPosition={bossPosition} onHitBoss={onHitBoss} />
           <CameraShake />
           <PlayerHands />
-          {/* The blade you arrive with, plain, mass-produced, and exactly the
-              thing the generated relic is meant to replace. */}
-          <StarterWeapon />
+          {/* The blade you arrive with: plain, mass-produced, and exactly the
+              thing a generated relic is meant to replace. */}
+          {!showCarried && <StarterWeapon />}
+          {showCarried && carried && (
+            <WeaponSocket
+              modelUrl={carried.modelUrl}
+              weaponClass={carried.dna.weaponClass}
+            />
+          )}
           <Embers active={phase !== "FIGHTING"} />
 
           {showPedestal && (

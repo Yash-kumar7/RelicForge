@@ -1,8 +1,15 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
-import type { Group } from "three";
+import { Box3, Vector3, type Group } from "three";
 import { fitCharacter } from "../lib/characterFit";
+import { HeldWeapon } from "./HeldWeapon";
+import type { WeaponClass } from "@relic/core";
+
+export interface HeldWeaponSpec {
+  url: string;
+  weaponClass: WeaponClass;
+}
 
 /**
  * Interactive viewer for a generated character.
@@ -28,10 +35,25 @@ function fitDistance(height: number, margin = 0.45): number {
   return (height / 2 + margin) / Math.tan((FOV / 2) * (Math.PI / 180));
 }
 
-function Model({ url, height }: { url: string; height: number }) {
+function Model({
+  url,
+  height,
+  weapon,
+}: {
+  url: string;
+  height: number;
+  weapon?: HeldWeaponSpec | undefined;
+}) {
   const { scene } = useGLTF(url);
   const model = useMemo(() => scene.clone(true), [scene]);
   const fit = useMemo(() => fitCharacter(model as Group, height), [model, height]);
+
+  // Fitted width, so the hand socket scales with the character instead of
+  // assuming every generated champion has the same build.
+  const width = useMemo(() => {
+    const size = new Box3().setFromObject(model).getSize(new Vector3());
+    return size.x * fit.scale;
+  }, [model, fit.scale]);
 
   return (
     // fitCharacter stands the model with its feet on y = 0, which is what the
@@ -42,6 +64,16 @@ function Model({ url, height }: { url: string; height: number }) {
         {/* Concepts are framed front-on, so the mesh already faces the camera. */}
         <primitive object={model} />
       </group>
+
+      {weapon && (
+        <Suspense fallback={null}>
+          <HeldWeapon
+            url={weapon.url}
+            weaponClass={weapon.weaponClass}
+            socket={{ height, width }}
+          />
+        </Suspense>
+      )}
     </group>
   );
 }
@@ -53,6 +85,7 @@ export function CharacterViewer({
   className = "",
   caption,
   autoRotate = true,
+  weapon,
 }: {
   url: string;
   height: number;
@@ -60,6 +93,7 @@ export function CharacterViewer({
   className?: string;
   caption?: string;
   autoRotate?: boolean;
+  weapon?: HeldWeaponSpec | undefined;
 }) {
   const [available, setAvailable] = useState<boolean | null>(null);
 
@@ -84,7 +118,7 @@ export function CharacterViewer({
           <directionalLight position={[3, 5, 4]} intensity={2.1} />
           <directionalLight position={[-3, 2, -2]} intensity={0.9} color={accent} />
           <Suspense fallback={null}>
-            <Model url={url} height={height} />
+            <Model url={url} height={height} weapon={weapon} />
             <Environment preset="night" />
           </Suspense>
           {/*

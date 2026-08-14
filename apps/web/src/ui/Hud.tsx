@@ -1,6 +1,7 @@
 import { PLAYER_MAX_HP, useGameStore } from "../state/useGameStore";
 import { bossTitleFor } from "../game/bosses";
 import { themeFor } from "../game/theme";
+import { useLoadout } from "../state/useLoadout";
 
 /**
  * Minimal HUD. The relic should hold the frame, not the interface.
@@ -18,6 +19,15 @@ export function Hud() {
   const bossLevel = useGameStore((s) => s.bossLevel);
   const affinity = useGameStore((s) => s.affinity);
   const forge = useGameStore((s) => s.forge);
+  // A relic carried in from the loadout is in hand from the first frame, before
+  // any forge has run this session.
+  const carried = useLoadout((s) => s.owned.find((r) => r.relicId === s.equippedId) ?? null);
+  const inHand =
+    phase === "EQUIPPED" && forge.name
+      ? { name: forge.name, weaponClass: forge.dna?.weaponClass ?? null }
+      : carried
+        ? { name: carried.name, weaponClass: carried.dna.weaponClass }
+        : null;
   const theme = themeFor(affinity);
 
   if (phase !== "FIGHTING" && phase !== "EQUIPPED") return null;
@@ -96,16 +106,16 @@ export function Hud() {
           outside the loadout panel. */}
       <div className="absolute bottom-8 left-8 mt-4 w-56 border-t border-ash-800 pt-2">
         <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-stone-700">wielding</p>
-        {phase === "EQUIPPED" && forge.name ? (
+        {inHand ? (
           <>
             <p
               className="mt-1 font-display text-sm tracking-[0.18em]"
               style={{ color: theme.forge }}
             >
-              {forge.name.toUpperCase()}
+              {inHand.name.toUpperCase()}
             </p>
             <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
-              legendary {forge.dna?.weaponClass} · one of one
+              legendary {inHand.weaponClass} · one of one
             </p>
           </>
         ) : (
