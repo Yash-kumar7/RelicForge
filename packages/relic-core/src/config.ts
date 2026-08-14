@@ -4,11 +4,10 @@ import type { GenerationConfig } from "./types.js";
  * Bump this whenever compileRelicPrompt changes. It feeds the cache key, so a
  * prompt edit invalidates every cached relic. Without it you edit the compiler,
  * regenerate, get the old sword back, and lose an afternoon to confusion.
- */
-/**
- * v2, the composition contract gained explicit no-text and hard vertical
+ *
+ * v2: the composition contract gained explicit no-text and hard vertical
  * clauses after Gate 1 produced a concept with "ASHEN WARDEN" lettered across
- * it (which becomes real geometry downstream) and a diagonally-framed sword.
+ * it, which becomes real geometry downstream, and a diagonally framed sword.
  */
 export const PROMPT_VERSION = "v2";
 

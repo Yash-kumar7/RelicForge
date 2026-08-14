@@ -38,7 +38,7 @@ describe("isWithinArc", () => {
     expect(isWithinArc(origin, facingNorth, origin, 3, 110)).toBe(false);
   });
 
-  it("ignores vertical separation — the arena is flat", () => {
+  it("ignores vertical separation, the arena is flat", () => {
     expect(isWithinArc({ x: 0, z: 0 }, facingNorth, { x: 0, z: -2 }, 3, 110)).toBe(true);
   });
 });

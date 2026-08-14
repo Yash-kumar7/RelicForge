@@ -199,8 +199,8 @@ export default function RelicCompare() {
             >
               {all.map((relic) => (
                 <option key={relic.relicId} value={relic.relicId}>
-                  {relic.name} — {relic.dna.element}/{relic.dna.temperament}/
-                  {relic.dna.condition} — {relic.dna.bossInfluence}
+                  {relic.name}, {relic.dna.element}/{relic.dna.temperament}/
+                  {relic.dna.condition}, {relic.dna.bossInfluence}
                 </option>
               ))}
             </select>
