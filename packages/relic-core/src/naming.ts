@@ -9,16 +9,24 @@ import type { Element, RelicDNA, Temperament } from "./types.js";
  * Same DNA always yields the same name, which also keeps cached relics stable.
  */
 
+/**
+ * Pool size is a correctness concern, not decoration.
+ *
+ * Five prefixes by five suffixes is 25 names per element-temperament pair, and
+ * with a relic cached for every boss and playstyle that produced two different
+ * weapons both called Stormedge. Nine by nine is 81, which makes a collision
+ * across the whole cache unlikely rather than expected.
+ */
 const PREFIX: Record<Element, string[]> = {
-  fire: ["Ember", "Ashen", "Cinder", "Molten", "Pyre"],
-  ice: ["Winter", "Frost", "Glacial", "Rime", "Hoar"],
-  lightning: ["Storm", "Thunder", "Arc", "Tempest", "Levin"],
+  fire: ["Ember", "Ashen", "Cinder", "Molten", "Pyre", "Scoria", "Kiln", "Slag", "Char"],
+  ice: ["Winter", "Frost", "Glacial", "Rime", "Hoar", "Sleet", "Verglas", "Snowfall", "Bitterhold"],
+  lightning: ["Storm", "Thunder", "Arc", "Tempest", "Levin", "Voltaic", "Skyfall", "Gale", "Fulgur"],
 };
 
 const SUFFIX: Record<Temperament, string[]> = {
-  brutal: ["fang", "maw", "ruin", "wrath", "breaker"],
-  balanced: ["oath", "vow", "edge", "warden", "keeper"],
-  elegant: ["whisper", "grace", "judgment", "veil", "song"],
+  brutal: ["fang", "maw", "ruin", "wrath", "breaker", "render", "crusher", "scourge", "tyrant"],
+  balanced: ["oath", "vow", "edge", "warden", "keeper", "sentinel", "accord", "bulwark", "creed"],
+  elegant: ["whisper", "grace", "judgment", "veil", "song", "requiem", "lament", "wane", "elegy"],
 };
 
 function hashIndex(seed: string, length: number): number {
