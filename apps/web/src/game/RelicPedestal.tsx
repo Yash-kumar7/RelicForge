@@ -4,7 +4,7 @@ import { useGLTF } from "@react-three/drei";
 import { AdditiveBlending, Group, Quaternion, Vector3 } from "three";
 import { normalizeRelic, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
-import { ARENA_RADIUS } from "./Arena";
+import { ARENA_RADIUS } from "./arenaGeometry";
 import { sfx } from "../audio/sfx";
 
 /**

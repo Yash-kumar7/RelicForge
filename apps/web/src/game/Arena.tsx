@@ -3,8 +3,9 @@ import { useFrame } from "@react-three/fiber";
 import type { PointLight } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { themeForBoss } from "./theme";
+import { ARENA_RADIUS } from "./arenaGeometry";
 
-export const ARENA_RADIUS = 14;
+export { ARENA_RADIUS } from "./arenaGeometry";
 
 /**
  * The arena exists to frame two things: the boss, and the forge behind it.

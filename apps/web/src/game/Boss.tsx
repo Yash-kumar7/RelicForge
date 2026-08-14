@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PointLight, Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { COMBAT, isWithinArc } from "./combat";
-import { ARENA_RADIUS } from "./Arena";
+import { BOSS_LIMIT } from "./arenaGeometry";
 import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
 import { themeForBoss } from "./theme";
@@ -148,7 +148,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
      * because it is a wider body.
      */
     const bossRadial = Math.hypot(position.current.x, position.current.z);
-    const bossLimit = ARENA_RADIUS - 1.8;
+    const bossLimit = BOSS_LIMIT;
     if (bossRadial > bossLimit) {
       const scale = bossLimit / bossRadial;
       position.current.x *= scale;

@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
-import { ARENA_RADIUS } from "./Arena";
+import { CAMERA_LIMIT, PLAYER_LIMIT } from "./arenaGeometry";
 import { COMBAT, attackSpec, isWithinArc, type AttackKind } from "./combat";
 import { sfx } from "../audio/sfx";
 import { registerDodge } from "./feedback";
@@ -253,8 +253,8 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
 
       // Arena bound. A physics engine for one circular wall would be overkill.
       const radial = Math.hypot(playerHandle.position.x, playerHandle.position.z);
-      if (radial > ARENA_RADIUS - 1) {
-        const scale = (ARENA_RADIUS - 1) / radial;
+      if (radial > PLAYER_LIMIT) {
+        const scale = PLAYER_LIMIT / radial;
         playerHandle.position.x *= scale;
         playerHandle.position.z *= scale;
       }
@@ -336,7 +336,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
        * view tightening in close quarters.
        */
       const back = new Vector3(0, 0, 1).applyAxisAngle(new Vector3(0, 1, 0), yaw.current);
-      const limit = ARENA_RADIUS - 0.6;
+      const limit = CAMERA_LIMIT;
       let boom = 4.2;
 
       for (let i = 0; i < 6; i++) {

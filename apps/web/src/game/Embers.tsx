@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { AdditiveBlending, Color, InstancedMesh, Object3D } from "three";
-import { ARENA_RADIUS } from "./Arena";
+import { ARENA_RADIUS } from "./arenaGeometry";
 import { useGameStore } from "../state/useGameStore";
 import { themeForBoss } from "./theme";
 
