@@ -12,6 +12,7 @@ import { playerHandle } from "./Player";
 import { swingProgress } from "./swing";
 import { IronSwordMesh } from "./IronSwordMesh";
 import { HeldRelicMesh } from "./HeldRelicMesh";
+import { PlayerHandWeapon } from "./HandWeapon";
 
 /**
  * Your champion, in the arena.
@@ -112,15 +113,21 @@ function AvatarBody({
       body.current.rotation.z = playerHandle.moving ? Math.sin(t * 4.5) * 0.04 : 0;
     }
 
-    // The body leans into it, and the weapon actually travels. A lean alone
-    // reads as the character flinching while damage happens by itself.
+    /**
+     * The body turns into the swing, hard enough to read from behind.
+     *
+     * The first version rotated by 0.18 radians, about ten degrees, which is
+     * invisible at third-person distance: the character appeared to stand still
+     * while the enemy took damage. A shoulder turn is what sells a swing, so the
+     * rotation is now large enough to see and the whole body dips into it.
+     */
     const swing = swingProgress(playerHandle.attacking);
-    body.current.rotation.x = swing * 0.18;
-    body.current.rotation.y = swing * -0.22;
+    body.current.rotation.x = swing * 0.3;
+    body.current.rotation.y = swing * -0.55;
+    body.current.rotation.z = swing * 0.12;
 
-    if (arm.current) {
-      // A diagonal overhead arc: back and up on the wind-up, down and across
-      // through the strike.
+    // Unrigged fallback socket only; the rigged path animates its own weapon.
+    if (arm.current && !rigged) {
       arm.current.rotation.x = 0.2 - swing * 0.85;
       arm.current.rotation.z = -0.3 - swing * 0.75;
       arm.current.position.z = 0.12 + Math.max(0, swing) * 0.22;
@@ -137,24 +144,13 @@ function AvatarBody({
             speed={walkSpeed}
           >
             {/*
-              Inside the hand bone, so the weapon travels with the hand through
-              the walk cycle. Previously it sat at an estimated offset beside the
-              body and the animated arm swung away from it, which read as the
-              sword floating next to the character rather than being held.
-
-              The rotation aligns the blade with the forearm: a bone's local axes
-              are the rig's business, not the mesh's, so the canonical +Y blade
-              has to be turned into the hand's frame.
+              Position comes from the hand bone, so the weapon travels with the
+              hand through the walk cycle. Rotation comes from the swing curve,
+              because rigging ships only walking and running: with no attack clip
+              in the skeleton, taking rotation from the bone would leave the
+              weapon unable to swing at all.
             */}
-            {/* Held angle in the character's own space: tipped forward and
-                canted across the body, the way a blade rests in a hand. */}
-            <group rotation={[0.35, 0, -0.35]}>
-              {held ? (
-                <HeldRelicMesh url={held.url} weaponClass={held.weaponClass} />
-              ) : (
-                <IronSwordMesh accent={accent} />
-              )}
-            </group>
+            <PlayerHandWeapon held={held} accent={accent} />
           </AnimatedCharacter>
         ) : (
           <group position={fit.offset} scale={fit.scale}>

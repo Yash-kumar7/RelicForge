@@ -241,6 +241,9 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
       body.current.position.y = striking ? -strikeT * 0.5 : charge * 0.35;
       body.current.scale.setScalar(1 + charge * 0.12 - strikeT * 0.05);
       body.current.rotation.z = striking ? Math.sin(strikeT * Math.PI) * 0.22 : charge * -0.12;
+      // A shoulder turn, so the swing comes from the body rather than the arm
+      // alone. Without it a huge armoured figure appears to flick its wrist.
+      body.current.rotation.y = striking ? -strikeT * 0.45 : charge * 0.3;
     }
 
     /**
@@ -280,14 +283,12 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
     <group ref={group} position={[0, 0, -4]}>
       <group ref={body}>
         <BossModel slug={bossSlug} walking={walking} onLoaded={onModelLoaded}>
-          {/* Follows the hand bone when the boss is rigged, so the weapon swings
-              with the arm rather than hanging beside it. */}
-          <group rotation={[0.3, 0, -0.3]}>
-            <BossHandWeapon
-              slug={bossSlug}
-              weaponClass={bossAt(bossLevel ?? 1).weaponClass}
-            />
-          </group>
+          {/* Position from the hand bone, rotation from the boss's own swing
+              curve, since a rig has no attack clip to play. */}
+          <BossHandWeapon
+            slug={bossSlug}
+            weaponClass={bossAt(bossLevel ?? 1).weaponClass}
+          />
         </BossModel>
 
         {/* Primitive fallback, hidden the moment a generated mesh loads. */}

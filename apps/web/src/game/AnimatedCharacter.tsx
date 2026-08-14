@@ -51,10 +51,19 @@ function findRightHand(root: Object3D): Object3D | null {
 const IDLE_TIME_SCALE = 0.18;
 
 /**
- * Places its children at a bone's position and rotation, in the root's space.
+ * Places its children at a bone's position, in the root's space.
  *
- * Scale is discarded on purpose. Everything else about the hand is worth
- * inheriting; its scale is an artefact of how the rig was exported.
+ * Position only. Rotation and scale are both discarded, for different reasons.
+ *
+ * Scale is an artefact of the FBX export pipeline these rigs come through, and
+ * inheriting it made the weapon microscopic.
+ *
+ * Rotation is discarded because a hand bone points down the forearm, so a blade
+ * inheriting it hangs downward, and more importantly because rigging ships only
+ * walking and running clips. There is no attack animation, so if the weapon took
+ * its rotation from the skeleton it would have no way to swing at all. The
+ * caller supplies rotation from the same swing curve the hit test uses, which is
+ * what makes an attack visible.
  */
 function HandFollower({
   root,
@@ -84,7 +93,6 @@ function HandFollower({
     local.decompose(position, quaternion, scale);
 
     group.position.copy(position);
-    group.quaternion.copy(quaternion);
   });
 
   return <group ref={socket}>{children}</group>;

@@ -4,6 +4,7 @@ import { Group } from "three";
 import type { WeaponClass } from "@relic/core";
 import { HeldRelicMesh } from "./HeldRelicMesh";
 import { bossSwing } from "./bossState";
+import { BossHandWeaponSwing } from "./HandWeapon";
 
 /**
  * A boss's generated weapon, socketed at its estimated right hand.
@@ -119,9 +120,7 @@ export function BossHandWeapon({
 
   return (
     <Suspense fallback={null}>
-      <group scale={1.15}>
-        <HeldRelicMesh url={url} weaponClass={weaponClass} />
-      </group>
+      <BossHandWeaponSwing url={url} weaponClass={weaponClass} />
     </Suspense>
   );
 }
