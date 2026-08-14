@@ -137,18 +137,23 @@ export function championStats(champion: Champion): ChampionStats {
 export function describeChampion(champion: Champion): { label: string; value: string }[] {
   const stats = championStats(champion);
   /*
-   * Plain words, with the unit on the value.
+   * Plain words, owned by the player, with the unit on the value.
    *
-   * This went through two worse versions. "light hit" never said whose hit it
-   * was, so the number beside it could as easily have been what the boss does
-   * to you. "you deal - light" said whose it was and stopped being English.
-   * Naming the action and letting the value carry the unit needs no decoding:
-   * a row reading "light attack: 30 damage" cannot be misread.
+   * "light attack" and "heavy attack" are jargon. They are the internal names
+   * for the two AttackKinds and they read fine to anyone who has played an
+   * action game, which is exactly the assumption worth removing: light and
+   * heavy describe nothing on their own, and neither says who is swinging. A
+   * reader could reasonably take "heavy attack: 71 damage" as what the boss is
+   * about to do to them.
+   *
+   * "your quick swing" and "your strong swing" need no prior knowledge: the
+   * possessive answers whose it is and the adjective describes the swing rather
+   * than naming a category.
    */
   return [
-    { label: "health", value: `${stats.health}` },
-    { label: "light attack", value: `${stats.lightDamage} damage` },
-    { label: "heavy attack", value: `${stats.heavyDamage} damage` },
+    { label: "your health", value: `${stats.health}` },
+    { label: "your quick swing", value: `${stats.lightDamage} damage` },
+    { label: "your strong swing", value: `${stats.heavyDamage} damage` },
   ];
   /*
    * Dodge cooldown is deliberately not a row.

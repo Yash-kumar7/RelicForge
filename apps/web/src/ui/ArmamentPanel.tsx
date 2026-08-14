@@ -109,13 +109,13 @@ export function ArmamentPanel() {
               </p>
               <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.12em]">
                 <div className="flex justify-between">
-                  <dt className="text-stone-700">light</dt>
+                  <dt className="text-stone-700">quick swing</dt>
                   <dd className="text-stone-400">
                     {light.damage} · {swingSeconds(light)}s
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-stone-700">heavy</dt>
+                  <dt className="text-stone-700">strong swing</dt>
                   <dd className="text-stone-400">
                     {heavy.damage} · {swingSeconds(heavy)}s
                   </dd>

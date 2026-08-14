@@ -28,11 +28,26 @@ export const COMBAT = {
     reach: 4.2,
     arcDeg: 130,
   },
+  /**
+   * Heavy is a burst, not a better light.
+   *
+   * It used to be strictly superior: more damage per hit and higher sustained
+   * damage per second, which left no reason to ever throw a light attack. That
+   * is not only a dull fight, it quietly breaks the product. Temperament is
+   * decided by the ratio of heavy to light attacks, so an attack nobody uses
+   * means every player is read as brutal and every player walks away with the
+   * same kind of weapon.
+   *
+   * The recovery is what fixes it. At 1220ms of total commitment the swing
+   * outlasts the boss's 1000ms telegraph, so starting one as the boss winds up
+   * means wearing the hit. Heavy keeps its burst and its stagger; it now costs
+   * something to use.
+   */
   heavyAttack: {
     damage: 60,
     windupMs: 420,
     activeMs: 180,
-    recoveryMs: 380,
+    recoveryMs: 620,
     reach: 4.8,
     arcDeg: 160,
   },

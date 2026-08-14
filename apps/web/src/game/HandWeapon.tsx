@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Group, Mesh, MeshBasicMaterial } from "three";
 import type { WeaponClass } from "@relic/core";
+import type { AttackKind } from "./combat";
 import { HeldRelicMesh } from "./HeldRelicMesh";
 import { IronSwordMesh } from "./IronSwordMesh";
 import { playerHandle } from "./Player";
@@ -35,10 +36,26 @@ import { bossState, bossSwing } from "./bossState";
  * rather than as the weapon being carried through a turn, the blade has to
  * travel visibly further than its holder.
  */
-function applySwing(group: Group, swing: number, scale = 1): void {
-  group.rotation.x = -swing * 1.45 * scale;
-  group.rotation.y = swing * 0.35 * scale;
-  group.rotation.z = -swing * 0.8 * scale;
+/**
+ * Light and heavy travel along different arcs, not the same arc at different
+ * sizes.
+ *
+ * They used to share one curve scaled up, so a heavy read as a slightly bigger
+ * light and the player had no way to tell from the animation which one had come
+ * out. A light is a quick lateral cut, mostly yaw. A heavy is an overhead, mostly
+ * pitch, and it drops further than it can be mistaken for.
+ */
+function applySwing(group: Group, swing: number, scale = 1, kind: AttackKind = "light"): void {
+  if (kind === "heavy") {
+    group.rotation.x = -swing * 2.1 * scale;
+    group.rotation.y = swing * 0.12 * scale;
+    group.rotation.z = -swing * 0.5 * scale;
+    return;
+  }
+
+  group.rotation.x = -swing * 0.55 * scale;
+  group.rotation.y = swing * 1.25 * scale;
+  group.rotation.z = -swing * 0.95 * scale;
 }
 
 export function PlayerHandWeapon({
@@ -51,7 +68,14 @@ export function PlayerHandWeapon({
   const arm = useRef<Group>(null);
 
   useFrame(() => {
-    if (arm.current) applySwing(arm.current, swingProgress(playerHandle.attacking));
+    if (arm.current) {
+      applySwing(
+        arm.current,
+        swingProgress(playerHandle.attacking),
+        1,
+        playerHandle.attacking?.kind ?? "light",
+      );
+    }
   });
 
   return (
@@ -78,7 +102,8 @@ export function BossHandWeaponSwing({
 
   useFrame(() => {
     const swing = bossSwing();
-    if (arm.current) applySwing(arm.current, swing, 1.15);
+    // The boss only has one attack, and it is a heavy one.
+    if (arm.current) applySwing(arm.current, swing, 1.15, "heavy");
 
     /**
      * A slash that appears only as the blow lands.
