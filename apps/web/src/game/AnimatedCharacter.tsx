@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
-import { createPortal } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, type ReactNode, type RefObject } from "react";
+import { useFrame } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
-import { Group, LoopRepeat, type Object3D } from "three";
+import { Group, LoopRepeat, Matrix4, Quaternion, Vector3, type Object3D } from "three";
 import { fitCharacter } from "../lib/characterFit";
 
 /**
@@ -50,6 +50,46 @@ function findRightHand(root: Object3D): Object3D | null {
 
 const IDLE_TIME_SCALE = 0.18;
 
+/**
+ * Places its children at a bone's position and rotation, in the root's space.
+ *
+ * Scale is discarded on purpose. Everything else about the hand is worth
+ * inheriting; its scale is an artefact of how the rig was exported.
+ */
+function HandFollower({
+  root,
+  bone,
+  children,
+}: {
+  root: RefObject<Group | null>;
+  bone: Object3D;
+  children: ReactNode;
+}) {
+  const socket = useRef<Group>(null);
+  const inverse = useMemo(() => new Matrix4(), []);
+  const local = useMemo(() => new Matrix4(), []);
+  const position = useMemo(() => new Vector3(), []);
+  const quaternion = useMemo(() => new Quaternion(), []);
+  const scale = useMemo(() => new Vector3(), []);
+
+  useFrame(() => {
+    const group = socket.current;
+    const parent = root.current;
+    if (!group || !parent) return;
+
+    // Bone world transform, expressed relative to the character root so the
+    // socket can live outside the scaled hierarchy.
+    inverse.copy(parent.matrixWorld).invert();
+    local.multiplyMatrices(inverse, bone.matrixWorld);
+    local.decompose(position, quaternion, scale);
+
+    group.position.copy(position);
+    group.quaternion.copy(quaternion);
+  });
+
+  return <group ref={socket}>{children}</group>;
+}
+
 export function AnimatedCharacter({
   url,
   height,
@@ -97,14 +137,17 @@ export function AnimatedCharacter({
       </group>
 
       {/*
-        Portalled into the hand bone rather than positioned near it. The bone is
-        inside the fitted group, so its world transform already carries the
-        character's scale; the weapon only has to undo that scale to stay its own
-        size.
+        The weapon follows the hand rather than being parented to it.
+
+        Parenting looked correct and rendered nothing: these rigs come through an
+        FBX pipeline whose armature carries its own scale, so a child of a bone
+        inherits that scale and ends up either microscopic or flung out of frame.
+        Copying the bone's position and rotation each frame, and deliberately
+        discarding its scale, gives the weapon the hand's motion while keeping
+        its own size.
       */}
-      {children && hand
-        ? createPortal(<group scale={1 / (fit.scale || 1)}>{children}</group>, hand)
-        : children}
+      {children && hand && <HandFollower root={root} bone={hand}>{children}</HandFollower>}
+      {children && !hand && children}
     </group>
   );
 }

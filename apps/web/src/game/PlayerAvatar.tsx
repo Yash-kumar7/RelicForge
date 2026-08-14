@@ -146,7 +146,9 @@ function AvatarBody({
               are the rig's business, not the mesh's, so the canonical +Y blade
               has to be turned into the hand's frame.
             */}
-            <group rotation={[Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+            {/* Held angle in the character's own space: tipped forward and
+                canted across the body, the way a blade rests in a hand. */}
+            <group rotation={[0.35, 0, -0.35]}>
               {held ? (
                 <HeldRelicMesh url={held.url} weaponClass={held.weaponClass} />
               ) : (

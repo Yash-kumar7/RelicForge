@@ -60,13 +60,22 @@ export function Hud() {
       : carried
         ? { name: carried.name, weaponClass: carried.dna.weaponClass }
         : null;
+  /**
+   * Every hook runs before the early return, without exception.
+   *
+   * A hook added below the return crashed the entire tree the instant the
+   * player won: while fighting the return did not fire so the hook ran, and at
+   * VICTORY it fired first, so React saw fewer hooks than the previous render
+   * and threw. The forge never started, and a won fight produced no relic at
+   * all. This is the one ordering in the file that must not be broken.
+   */
+  const telemetry = useGameStore((s) => s.telemetry);
   const bossTheme = themeForBoss(bossLevel ?? 1);
   const accent = accentFor(affinity);
 
   if (phase !== "FIGHTING" && phase !== "EQUIPPED") return null;
 
   const fighting = phase === "FIGHTING";
-  const telemetry = useGameStore((s) => s.telemetry);
   const playerPct = Math.round((playerHp / PLAYER_MAX_HP) * 100);
   const bossPct = Math.ceil((bossHp / Math.max(1, bossMaxHp)) * 100);
   const bossName = bossTitleFor(bossLevel ?? 1, affinity);

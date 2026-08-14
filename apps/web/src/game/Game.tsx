@@ -47,6 +47,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   const forge = useGameStore((s) => s.forge);
   const damageBoss = useGameStore((s) => s.damageBoss);
   const setPhase = useGameStore((s) => s.setPhase);
+  const reset = useGameStore((s) => s.reset);
   const { start, retry, persistTransform } = useForgeRun();
   const started = useRef(false);
 
@@ -222,13 +223,29 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
       {phase === "DEFEAT" && <DefeatScreen />}
 
       {phase === "EQUIPPED" && (
-        <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
-          <p className="font-display text-sm uppercase tracking-[0.35em] text-ember-300">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
+          <p className="pointer-events-none font-display text-sm uppercase tracking-[0.35em] text-ember-300">
             {forge.name}
           </p>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
+          <p className="pointer-events-none mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
             click to look · LMB to swing
           </p>
+          {/*
+            There was no route out of a finished run except reloading the page,
+            which matters more than it sounds: two runs back to back is the
+            entire comparison the project is built to show, and the relic is
+            already saved to the loadout by the time this appears.
+          */}
+          <button
+            type="button"
+            onClick={() => {
+              document.exitPointerLock?.();
+              reset();
+            }}
+            className="pointer-events-auto mt-5 border border-ember-500/50 px-8 py-2 text-xs uppercase tracking-[0.3em] text-ember-300 transition hover:bg-ember-500/10"
+          >
+            Forge another
+          </button>
         </div>
       )}
     </div>

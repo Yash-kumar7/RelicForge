@@ -280,11 +280,9 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
     <group ref={group} position={[0, 0, -4]}>
       <group ref={body}>
         <BossModel slug={bossSlug} walking={walking} onLoaded={onModelLoaded}>
-          {/* Inside the hand bone when the boss is rigged, so the weapon swings
-              with the arm rather than hanging beside it. The blade is canonical
-              +Y and a bone's axes belong to the rig, so it is turned into the
-              hand's frame. */}
-          <group rotation={[Math.PI / 2, 0, 0]} position={[0, 0.04, 0]}>
+          {/* Follows the hand bone when the boss is rigged, so the weapon swings
+              with the arm rather than hanging beside it. */}
+          <group rotation={[0.3, 0, -0.3]}>
             <BossHandWeapon
               slug={bossSlug}
               weaponClass={bossAt(bossLevel ?? 1).weaponClass}
