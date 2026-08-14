@@ -13,6 +13,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { env } from "../src/env.js";
+import { fetchBuffer, fetchBytes } from "../src/lib/fetchBytes.js";
 import {
   buildRelicDNA,
   compileRelicPrompt,
@@ -97,7 +98,7 @@ async function main() {
       const conceptMs = Date.now() - conceptStart;
       await writeFile(
         path.join(dir, "concept.png"),
-        Buffer.from(await fetch(conceptUrl).then((r) => r.arrayBuffer())),
+        await fetchBuffer(conceptUrl),
       );
       console.log(`  concept ok (${(conceptMs / 1000).toFixed(1)}s)`);
 
@@ -123,7 +124,7 @@ async function main() {
       if (!glbUrl) throw new Error("no glb");
       const meshMs = Date.now() - meshStart;
 
-      const raw = new Uint8Array(await fetch(glbUrl).then((r) => r.arrayBuffer()));
+      const raw = await fetchBytes(glbUrl);
       const { data, stats } = await optimizeGlb(raw);
       await writeFile(path.join(dir, "model.glb"), data);
 
