@@ -111,7 +111,7 @@ export function TitleScreen() {
           <div className="mt-8 grid gap-3 text-left sm:grid-cols-3">
             {[
               ["1 · Fight", "Swing hard, dodge, survive. Everything you do is recorded."],
-              ["2 · Forge", "Your fight becomes a design, then a real 3D model. Takes about two minutes."],
+              ["2 · Forge", "Your fight becomes a design, then a real 3D model, generated while you wait. About two minutes."],
               ["3 · Wield", "Claim it and carry it. Nobody else will ever have that weapon."],
             ].map(([title, body]) => (
               <div key={title} className="border border-ash-800 px-4 py-3">
@@ -154,7 +154,8 @@ export function TitleScreen() {
         )}
 
         <p className="mt-12 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
-          weapons, bosses and champions generated at runtime by meshy-7
+          weapons forged live by meshy-7 from your fight · bosses and champions
+          pre-generated with meshy-7
         </p>
         </div>
       </div>

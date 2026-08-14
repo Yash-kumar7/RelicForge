@@ -185,10 +185,15 @@ loadout and the second slot reads `??????`, because that weapon does not exist
 yet and cannot be looked up. It will be generated from the fight you are
 currently having.
 
-Bosses are Meshy-generated too. They are static meshes moved by code — approach,
-telegraph and strike are whole-body transforms — so a generated model drops into
-the same behaviour a primitive one had, with no rig and no animation clips. If a
-level has no model yet, a primitive fallback keeps the fight intact.
+Bosses and champions are Meshy-generated too, but **ahead of time**, by scripts
+in `apps/api/scripts/`, and they ship as assets. Only the weapon is generated
+while you play. The distinction matters: the runtime claim belongs to the relic
+alone, and everything else is Meshy used the ordinary way, as a content tool.
+
+They are static meshes moved by code — approach, telegraph and strike are
+whole-body transforms — so a generated model drops into the same behaviour a
+primitive one had, with no rig and no animation clips. If a level has no model
+yet, a primitive fallback keeps the fight intact.
 
 ## How you play
 
