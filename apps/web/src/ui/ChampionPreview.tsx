@@ -18,6 +18,18 @@ import { themeFor } from "../game/theme";
  */
 
 const CHAMPION_HEIGHT = 2.6;
+const FOV = 38;
+
+/**
+ * Camera distance that actually fits the champion.
+ *
+ * Picking this by eye is how the model ended up cropped: at fov 38 a camera
+ * 3.7 units back only sees 2.55 units of height, which is less than the
+ * character is tall. Derived from the frustum instead, with a margin so the
+ * silhouette has air around it rather than touching the frame edges.
+ */
+const FIT_DISTANCE =
+  (CHAMPION_HEIGHT / 2 + 0.45) / Math.tan((FOV / 2) * (Math.PI / 180));
 
 function ChampionModel({ slug }: { slug: string }) {
   const { scene } = useGLTF(`/assets/champions/${slug}/model.glb`);
@@ -61,9 +73,9 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
   if (available === false) return null;
 
   return (
-    <div className="relative h-[calc(100vh-6rem)] max-h-[60rem] min-h-[30rem] w-full cursor-grab border border-ash-800 bg-ash-900/40 active:cursor-grabbing">
+    <div className="relative h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full cursor-grab border border-ash-800 bg-ash-900/40 active:cursor-grabbing">
       {available && (
-        <Canvas camera={{ position: [0, 0.3, 3.7], fov: 38 }}>
+        <Canvas camera={{ position: [0, 0.25, FIT_DISTANCE], fov: FOV }}>
           <ambientLight intensity={0.55} />
           <directionalLight position={[3, 5, 4]} intensity={2.1} />
           <directionalLight position={[-3, 2, -2]} intensity={0.9} color={theme.forge} />
@@ -83,7 +95,7 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
             autoRotate
             autoRotateSpeed={0.7}
             enablePan={false}
-            minDistance={1.6}
+            minDistance={2}
             maxDistance={7}
             minPolarAngle={0.25}
             maxPolarAngle={Math.PI - 0.25}
