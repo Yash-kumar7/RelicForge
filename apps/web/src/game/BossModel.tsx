@@ -25,13 +25,17 @@ function StaticBoss({ slug, onLoaded }: { slug: string; onLoaded: () => void }) 
   useEffect(() => onLoaded(), [onLoaded]);
 
   return (
+    /**
+     * No facing correction.
+     *
+     * Object3D.lookAt on a non-camera already points the object's +Z at its
+     * target, and a front-on concept produces a mesh whose front IS +Z. The half
+     * turn that used to be here therefore turned the boss away from the player,
+     * so it advanced and attacked with its back to them. Exactly the same
+     * mistake was in the champion's facing and was fixed there.
+     */
     <group position={fit.offset} scale={fit.scale}>
-      {/* Concepts are framed front-on, so the mesh faces +Z out of the image.
-          The parent turns to face the player, so this only undoes the model's
-          own facing. */}
-      <group rotation={[0, Math.PI, 0]}>
-        <primitive object={model} />
-      </group>
+      <primitive object={model} />
     </group>
   );
 }
@@ -84,17 +88,15 @@ export function BossModel({
   return (
     <Suspense fallback={null}>
       {asset === "rig" ? (
-        // Rigged bosses face the camera in their own space too, so the same
-        // half turn applies.
-        <group rotation={[0, Math.PI, 0]}>
-          <AnimatedCharacter
-            url={`/assets/bosses/${slug}/rig/walking.glb`}
-            height={BOSS_HEIGHT}
-            speed={walking}
-          >
-            {children}
-          </AnimatedCharacter>
-        </group>
+        // Same reasoning as the static case: the parent's lookAt already aims
+        // the model's front at the player, so a half turn would face it away.
+        <AnimatedCharacter
+          url={`/assets/bosses/${slug}/rig/walking.glb`}
+          height={BOSS_HEIGHT}
+          speed={walking}
+        >
+          {children}
+        </AnimatedCharacter>
       ) : (
         <StaticBoss slug={slug} onLoaded={() => onLoaded(true)} />
       )}

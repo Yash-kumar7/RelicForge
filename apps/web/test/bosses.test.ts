@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BOSSES, MAX_LEVEL, bossAt, bossTitleFor, isUnlocked } from "../src/game/bosses";
 import { themeForBoss } from "../src/game/theme";
+import { Group, Vector3 } from "three";
 
 describe("boss ladder", () => {
   it("clamps out-of-range levels instead of returning undefined", () => {
@@ -71,5 +72,31 @@ describe("themeForBoss", () => {
         expect(theme[key]).toMatch(/^#[0-9a-f]{6}$/i);
       }
     }
+  });
+});
+
+describe("facing convention", () => {
+  it("points a front-on mesh at its target with no correction", () => {
+    // Object3D.lookAt on a non-camera aims the object's +Z at the target, and a
+    // front-on concept produces a mesh whose front is +Z. Any half turn applied
+    // on top of that faces the model away, which is what made the boss advance
+    // with its back to the player and the champion run backwards.
+    const group = new Group();
+    group.position.set(0, 0, 0);
+    group.lookAt(new Vector3(0, 0, -10));
+
+    const facing = new Vector3(0, 0, 1).applyQuaternion(group.quaternion);
+    expect(facing.z).toBeLessThan(-0.9);
+  });
+
+  it("matches the champion's own facing formula", () => {
+    // PlayerAvatar sets rotation.y from atan2(forward.x, forward.z), which is
+    // the same convention. Both must agree or one of them is backwards.
+    const forward = new Vector3(0, 0, -1);
+    const group = new Group();
+    group.rotation.y = Math.atan2(forward.x, forward.z);
+
+    const facing = new Vector3(0, 0, 1).applyQuaternion(group.quaternion);
+    expect(facing.z).toBeLessThan(-0.9);
   });
 });
