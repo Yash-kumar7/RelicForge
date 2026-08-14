@@ -15,6 +15,8 @@ import { PlayerHands } from "./PlayerHands";
 import { PlayerAvatar } from "./PlayerAvatar";
 import { CameraShake } from "./CameraShake";
 import { registerHit, resetFeedback } from "./feedback";
+import { resetPlayerHandle } from "./Player";
+import { resetBossState } from "./bossState";
 import { recordClear } from "./bosses";
 import { useGameStore } from "../state/useGameStore";
 import { useForgeRun } from "../forge/useForgeRun";
@@ -109,6 +111,14 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
     // The relic is yours from here: it persists across runs and shows up in
     // the loadout on every later fight.
     if (f.relicId && f.name && f.dna && f.modelUrl) {
+      // Claiming is when a relic actually exists, so this is where its XP is paid.
+      useProgress.getState().award({
+        bossLevel: state.bossLevel ?? 1,
+        healthRemaining: 100,
+        dodges: 0,
+        healingUsed: 1,
+        forgedRelic: true,
+      });
       useLoadout.getState().claim({
         relicId: f.relicId,
         name: f.name,
@@ -142,8 +152,19 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
     if (phase === "DEFEAT") useProgress.getState().recordLoss();
   }, [phase]);
 
+  /**
+   * Everything that lives outside React has to be reset here.
+   *
+   * These are module-level because they are read every frame, which also means
+   * they outlive the components. A fight that inherits the previous fight's
+   * player position, attack state or boss swing is the kind of bug that only
+   * shows up on a second run, which is exactly the run a demo does twice.
+   */
   useEffect(() => {
-    if (phase === "FIGHTING") resetFeedback();
+    if (phase !== "FIGHTING") return;
+    resetFeedback();
+    resetPlayerHandle();
+    resetBossState();
   }, [phase]);
 
   const relicReady = Boolean(forge.modelUrl && forge.dna);
@@ -219,7 +240,19 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
       <LoadoutPanel />
       <DebugOverlay />
 
-      {(phase === "FORGING" || phase === "VICTORY") && <ForgeSequence onClaim={claim} onRetry={() => void retry()} />}
+      {(phase === "FORGING" || phase === "VICTORY") && (
+        <ForgeSequence
+          onClaim={claim}
+          onRetry={() => void retry()}
+          /* A failed forge has no relic to equip, so walking away returns to the
+             forge rather than dropping the player into EQUIPPED holding nothing
+             with a null name on screen. */
+          onAbandon={() => {
+            document.exitPointerLock?.();
+            reset();
+          }}
+        />
+      )}
       {phase === "DEFEAT" && <DefeatScreen />}
 
       {phase === "EQUIPPED" && (

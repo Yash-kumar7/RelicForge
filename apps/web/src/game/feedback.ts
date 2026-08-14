@@ -107,5 +107,7 @@ export function resetFeedback(): void {
   playerHurt.amount = 0;
   shake.magnitude = 0;
   hitstop.until = 0;
+  // Otherwise the dodge bar opens a fight showing a recharge from the last one.
+  lastDodge.at = 0;
   popListeners.forEach((listener) => listener([]));
 }

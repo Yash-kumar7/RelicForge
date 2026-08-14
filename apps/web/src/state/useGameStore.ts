@@ -17,7 +17,8 @@ export type GamePhase =
   | "VICTORY"
   | "DEFEAT"
   | "FORGING"
-  | "REVEAL"
+  // No REVEAL phase: the pedestal reveal happens inside FORGING, driven by the
+  // forge stage, so a separate phase would be a second source of truth.
   | "EQUIPPED";
 
 export type ForgeStage =
@@ -102,7 +103,6 @@ interface GameState {
   damagePlayer: (amount: number) => void;
   heal: (amount: number) => void;
   recordDodge: () => void;
-  recordHeal: () => void;
   snapshotTelemetry: () => CombatTelemetry;
   patchForge: (patch: Partial<ForgeState>) => void;
   reset: () => void;
@@ -236,11 +236,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   recordDodge: () =>
     set((state) => ({ telemetry: { ...state.telemetry, dodges: state.telemetry.dodges + 1 } })),
-
-  recordHeal: () =>
-    set((state) => ({
-      telemetry: { ...state.telemetry, healingUsed: state.telemetry.healingUsed + 1 },
-    })),
 
   snapshotTelemetry: () => {
     const state = get();

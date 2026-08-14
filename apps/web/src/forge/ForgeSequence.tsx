@@ -13,9 +13,11 @@ import { bossAt } from "../game/bosses";
 export function ForgeSequence({
   onClaim,
   onRetry,
+  onAbandon,
 }: {
   onClaim: () => void;
   onRetry: () => void;
+  onAbandon: () => void;
 }) {
   const forge = useGameStore((s) => s.forge);
   const telemetry = useGameStore((s) => s.telemetry);
@@ -184,7 +186,7 @@ export function ForgeSequence({
               </button>
               <button
                 type="button"
-                onClick={onClaim}
+                onClick={onAbandon}
                 className="border border-stone-700 px-8 py-2 text-xs uppercase tracking-[0.3em] text-stone-400 hover:border-stone-500"
               >
                 Walk away

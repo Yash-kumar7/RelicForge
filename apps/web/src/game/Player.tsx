@@ -35,6 +35,26 @@ export const playerHandle: PlayerHandle = {
   moving: false,
 };
 
+/** Where a fight begins. Kept here so the reset and the initial value agree. */
+export const SPAWN = { x: 0, y: 1.7, z: 8 } as const;
+
+/**
+ * Returns the player to the start of a fight.
+ *
+ * playerHandle is module-level because it is read every frame and must not go
+ * through React, but that means it outlives the component. Without this, a
+ * second run began wherever the first one ended, which could be standing inside
+ * the boss, and could inherit a half-finished attack or leftover invulnerability
+ * frames from the previous fight.
+ */
+export function resetPlayerHandle(): void {
+  playerHandle.position.set(SPAWN.x, SPAWN.y, SPAWN.z);
+  playerHandle.forward.set(0, 0, -1);
+  playerHandle.attacking = null;
+  playerHandle.invulnerableUntil = 0;
+  playerHandle.moving = false;
+}
+
 interface PlayerProps {
   bossPosition: () => Vector3;
   onHitBoss: (kind: AttackKind, damage: number) => void;
@@ -153,6 +173,9 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
   useFrame((_, delta) => {
     const now = performance.now();
     const fighting = phase === "FIGHTING" && combatActive;
+    // Attack timing has to keep advancing after the fight, or a swing taken in
+    // EQUIPPED would start and never clear.
+    const swinging = phase === "EQUIPPED";
 
     // Look is allowed after victory too, so the player can watch the forge.
     camera.rotation.order = "YXZ";
@@ -228,6 +251,14 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
         }
 
         if (elapsed > activeTo + spec.recoveryMs) playerHandle.attacking = null;
+      }
+    } else if (swinging) {
+      // Animation only: no movement, no hit test, no damage.
+      const attack = playerHandle.attacking;
+      if (attack) {
+        const spec = attackSpec(attack.kind);
+        const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
+        if (now - attack.startedAt > total) playerHandle.attacking = null;
       }
     }
 

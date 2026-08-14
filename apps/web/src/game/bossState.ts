@@ -18,6 +18,12 @@ export const bossState = {
   progress: 0,
 };
 
+/** Returns the boss to rest, so a new fight does not start mid-swing. */
+export function resetBossState(): void {
+  bossState.action = "idle";
+  bossState.progress = 0;
+}
+
 export function setBossAction(action: BossAction, progress: number): void {
   bossState.action = action;
   bossState.progress = progress;
