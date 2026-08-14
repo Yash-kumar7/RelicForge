@@ -24,6 +24,7 @@ import { useForgeRun } from "../forge/useForgeRun";
 import { ForgeSequence } from "../forge/ForgeSequence";
 import { setEquippedRelic } from "./equipped";
 import { setActiveChampion } from "./champions";
+import { resetAbility } from "./abilities";
 import { Hud } from "../ui/Hud";
 import { DefeatScreen } from "../ui/DefeatScreen";
 import { PreFightBriefing } from "../ui/PreFightBriefing";
@@ -107,12 +108,17 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   const bossPosition = useCallback(() => boss.current?.position() ?? fallbackPosition.current, []);
 
   const onHitBoss = useCallback(
-    (kind: "light" | "heavy", damage: number) => {
-      boss.current?.hit(kind);
+    (kind: "light" | "heavy" | "ability", damage: number) => {
+      // An ability reads as heavy to the feedback layer: the boss staggers and
+      // the camera kicks. Only the telemetry cares that it was an ability, and
+      // it cares a lot, because an ability kill is a finishing blow the relic
+      // data model has always had a slot for.
+      const impact = kind === "ability" ? "heavy" : kind;
+      boss.current?.hit(impact);
       sfx.hitBoss();
       // Impact arrives on four channels at once: sound, a staggering boss,
       // a floating number, and a shaken camera. Any one alone reads as weak.
-      registerHit(damage, kind);
+      registerHit(damage, impact);
       damageBoss(damage, kind);
     },
     [damageBoss],
@@ -189,6 +195,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
     // numbers than the ones it began with.
     const { affinity } = useGameStore.getState();
     setActiveChampion(affinity);
+    resetAbility();
     setEquippedRelic(useLoadout.getState().equipped(), affinity);
   }, [phase]);
 

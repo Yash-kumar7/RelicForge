@@ -14,9 +14,12 @@ describe("champions", () => {
     // A champion that only gains is not a choice, it is the answer.
     for (const affinity of AFFINITIES) {
       const { traits } = championFor(affinity);
-      const values = Object.values(traits);
-      expect(values.some((v) => v > 1)).toBe(true);
-      expect(values.some((v) => v < 1)).toBe(true);
+      // Normalised so every entry reads the same way: above 1 is a gain. Without
+      // this, Storm's shorter dodge cooldown counts as a loss and the champion
+      // built entirely around it looks like it has no strengths.
+      const gains = [traits.damage, traits.maxHp, 1 / traits.dodgeCooldown];
+      expect(gains.some((v) => v > 1)).toBe(true);
+      expect(gains.some((v) => v < 1)).toBe(true);
     }
   });
 
@@ -26,10 +29,9 @@ describe("champions", () => {
     for (const affinity of AFFINITIES) {
       const { traits } = championFor(affinity);
       // Dodge cooldown is inverted: below 1 is a gain, so it is counted that way.
-      const budget =
-        traits.damage + traits.maxHp + 1 / traits.dodgeCooldown + traits.moveSpeed;
-      expect(budget).toBeGreaterThan(3.85);
-      expect(budget).toBeLessThan(4.35);
+      const budget = traits.damage + traits.maxHp + 1 / traits.dodgeCooldown;
+      expect(budget).toBeGreaterThan(2.9);
+      expect(budget).toBeLessThan(3.2);
     }
   });
 
@@ -54,5 +56,20 @@ describe("champions", () => {
 
   it("reports a shorter dodge cooldown as more dodging, not less", () => {
     expect(describeChampion(CHAMPIONS.storm)).toContain("dodge +");
+  });
+
+  it("carries no trait the player cannot feel", () => {
+    // Move speed used to live here at roughly ten percent either way, which is
+    // imperceptible while a boss is winding up. A stat nobody can feel makes the
+    // champions look distinct in a table and identical in play.
+    for (const affinity of AFFINITIES) {
+      for (const [name, value] of Object.entries(championFor(affinity).traits)) {
+        if (value === 1) continue;
+        // Epsilon because 1 - 0.9 is 0.09999999999999998 in binary floating
+        // point, and a champion should not fail balance review over that.
+        expect(Math.abs(value - 1), `${affinity}.${name} is too small to notice`)
+          .toBeGreaterThan(0.1 - 1e-6);
+      }
+    }
   });
 });

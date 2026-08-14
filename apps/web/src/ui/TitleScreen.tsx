@@ -175,8 +175,8 @@ export function TitleScreen() {
     <div className="h-full overflow-y-auto bg-ash-950 px-6 py-8">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2">
         {/* Left: the champion, as large as the viewport allows. */}
-        <div className="lg:sticky lg:top-8 lg:self-start">
-          <div className="mb-3 flex items-baseline justify-between">
+        <div className="lg:sticky lg:top-4 lg:self-start">
+          <div className="mb-2 flex items-baseline justify-between">
             <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Your champion</p>
             <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
               {rank.name} · {xp} xp
@@ -204,8 +204,10 @@ export function TitleScreen() {
                       : "border-ash-700 text-stone-500 hover:border-stone-500",
                   ].join(" ")}
                 >
-                  <div className="text-xl">{a.glyph}</div>
-                  <div className="mt-2 font-display text-base tracking-[0.15em]">{a.name}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl leading-none">{a.glyph}</span>
+                    <span className="font-display text-base tracking-[0.15em]">{a.name}</span>
+                  </div>
                   <p className="mt-1 text-[10px] leading-relaxed text-stone-600">{a.blurb}</p>
 
                   {/*

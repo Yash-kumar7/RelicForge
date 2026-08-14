@@ -31,9 +31,19 @@ export interface ChampionTraits {
   maxHp: number;
   /** Multiplier on the dodge cooldown. Below 1 means dodge returns sooner. */
   dodgeCooldown: number;
-  /** Multiplier on movement speed. */
-  moveSpeed: number;
 }
+
+/*
+ * Movement speed was a trait here and has been removed.
+ *
+ * At the sizes that kept the three balanced, roughly ten percent either way, it
+ * was invisible: nobody can feel 5.2 units per second against 5.7 while a boss
+ * is winding up. A stat the player cannot perceive is not a difference, it is a
+ * number on a setup screen, and it made the champions look distinguishable in a
+ * table while playing identically. What remains is what can actually be felt:
+ * how hard you hit, how much you can absorb, how often you can dodge, and the
+ * signature move.
+ */
 
 export interface Champion {
   slug: string;
@@ -48,19 +58,19 @@ export const CHAMPIONS: Record<Affinity, Champion> = {
     slug: "ember",
     name: "Ember",
     blurb: "Hits hardest, breaks soonest. Fewer mistakes allowed.",
-    traits: { damage: 1.18, maxHp: 0.85, dodgeCooldown: 1, moveSpeed: 1 },
+    traits: { damage: 1.18, maxHp: 0.85, dodgeCooldown: 1 },
   },
   ice: {
     slug: "frost",
     name: "Frost",
-    blurb: "Absorbs the most punishment, gives up the reach to finish quickly.",
-    traits: { damage: 0.88, maxHp: 1.25, dodgeCooldown: 1.1, moveSpeed: 0.94 },
+    blurb: "Absorbs the most punishment, gives up the power to end it quickly.",
+    traits: { damage: 0.88, maxHp: 1.25, dodgeCooldown: 1.12 },
   },
   storm: {
     slug: "storm",
     name: "Storm",
-    blurb: "Fastest on the ground and quickest to dodge again. Average in a trade.",
-    traits: { damage: 1, maxHp: 0.88, dodgeCooldown: 0.78, moveSpeed: 1.1 },
+    blurb: "Dodges again long before the others can. Fragile if you stand still.",
+    traits: { damage: 0.9, maxHp: 0.85, dodgeCooldown: 0.72 },
   },
 };
 
@@ -91,7 +101,6 @@ export function describeChampion(champion: Champion): string {
   if (traits.maxHp !== 1) notes.push(`hp ${pct(traits.maxHp)}`);
   // Inverted, because a shorter cooldown should read as more dodging, not less.
   if (traits.dodgeCooldown !== 1) notes.push(`dodge ${pct(1 / traits.dodgeCooldown)}`);
-  if (traits.moveSpeed !== 1) notes.push(`speed ${pct(traits.moveSpeed)}`);
 
   return notes.join(" · ");
 }

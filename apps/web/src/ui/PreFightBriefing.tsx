@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
 import { COMBAT, attackSpec } from "../game/combat";
 import { relicTraits } from "@relic/core";
+import { abilityFor } from "../game/abilities";
 import { useLoadout } from "../state/useLoadout";
 import { bossTitleFor } from "../game/bosses";
 
@@ -34,6 +35,7 @@ export function PreFightBriefing() {
    * calibrates against it.
    */
   const carried = useLoadout((s) => s.equipped());
+  const ability = abilityFor(affinity);
   const traits = relicTraits(carried?.dna);
   const light = attackSpec("light", traits);
   const heavy = attackSpec("heavy", traits);
@@ -107,7 +109,20 @@ export function PreFightBriefing() {
             one did. A player who does not know that heavy swings produce a
             brutal weapon cannot make the choice the game is asking them to make.
           */}
-          <div className="mx-auto mt-8 grid max-w-lg gap-3 sm:grid-cols-2">
+          {/*
+            The champion's move, named and explained.
+            Stats on the setup screen tell a player which champion is stronger;
+            this is the line that tells them what their champion actually does,
+            and it is the only control they have not seen in another game.
+          */}
+          <div className="mx-auto mt-6 max-w-lg border border-stone-700/60 px-4 py-3 text-left">
+            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-500">
+              e · {ability.name}
+            </p>
+            <p className="mt-1 text-[11px] leading-relaxed text-stone-500">{ability.blurb}</p>
+          </div>
+
+          <div className="mx-auto mt-4 grid max-w-lg gap-3 sm:grid-cols-2">
             <div className="border border-frost-500/40 px-4 py-3 text-left">
               <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-frost-400">
                 left click · light
