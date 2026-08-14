@@ -71,12 +71,15 @@ describe("champions", () => {
     // better than no stat.
     for (const affinity of AFFINITIES) {
       const stats = describeChampion(championFor(affinity));
-      expect(stats.length).toBeGreaterThanOrEqual(4);
+      expect(stats.length).toBeGreaterThanOrEqual(3);
       for (const stat of stats) {
         expect(stat.label.length).toBeGreaterThan(2);
         expect(stat.value.length).toBeGreaterThan(0);
       }
-      expect(stats.map((s) => s.label)).toContain("health");
+      expect(stats.map((s) => s.label)).toContain("your health");
+      // Every label says whose number it is. "light hit" did not, so a value
+      // beside it could as easily have been what the boss does to you.
+      for (const stat of stats) expect(stat.label).toMatch(/your|you deal/);
     }
   });
 

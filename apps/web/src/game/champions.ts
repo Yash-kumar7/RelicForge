@@ -136,10 +136,24 @@ export function championStats(champion: Champion): ChampionStats {
  */
 export function describeChampion(champion: Champion): { label: string; value: string }[] {
   const stats = championStats(champion);
+  /*
+   * Named from the player's side of the fight.
+   *
+   * "light hit" did not say whose hit it was, so a number next to it could just
+   * as easily have been what the boss does to you, which is the reading that
+   * matters most on a screen where you are also choosing what to fight.
+   */
   return [
-    { label: "health", value: `${stats.health}` },
-    { label: "light hit", value: `${stats.lightDamage}` },
-    { label: "heavy hit", value: `${stats.heavyDamage}` },
-    { label: "dodge every", value: `${stats.dodgeSeconds}s` },
+    { label: "your health", value: `${stats.health}` },
+    { label: "you deal · light", value: `${stats.lightDamage}` },
+    { label: "you deal · heavy", value: `${stats.heavyDamage}` },
   ];
+  /*
+   * Dodge cooldown is deliberately not a row.
+   *
+   * Every champion's blurb already states its dodging in words, and a seconds
+   * figure next to three other numbers invited the reader to add them up rather
+   * than read them. The number is still real and still tuned; it is just not
+   * something a player needs on a card to make this choice.
+   */
 }

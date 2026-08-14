@@ -104,7 +104,10 @@ export function ArmamentPanel() {
                 player has never been shown; 78 damage over 0.98 seconds is
                 something they can decide with.
               */}
-              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.12em]">
+              <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
+                with this relic, in hand
+              </p>
+              <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.12em]">
                 <div className="flex justify-between">
                   <dt className="text-stone-700">light</dt>
                   <dd className="text-stone-400">

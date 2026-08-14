@@ -207,6 +207,17 @@ export function TitleScreen() {
         <div className="flex flex-col">
           <section>
             <p className={`${SECTION_HEADING} mb-2`}>Choose your affinity</p>
+            {/*
+              Stated once rather than repeated in all three cards.
+              Without it the champion's damage and the armament panel's damage
+              are two different numbers for the same swing, and nothing on
+              screen explains which one the fight will actually use.
+            */}
+            <p className="mt-2 text-[10px] leading-relaxed text-stone-600">
+              Bare-handed numbers, before your armament. Whatever you carry
+              changes them, and the relic below shows the totals you will
+              actually swing.
+            </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {AFFINITIES.map((a) => (
                 <button
