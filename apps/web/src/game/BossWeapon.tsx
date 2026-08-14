@@ -1,6 +1,9 @@
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useFrame } from "@react-three/fiber";
+import { Group } from "three";
 import type { WeaponClass } from "@relic/core";
 import { HeldRelicMesh } from "./HeldRelicMesh";
+import { bossSwing } from "./bossState";
 
 /**
  * A boss's generated weapon, socketed at its estimated right hand.
@@ -39,15 +42,44 @@ export function BossWeapon({
 
   return (
     <Suspense fallback={null}>
-      {/* Boss weapons are oversized relative to the wielder on purpose: a
-          two-handed slab of stone should look like it takes a boss to lift. */}
-      <group
-        position={[height * 0.3, height * 0.42, 0.2]}
-        rotation={[0.25, 0, -0.35]}
-        scale={1.45}
-      >
-        <HeldRelicMesh url={url} weaponClass={weaponClass} />
-      </group>
+      <SwingingWeapon url={url} weaponClass={weaponClass} height={height} />
     </Suspense>
+  );
+}
+
+/**
+ * The weapon arm, driven by the boss's published action.
+ *
+ * Oversized relative to the wielder on purpose: a two-handed slab of stone
+ * should look like it takes a boss to lift.
+ */
+function SwingingWeapon({
+  url,
+  weaponClass,
+  height,
+}: {
+  url: string;
+  weaponClass: WeaponClass;
+  height: number;
+}) {
+  const arm = useRef<Group>(null);
+
+  useFrame(() => {
+    if (!arm.current) return;
+    const swing = bossSwing();
+    arm.current.rotation.x = 0.25 - swing * 0.8;
+    arm.current.rotation.z = -0.35 - swing * 0.55;
+    arm.current.position.z = 0.2 + Math.max(0, swing) * 0.35;
+  });
+
+  return (
+    <group
+      ref={arm}
+      position={[height * 0.3, height * 0.42, 0.2]}
+      rotation={[0.25, 0, -0.35]}
+      scale={1.45}
+    >
+      <HeldRelicMesh url={url} weaponClass={weaponClass} />
+    </group>
   );
 }

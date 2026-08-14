@@ -7,6 +7,7 @@ import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
 import { themeForBoss } from "./theme";
 import { registerPlayerHurt, registerTelegraph } from "./feedback";
+import { setBossAction } from "./bossState";
 import { bossAt } from "./bosses";
 import { BossModel } from "./BossModel";
 import { BossWeapon } from "./BossWeapon";
@@ -198,6 +199,20 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
 
     const lunge = state.current === "STRIKE" ? 0.6 : 0;
     g.position.addScaledVector(forward, lunge);
+
+    /**
+     * Published before presentation so the weapon, which renders in its own
+     * component, moves on the same frame as the body rather than one behind.
+     */
+    if (state.current === "TELEGRAPH") {
+      setBossAction("telegraph", 1 - (stateUntil.current - now) / tuning.telegraphMs);
+    } else if (state.current === "STRIKE") {
+      setBossAction("strike", 1 - Math.max(0, (stateUntil.current - now) / COMBAT.boss.activeMs));
+    } else if (state.current === "RECOVER") {
+      setBossAction("recover", 1 - Math.max(0, (stateUntil.current - now) / COMBAT.boss.recoveryMs));
+    } else {
+      setBossAction("idle", 0);
+    }
 
     /* -------------------------------------------------------- presentation */
     const charge =
