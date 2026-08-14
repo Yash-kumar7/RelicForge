@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useGLTF } from "@react-three/drei";
 import type { Group } from "three";
 import { fitCharacter } from "../lib/characterFit";
@@ -40,11 +40,14 @@ export function BossModel({
   slug,
   walking,
   onLoaded,
+  children,
 }: {
   slug: string;
   /** 0 while it holds position, 1 while it advances on the player. */
   walking: number;
   onLoaded: (loaded: boolean) => void;
+  /** Placed in the hand bone when rigged, beside the body when not. */
+  children?: ReactNode;
 }) {
   const [asset, setAsset] = useState<"rig" | "static" | "none" | null>(null);
 
@@ -88,7 +91,9 @@ export function BossModel({
             url={`/assets/bosses/${slug}/rig/walking.glb`}
             height={BOSS_HEIGHT}
             speed={walking}
-          />
+          >
+            {children}
+          </AnimatedCharacter>
         </group>
       ) : (
         <StaticBoss slug={slug} onLoaded={() => onLoaded(true)} />

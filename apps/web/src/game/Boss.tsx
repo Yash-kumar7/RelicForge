@@ -10,7 +10,7 @@ import { registerPlayerHurt, registerTelegraph } from "./feedback";
 import { setBossAction } from "./bossState";
 import { bossAt } from "./bosses";
 import { BossModel } from "./BossModel";
-import { BossWeapon } from "./BossWeapon";
+import { BossWeapon, BossHandWeapon } from "./BossWeapon";
 
 /**
  * The Ashen Warden.
@@ -279,7 +279,18 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   return (
     <group ref={group} position={[0, 0, -4]}>
       <group ref={body}>
-        <BossModel slug={bossSlug} walking={walking} onLoaded={onModelLoaded} />
+        <BossModel slug={bossSlug} walking={walking} onLoaded={onModelLoaded}>
+          {/* Inside the hand bone when the boss is rigged, so the weapon swings
+              with the arm rather than hanging beside it. The blade is canonical
+              +Y and a bone's axes belong to the rig, so it is turned into the
+              hand's frame. */}
+          <group rotation={[Math.PI / 2, 0, 0]} position={[0, 0.04, 0]}>
+            <BossHandWeapon
+              slug={bossSlug}
+              weaponClass={bossAt(bossLevel ?? 1).weaponClass}
+            />
+          </group>
+        </BossModel>
 
         {/* Primitive fallback, hidden the moment a generated mesh loads. */}
         <group visible={!hasModel}>
@@ -331,14 +342,16 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         ))}
         </group>
 
-        {/* Its own generated armament. The weapon a boss swings is made of the
-            same material the relic will be forged from, so what hits you
-            foreshadows what you take from it. */}
-        <BossWeapon
-          slug={bossSlug}
-          weaponClass={bossAt(bossLevel ?? 1).weaponClass}
-          height={2.75}
-        />
+        {/* Estimated socket, used only when the boss has no rig to parent to.
+            The weapon a boss swings is made of the same material the relic will
+            be forged from, so what hits you foreshadows what you take. */}
+        {!hasModel && (
+          <BossWeapon
+            slug={bossSlug}
+            weaponClass={bossAt(bossLevel ?? 1).weaponClass}
+            height={2.75}
+          />
+        )}
 
         {/* The core stays in both cases: it is the hit-feedback surface, and
             it reads as the thing you are actually breaking. */}

@@ -86,3 +86,42 @@ function SwingingWeapon({
     </group>
   );
 }
+
+/**
+ * The boss's weapon for a rigged skeleton.
+ *
+ * No socket offset and no swing curve: the hand bone supplies both, because the
+ * rig's own animation is now moving the arm. Keeping the hand-estimated version
+ * around for unrigged bosses is why these are separate components rather than
+ * one with a flag.
+ */
+export function BossHandWeapon({
+  slug,
+  weaponClass,
+}: {
+  slug: string;
+  weaponClass: WeaponClass;
+}) {
+  const url = `/assets/bosses/${slug}/weapon.glb`;
+  const [available, setAvailable] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(url, { method: "HEAD" })
+      .then((res) => !cancelled && setAvailable(res.ok))
+      .catch(() => !cancelled && setAvailable(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  if (!available) return null;
+
+  return (
+    <Suspense fallback={null}>
+      <group scale={1.15}>
+        <HeldRelicMesh url={url} weaponClass={weaponClass} />
+      </group>
+    </Suspense>
+  );
+}

@@ -135,7 +135,25 @@ function AvatarBody({
             url={`/assets/champions/${slug}/rig/walking.glb`}
             height={AVATAR_HEIGHT}
             speed={walkSpeed}
-          />
+          >
+            {/*
+              Inside the hand bone, so the weapon travels with the hand through
+              the walk cycle. Previously it sat at an estimated offset beside the
+              body and the animated arm swung away from it, which read as the
+              sword floating next to the character rather than being held.
+
+              The rotation aligns the blade with the forearm: a bone's local axes
+              are the rig's business, not the mesh's, so the canonical +Y blade
+              has to be turned into the hand's frame.
+            */}
+            <group rotation={[Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+              {held ? (
+                <HeldRelicMesh url={held.url} weaponClass={held.weaponClass} />
+              ) : (
+                <IronSwordMesh accent={accent} />
+              )}
+            </group>
+          </AnimatedCharacter>
         ) : (
           <group position={fit.offset} scale={fit.scale}>
             {/* Concepts face +Z out of the image; the root turns to face forward. */}
@@ -143,9 +161,11 @@ function AvatarBody({
           </group>
         )}
 
-        {/* The weapon, socketed at the estimated right hand. */}
+        {/* Estimated socket, for the unrigged fallback only: without a skeleton
+            there is no hand bone to parent to. */}
         <group
           ref={arm}
+          visible={!rigged}
           position={[AVATAR_HEIGHT * 0.28, AVATAR_HEIGHT * 0.46, 0.12]}
           rotation={[0.2, 0, -0.3]}
           scale={0.9}
