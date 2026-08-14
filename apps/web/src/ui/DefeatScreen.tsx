@@ -42,10 +42,7 @@ export function DefeatScreen() {
 
         <button
           type="button"
-          onClick={() => {
-            document.exitPointerLock?.();
-            reset();
-          }}
+          onClick={reset}
           className="mt-12 border border-stone-700 px-10 py-3 text-xs uppercase tracking-[0.35em] text-stone-400 transition hover:border-ember-500/60 hover:text-ember-300"
         >
           Try again

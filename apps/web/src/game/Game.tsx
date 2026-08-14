@@ -55,6 +55,23 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
 
   useEffect(() => unlockAudio(), []);
 
+  /**
+   * Release the cursor the moment the fight ends.
+   *
+   * Pointer lock captures the mouse, so every overlay button, Claim Relic,
+   * Try again, Stoke the forge, was unclickable while it was held: the click
+   * went to the canvas instead. The only escape was pressing Escape, which
+   * nothing tells the player to do, so the buttons looked broken and the player
+   * waited for something to happen.
+   *
+   * The handlers that call exitPointerLock inside onClick could never help,
+   * since the click they depend on is the thing being swallowed.
+   */
+  useEffect(() => {
+    if (phase === "FIGHTING") return;
+    if (document.pointerLockElement) document.exitPointerLock?.();
+  }, [phase]);
+
   /* Victory → a beat of silence → the forge wakes. */
   useEffect(() => {
     if (phase !== "VICTORY" || started.current) return undefined;
@@ -269,7 +286,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
             {forge.name}
           </p>
           <p className="pointer-events-none mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
-            click to look · LMB to swing
+            click the arena to look · LMB to swing
           </p>
           {/*
             There was no route out of a finished run except reloading the page,
