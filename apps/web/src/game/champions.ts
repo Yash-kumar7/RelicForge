@@ -137,23 +137,22 @@ export function championStats(champion: Champion): ChampionStats {
 export function describeChampion(champion: Champion): { label: string; value: string }[] {
   const stats = championStats(champion);
   /*
-   * Plain words, owned by the player, with the unit on the value.
+   * Deliberately no damage rows.
    *
-   * "light attack" and "heavy attack" are jargon. They are the internal names
-   * for the two AttackKinds and they read fine to anyone who has played an
-   * action game, which is exactly the assumption worth removing: light and
-   * heavy describe nothing on their own, and neither says who is swinging. A
-   * reader could reasonably take "heavy attack: 71 damage" as what the boss is
-   * about to do to them.
+   * Damage belongs to the weapon, and putting it on the character card asked
+   * the player to hold two sources of the same number in their head: if the
+   * sword does the damage, what were the numbers on the character? Several
+   * rounds of relabelling went into making those rows readable when the real
+   * problem was that they should not have been there.
    *
-   * "your quick swing" and "your strong swing" need no prior knowledge: the
-   * possessive answers whose it is and the adjective describes the swing rather
-   * than naming a category.
+   * The champion is now only what a character is: how much you can take, how
+   * often you can move, and what you can do that nobody else can. What you hit
+   * for is on the weapon panel, once, already including this champion's
+   * strength.
    */
   return [
-    { label: "your health", value: `${stats.health}` },
-    { label: "your quick swing", value: `${stats.lightDamage} damage` },
-    { label: "your strong swing", value: `${stats.heavyDamage} damage` },
+    { label: "health", value: `${stats.health}` },
+    { label: "dodge every", value: `${stats.dodgeSeconds}s` },
   ];
   /*
    * Dodge cooldown is deliberately not a row.

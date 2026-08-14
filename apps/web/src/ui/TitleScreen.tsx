@@ -219,8 +219,8 @@ export function TitleScreen() {
               screen explains which one the fight will actually use.
             */}
             <p className="mt-2 text-[10px] leading-relaxed text-stone-600">
-              Numbers below are for bare hands. The weapon you carry changes
-              them, and the panel underneath shows what you will actually swing.
+              Your element decides who you are and what your weapon is made of.
+              Damage comes from the weapon, shown below.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {AFFINITIES.map((a) => (

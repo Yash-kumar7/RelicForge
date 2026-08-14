@@ -71,12 +71,12 @@ describe("champions", () => {
     // better than no stat.
     for (const affinity of AFFINITIES) {
       const stats = describeChampion(championFor(affinity));
-      expect(stats.length).toBeGreaterThanOrEqual(3);
+      expect(stats.length).toBeGreaterThanOrEqual(2);
       for (const stat of stats) {
         expect(stat.label.length).toBeGreaterThan(2);
         expect(stat.value.length).toBeGreaterThan(0);
       }
-      expect(stats.map((s) => s.label)).toContain("your health");
+      expect(stats.map((s) => s.label)).toContain("health");
       // Labels are plain words, and any value that is not a bare count carries
       // its own unit. "38/71 dmg" and "you deal - light" both failed this by
       // needing the reader to already know the convention.
@@ -84,15 +84,12 @@ describe("champions", () => {
         expect(stat.label).toMatch(/^[a-z ]+$/);
         expect(stat.label).not.toContain("·");
       }
-      for (const stat of stats.filter((s) => s.label.includes("swing"))) {
-        expect(stat.value).toContain("damage");
-      }
-      // No label may use the internal AttackKind names. They describe nothing
-      // on their own and they do not say who is swinging, so a reader could
-      // take "heavy attack: 71 damage" as what the boss is about to do to them.
+      // Damage is deliberately absent. It belongs to the weapon, and stating
+      // it here too asked the player to hold two sources of one number: if the
+      // sword does the damage, what were the numbers on the character?
       for (const stat of stats) {
-        expect(stat.label).not.toMatch(/\b(light|heavy)\b/);
-        expect(stat.label.startsWith("your")).toBe(true);
+        expect(stat.label).not.toMatch(/damage|swing|attack|hit/);
+        expect(stat.value).not.toContain("damage");
       }
     }
   });

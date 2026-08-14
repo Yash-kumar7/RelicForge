@@ -38,7 +38,15 @@ import { bossState, bossSwing } from "./bossState";
  */
 /**
  * Light and heavy travel along different arcs, not the same arc at different
- * sizes.
+ * sizes, and both stay inside roughly a right angle of travel.
+ *
+ * The multipliers used to be far larger, on the theory that a swing has to
+ * out-travel the body turn to read as a swing. That was true and overdone:
+ * swingProgress peaks near 2.4, so a multiplier of 2.1 asked for about 150
+ * degrees of rotation. The blade swept well past the boss and finished pointing
+ * behind the player, which reads as the weapon swinging away from the target
+ * rather than into it. Peak travel is now around 80 degrees, which still reads
+ * clearly from third person and actually ends up where the hit lands.
  *
  * They used to share one curve scaled up, so a heavy read as a slightly bigger
  * light and the player had no way to tell from the animation which one had come
@@ -47,15 +55,17 @@ import { bossState, bossSwing } from "./bossState";
  */
 function applySwing(group: Group, swing: number, scale = 1, kind: AttackKind = "light"): void {
   if (kind === "heavy") {
-    group.rotation.x = -swing * 2.1 * scale;
-    group.rotation.y = swing * 0.12 * scale;
-    group.rotation.z = -swing * 0.5 * scale;
+    // Overhead: raised on the wind-up, driven down through the target.
+    group.rotation.x = -swing * 0.62 * scale;
+    group.rotation.y = swing * 0.1 * scale;
+    group.rotation.z = -swing * 0.18 * scale;
     return;
   }
 
-  group.rotation.x = -swing * 0.55 * scale;
-  group.rotation.y = swing * 1.25 * scale;
-  group.rotation.z = -swing * 0.95 * scale;
+  // Lateral: pulled across the body, then cut through it.
+  group.rotation.x = -swing * 0.16 * scale;
+  group.rotation.y = swing * 0.58 * scale;
+  group.rotation.z = -swing * 0.3 * scale;
 }
 
 export function PlayerHandWeapon({

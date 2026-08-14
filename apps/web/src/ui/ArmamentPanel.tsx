@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { relicTraits } from "@relic/core";
+import { championFor } from "../game/champions";
+import { useGameStore } from "../state/useGameStore";
 import { attackSpec, type AttackSpec } from "../game/combat";
 
 /** Total swing time in seconds, which is the unit a player counts attacks in. */
@@ -33,7 +35,21 @@ export function ArmamentPanel() {
 
   // Derived from the same function the fight uses, so the panel cannot promise
   // a number the swing does not deliver.
-  const traits = useMemo(() => relicTraits(selected?.dna), [selected]);
+  /*
+   * Champion strength folded in, because this is now the only place damage
+   * appears. A panel that showed weapon-only numbers while the fight applied
+   * the champion on top would be quietly wrong for every champion but one.
+   */
+  const affinity = useGameStore((s) => s.affinity);
+  const traits = useMemo(() => {
+    const base = relicTraits(selected?.dna);
+    const champion = championFor(affinity).traits;
+    return {
+      ...base,
+      lightDamage: base.lightDamage * champion.damage,
+      heavyDamage: base.heavyDamage * champion.damage,
+    };
+  }, [selected, affinity]);
   const light = attackSpec("light", traits);
   const heavy = attackSpec("heavy", traits);
 
@@ -109,17 +125,17 @@ export function ArmamentPanel() {
                 something they can decide with.
               */}
               <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
-carrying this weapon
+                what this weapon hits for
               </p>
               <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.12em]">
                 <div className="flex justify-between">
-                  <dt className="text-stone-700">quick swing</dt>
+                  <dt className="text-stone-700">left click</dt>
                   <dd className="text-stone-400">
                     {light.damage} · {swingSeconds(light)}s
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-stone-700">strong swing</dt>
+                  <dt className="text-stone-700">right click</dt>
                   <dd className="text-stone-400">
                     {heavy.damage} · {swingSeconds(heavy)}s
                   </dd>
