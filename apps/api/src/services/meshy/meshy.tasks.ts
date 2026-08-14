@@ -93,26 +93,50 @@ export async function* streamTask<K extends TaskKind>(
   }
 }
 
-/** Stream to completion, returning the terminal task object. */
+/**
+ * Waits for a task to finish, streaming while the stream lasts and polling when
+ * it does not.
+ *
+ * The stream is an optimisation, not the source of truth. Under concurrent load
+ * Meshy's per-task stream can end early while the task itself is still running
+ * perfectly well, and the first version of this treated that as a failure: it
+ * read the task once, saw IN_PROGRESS and threw, abandoning a mesh whose credits
+ * were already spent. Polling until the task actually reaches a terminal state
+ * is the difference between a dropped connection costing nothing and costing a
+ * generation.
+ */
 export async function waitForTask<K extends TaskKind>(
   kind: K,
   id: string,
   onProgress?: (task: TaskFor<K>) => void,
+  { pollIntervalMs = 4000, timeoutMs = 15 * 60_000 }: { pollIntervalMs?: number; timeoutMs?: number } = {},
 ): Promise<TaskFor<K>> {
+  const deadline = Date.now() + timeoutMs;
   let last: TaskFor<K> | undefined;
-  for await (const task of streamTask(kind, id)) {
-    last = task;
-    onProgress?.(task);
+
+  try {
+    for await (const task of streamTask(kind, id)) {
+      last = task;
+      onProgress?.(task);
+    }
+  } catch (err) {
+    // A task that genuinely failed is terminal and must not be polled for.
+    if (err instanceof MeshyTaskFailed) throw err;
   }
-  // The stream can end without a SUCCEEDED frame; confirm with a direct read.
-  if (!last || last.status !== "SUCCEEDED") {
-    const final = await getTask(kind, id);
-    if (final.status !== "SUCCEEDED") {
+
+  if (last?.status === "SUCCEEDED") return last;
+
+  while (Date.now() < deadline) {
+    const task = await getTask(kind, id);
+    onProgress?.(task);
+    if (task.status === "SUCCEEDED") return task;
+    if (task.status === "FAILED" || task.status === "CANCELED") {
       throw new MeshyTaskFailed(
-        `${kind}/${id} ended as ${final.status}: ${final.task_error?.message ?? "no detail"}`,
+        `${kind}/${id} ${task.status}: ${task.task_error?.message ?? "no detail"}`,
       );
     }
-    return final;
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
   }
-  return last;
+
+  throw new MeshyTimeout(`${kind}/${id} did not finish within ${Math.round(timeoutMs / 60_000)} min`);
 }
