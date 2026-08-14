@@ -14,7 +14,7 @@ const CreateRelicSchema = z.object({
   forceFail: z.boolean().optional(),
 });
 
-/** Public shape — the browser never learns Meshy's endpoint structure. */
+/** Public shape, the browser never learns Meshy's endpoint structure. */
 function toPublic(record: NonNullable<Awaited<ReturnType<typeof getRelic>>>) {
   return {
     relicId: record.relicId,
@@ -103,7 +103,7 @@ export async function relicRoutes(app: FastifyInstance): Promise<void> {
       reply.raw.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
     };
 
-    // Replay current state so a client that connects late — or reconnects —
+    // Replay current state so a client that connects late, or reconnects -
     // is never stuck waiting for an event that already fired.
     send({ type: "dna.ready", dna: record.dna, name: record.name });
     if (record.conceptUrl) {

@@ -18,12 +18,12 @@ export interface MeshOptions {
  * completed text-to-image task directly, so the concept image never needs to be
  * publicly hosted. That deletes an entire storage dependency from the hero path.
  *
- * `target_formats: ["glb"]` is deliberate — the docs state that requesting fewer
+ * `target_formats: ["glb"]` is deliberate, the docs state that requesting fewer
  * formats reduces task completion time, and glb is the only one the game loads.
  *
  * `should_remesh` MUST be sent explicitly: it defaults to false on meshy-6/7,
  * and `target_polycount` only takes effect when it is true. Leaving it off
- * yielded 1.5M–3.1M triangle meshes (37–116 MB) that no browser game can load.
+ * yielded 1.5M-3.1M triangle meshes (37-116 MB) that no browser game can load.
  * Meshy recommends false for maximum fidelity; a real-time weapon needs
  * playable topology more than it needs another million triangles.
  */

@@ -45,7 +45,7 @@ export interface StartRelicInput {
 
 export interface StartRelicResult {
   record: RelicRecord;
-  /** True when served straight from cache — no Meshy call, no credits. */
+  /** True when served straight from cache, no Meshy call, no credits. */
   cacheHit: boolean;
 }
 
@@ -108,7 +108,7 @@ async function runGeneration(initial: RelicRecord, forceFail = false): Promise<v
     const conceptStart = Date.now();
     const candidates: { taskId: string; url: string }[] = [];
 
-    // Concepts are 3–9 credits against a 30–35 credit mesh, and mesh quality is
+    // Concepts are 3-9 credits against a 30-35 credit mesh, and mesh quality is
     // dominated by concept quality, so hero mode buys several and picks.
     for (let i = 0; i < config.conceptCandidates; i++) {
       await assertBudget(conceptOp(config.imageModel));
@@ -141,7 +141,7 @@ async function runGeneration(initial: RelicRecord, forceFail = false): Promise<v
     await assertBudget(meshOp(config.ultraMode));
 
     const meshStart = Date.now();
-    // Chained by task id, not image url — Meshy reads the concept straight from
+    // Chained by task id, not image url, Meshy reads the concept straight from
     // the completed text-to-image task, so nothing needs public hosting.
     const meshTaskId = await createMeshFromConceptTask(chosen.taskId, {
       meshyModel: config.meshyModel,

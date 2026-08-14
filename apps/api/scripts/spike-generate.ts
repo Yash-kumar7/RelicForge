@@ -45,7 +45,7 @@ const COMPOSITION = [
 ].join(" ");
 
 const SHAPES: SpikeShape[] = [
-  // Wave 0 — Gate 0A. Can a meshy-7 GLB load in R3F at all?
+  // Wave 0, Gate 0A. Can a meshy-7 GLB load in R3F at all?
   {
     slug: "greatsword",
     wave: 0,
@@ -68,7 +68,7 @@ const SHAPES: SpikeShape[] = [
     subject: "a legendary warhammer, heavy squared head, short thick haft",
   },
 
-  // Wave 1 — completes the viability read.
+  // Wave 1, completes the viability read.
   {
     slug: "curved-saber",
     wave: 1,
@@ -91,7 +91,7 @@ const SHAPES: SpikeShape[] = [
     subject: "a legendary glaive, long pole with a broad blade at one end",
   },
 
-  // Wave 2 — completes core, then probes the boundary.
+  // Wave 2, completes core, then probes the boundary.
   {
     slug: "dagger",
     wave: 2,
@@ -103,7 +103,7 @@ const SHAPES: SpikeShape[] = [
     slug: "ornate-longsword",
     wave: 2,
     corpus: "core",
-    why: "vertex-density trap — heavy detail concentrated in the pommel",
+    why: "vertex-density trap, heavy detail concentrated in the pommel",
     subject:
       "a legendary longsword with an extremely ornate filigreed pommel and decorated crossguard",
   },
@@ -111,7 +111,7 @@ const SHAPES: SpikeShape[] = [
     slug: "twin-maul",
     wave: 2,
     corpus: "stress",
-    why: "symmetric — no tip taper at either end",
+    why: "symmetric, no tip taper at either end",
     subject: "a legendary twin-headed maul, identical heavy heads at both ends of the haft",
   },
   {
@@ -132,7 +132,7 @@ const SHAPES: SpikeShape[] = [
     slug: "chained-flail",
     wave: 2,
     corpus: "stress",
-    why: "disconnected components after merge — never P0, boundary probe only",
+    why: "disconnected components after merge, never P0, boundary probe only",
     subject: "a legendary chained flail, spiked ball connected by chain links to a handle",
   },
 ];
@@ -155,7 +155,7 @@ async function main() {
   const perModel = (cfg.imageModel === "nano-banana-pro" ? 9 : 3) + (cfg.ultraMode ? 35 : 30);
   const startBalance = await getBalance();
 
-  console.log(`\nGate 0 spike — wave ${wave}`);
+  console.log(`\nGate 0 spike, wave ${wave}`);
   console.log(`  shapes:   ${shapes.length} (${shapes.map((s) => s.slug).join(", ")})`);
   console.log(`  config:   ${cfg.imageModel} → ${cfg.meshyModel}${cfg.ultraMode ? " + ultra" : ""}`);
   console.log(`  estimate: ~${perModel * shapes.length} credits`);
@@ -238,7 +238,7 @@ async function main() {
       results.push(meta);
 
       console.log(
-        `${label} done — mesh ${(meshMs / 1000).toFixed(1)}s, ` +
+        `${label} done, mesh ${(meshMs / 1000).toFixed(1)}s, ` +
           `${(glbBytes.byteLength / 1024 / 1024).toFixed(2)} MB\n`,
       );
     } catch (err) {

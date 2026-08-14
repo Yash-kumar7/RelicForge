@@ -2,7 +2,7 @@
  * Promotes the Gate 1 outputs into the live relic cache.
  *
  * After this, an actual fight matching either hero archetype resolves from
- * cache in milliseconds and spends nothing — which is what makes the demo
+ * cache in milliseconds and spends nothing, which is what makes the demo
  * recordable. The live path is untouched: any telemetry that does not match a
  * cached DNA still generates for real.
  *

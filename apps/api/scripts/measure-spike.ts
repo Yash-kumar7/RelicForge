@@ -1,6 +1,6 @@
 /**
  * Gate 0B measurement. Loads every spike GLB, runs the normalizer, and prints
- * the numbers the gate is scored on — raw angle first, because if Meshy already
+ * the numbers the gate is scored on, raw angle first, because if Meshy already
  * preserves the concept framing the hard orientation problem does not exist.
  */
 import { readFile, readdir } from "node:fs/promises";
@@ -84,4 +84,4 @@ for (const slug of dirs.sort()) {
 const sorted = [...angles].sort((a, b) => a - b);
 const median = sorted.length ? sorted[Math.floor(sorted.length / 2)]! : NaN;
 console.log("─".repeat(64));
-console.log(`median raw angle: ${median.toFixed(1)}°  →  ${median < 15 ? "TIER 0 — Meshy preserves framing" : "TIER 1 — PCA correction required"}\n`);
+console.log(`median raw angle: ${median.toFixed(1)}°  →  ${median < 15 ? "TIER 0, Meshy preserves framing" : "TIER 1, PCA correction required"}\n`);

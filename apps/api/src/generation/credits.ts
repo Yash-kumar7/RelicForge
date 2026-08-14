@@ -6,7 +6,7 @@ import { getBalance } from "../services/meshy/meshy.balance.js";
  * Credit guard.
  *
  * This is a runaway-bug backstop, not a budget. Credits are replenishable for
- * testing, so cost never dictates a design choice here — but a retry loop
+ * testing, so cost never dictates a design choice here, but a retry loop
  * spinning unattended for an hour is still a bug, and the floor catches it
  * before it drains the account.
  */
@@ -31,7 +31,7 @@ export function meshOp(ultraMode: boolean): CreditOp {
   return ultraMode ? "mesh:meshy-7:ultra" : "mesh:meshy-7";
 }
 
-// Balance is only re-read when it is stale or close to the floor — every check
+// Balance is only re-read when it is stale or close to the floor, every check
 // is itself a network round trip in the middle of a latency-sensitive pipeline.
 let lastBalance: number | null = null;
 let lastCheckedAt = 0;

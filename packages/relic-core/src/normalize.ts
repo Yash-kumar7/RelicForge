@@ -2,7 +2,7 @@ import { CANONICAL_LENGTH } from "./config.js";
 import type { OrientationHint, RelicTransform, WeaponClass } from "./types.js";
 
 /**
- * Geometry canonicalization — the hard problem in RelicForge.
+ * Geometry canonicalization, the hard problem in RelicForge.
  *
  * Meshy returns a weapon; nothing promises it is upright, correctly scaled, or
  * that the game knows where the handle is. This module answers "what orientation
@@ -142,7 +142,7 @@ export function principalAxis(sample: MeshSample): Vec3 {
     zz += w * d[2] * d[2];
   }
 
-  // Dominant eigenvector by power iteration — cheap, and 32 steps is ample
+  // Dominant eigenvector by power iteration, cheap, and 32 steps is ample
   // convergence for a 3x3 with one clearly dominant axis.
   let v: Vec3 = [1, 1, 1];
   for (let iter = 0; iter < 32; iter++) {
@@ -210,7 +210,7 @@ export function radiusProfile(sample: MeshSample, axis: Vec3, bins = 64): Profil
  * A blade tapers toward ~0 radius at the tip; the guard shows up as a sharp
  * local maximum near the opposite end. That is reliable for a spear, plausible
  * for an ornate sword, and outright ambiguous for a double-edged blade,
- * symmetric staff or twin-headed maul — so the answer carries a confidence
+ * symmetric staff or twin-headed maul, so the answer carries a confidence
  * rather than pretending the heuristic always knows.
  */
 export function resolveEnds(profile: Profile): EndResolution {

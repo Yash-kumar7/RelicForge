@@ -50,7 +50,7 @@ describe("relicCacheKey", () => {
   it("changes when the prompt version is bumped", () => {
     // The trap this exists to prevent: edit the prompt compiler, regenerate,
     // silently receive the previously cached sword.
-    // Derived from the live version, never hardcoded — otherwise this test
+    // Derived from the live version, never hardcoded, otherwise this test
     // silently passes forever and then breaks the day it matches reality.
     const bumped = {
       ...HERO_GENERATION_CONFIG,

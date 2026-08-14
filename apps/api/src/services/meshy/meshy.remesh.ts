@@ -8,7 +8,7 @@ export interface RemeshOptions {
 }
 
 /**
- * POST /openapi/v1/remesh — decimate an already-generated mesh by task id.
+ * POST /openapi/v1/remesh, decimate an already-generated mesh by task id.
  *
  * The production pipeline gets this for free via `should_remesh: true` on the
  * image-to-3d call. This standalone path exists for meshes that were already

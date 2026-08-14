@@ -55,7 +55,7 @@ export const RelicTransformSchema = z.object({
   quaternion: z.tuple([z.number(), z.number(), z.number(), z.number()]),
   scale: z.number().positive(),
   gripOffset: z.tuple([z.number(), z.number(), z.number()]),
-  /** Diagnostics — drives /lab and the Gate 0B numbers. */
+  /** Diagnostics, drives /lab and the Gate 0B numbers. */
   rawAngleDeg: z.number(),
   gripT: z.number().min(0).max(1),
   endConfidence: z.number().min(0).max(1),
@@ -65,7 +65,7 @@ export type RelicTransform = z.infer<typeof RelicTransformSchema>;
 
 /**
  * Human-in-the-loop override. Authored in /lab in seconds and stored on the
- * relic record. This is the acceptable escape hatch — opening Blender per
+ * relic record. This is the acceptable escape hatch, opening Blender per
  * asset is not, because that would mean the runtime-generation story isn't real.
  */
 export const OrientationHintSchema = z.object({
@@ -83,7 +83,7 @@ export const GenerationConfigSchema = z.object({
   ultraMode: z.boolean(),
   targetPolycount: z.number().int().positive(),
   /**
-   * Must be true for targetPolycount to have any effect — it defaults to false
+   * Must be true for targetPolycount to have any effect, it defaults to false
    * on meshy-6/7, which silently yields million-triangle meshes.
    */
   shouldRemesh: z.boolean(),

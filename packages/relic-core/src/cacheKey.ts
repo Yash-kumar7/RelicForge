@@ -1,7 +1,7 @@
 import type { GenerationConfig, RelicDNA } from "./types.js";
 
 /**
- * Stable stringify — object key order must never change the hash, or the same
+ * Stable stringify, object key order must never change the hash, or the same
  * relic generated twice would miss its own cache entry.
  */
 function canonicalJson(value: unknown): string {
@@ -14,7 +14,7 @@ function canonicalJson(value: unknown): string {
   return `{${entries.join(",")}}`;
 }
 
-/** FNV-1a — no crypto dependency, so this stays runnable in the browser too. */
+/** FNV-1a, no crypto dependency, so this stays runnable in the browser too. */
 function fnv1a64(input: string): string {
   let h1 = 0x811c9dc5;
   let h2 = 0x01000193;

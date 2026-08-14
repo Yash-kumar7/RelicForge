@@ -2,7 +2,7 @@
  * Attaches to already-paid image-to-3d tasks and downloads their output.
  *
  * Exists because a client-side parse bug can kill the script while the task
- * keeps running server-side — the credits are spent either way, so recovery
+ * keeps running server-side, the credits are spent either way, so recovery
  * beats regeneration.
  *
  *   pnpm --filter @relic/api exec tsx scripts/recover-spike.ts <taskId>:<slug> ...
@@ -34,7 +34,7 @@ async function main() {
     const startedAt = Date.now();
 
     try {
-      console.log(`${slug} — attaching to ${taskId}…`);
+      console.log(`${slug}, attaching to ${taskId}…`);
       let lastPct = -1;
       const mesh = await waitForTask("image-to-3d", taskId, (t) => {
         const pct = Math.floor((t.progress ?? 0) / 10) * 10;
@@ -61,9 +61,9 @@ async function main() {
       };
       await writeFile(path.join(dir, "meta.json"), JSON.stringify(meta, null, 2));
       results.push(meta);
-      console.log(`${slug} — ${(bytes.byteLength / 1024 / 1024).toFixed(2)} MB saved\n`);
+      console.log(`${slug}, ${(bytes.byteLength / 1024 / 1024).toFixed(2)} MB saved\n`);
     } catch (err) {
-      console.error(`${slug} — FAILED: ${(err as Error).message}\n`);
+      console.error(`${slug}, FAILED: ${(err as Error).message}\n`);
       results.push({ slug, error: (err as Error).message });
     }
   }

@@ -12,8 +12,8 @@ import sharp from "sharp";
  * Game-ready pass over a Meshy GLB.
  *
  * `should_remesh` fixes geometry (3.1M → 12k triangles), but textures then
- * dominate: three 4K PBR maps re-exported as PNG land at 12–22 MB, which is a
- * multi-second stall on the reveal — the exact moment the demo cannot afford one.
+ * dominate: three 4K PBR maps re-exported as PNG land at 12-22 MB, which is a
+ * multi-second stall on the reveal, the exact moment the demo cannot afford one.
  *
  * WebP at 2K is visually indistinguishable on a weapon held at arm's length and
  * cuts the payload by roughly an order of magnitude. This runs once at

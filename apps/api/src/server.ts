@@ -15,7 +15,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const app = Fastify({
   logger: {
     level: env.LOG_LEVEL,
-    // Spread rather than assign undefined — exactOptionalPropertyTypes treats
+    // Spread rather than assign undefined, exactOptionalPropertyTypes treats
     // "present but undefined" as a different thing from "absent".
     ...(isProd
       ? {}
@@ -31,7 +31,7 @@ const app = Fastify({
 await mkdir(env.storageDir, { recursive: true });
 await mkdir(env.cacheDir, { recursive: true });
 
-// Generated assets are downloaded locally and served from here — Meshy asset
+// Generated assets are downloaded locally and served from here, Meshy asset
 // URLs expire, and a demo that 404s on replay is worse than no demo.
 await app.register(fastifyStatic, {
   root: env.storageDir,
@@ -71,7 +71,7 @@ if (isProd) {
     });
     app.log.info(`Serving client from ${clientDir}`);
   } else {
-    app.log.warn(`No client build at ${clientDir} — run pnpm build first`);
+    app.log.warn(`No client build at ${clientDir}, run pnpm build first`);
   }
 }
 

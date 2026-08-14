@@ -6,7 +6,7 @@ import type { GenerationConfig } from "./types.js";
  * regenerate, get the old sword back, and lose an afternoon to confusion.
  */
 /**
- * v2 — the composition contract gained explicit no-text and hard vertical
+ * v2, the composition contract gained explicit no-text and hard vertical
  * clauses after Gate 1 produced a concept with "ASHEN WARDEN" lettered across
  * it (which becomes real geometry downstream) and a diagonally-framed sword.
  */
@@ -31,7 +31,7 @@ export const DEV_GENERATION_CONFIG = {
 
 /**
  * Anything a human will actually look at. Three pro concepts, best one picked,
- * ultra geometry. ≈62 credits — worth it for models that appear in every
+ * ultra geometry. ≈62 credits, worth it for models that appear in every
  * screenshot and video frame.
  */
 export const HERO_GENERATION_CONFIG = {

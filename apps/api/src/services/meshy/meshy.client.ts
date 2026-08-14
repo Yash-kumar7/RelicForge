@@ -63,7 +63,7 @@ export async function meshyJson<T>(
   return (await res.json()) as T;
 }
 
-/** Retries only what is worth retrying — see the error taxonomy. */
+/** Retries only what is worth retrying, see the error taxonomy. */
 export async function withRetry<T>(
   fn: () => Promise<T>,
   { attempts = 3, baseDelayMs = 1000 } = {},

@@ -16,7 +16,7 @@ const base: CombatTelemetry = {
 };
 
 describe("conditionFor", () => {
-  // The exact boundaries are the whole contract — off-by-one here silently
+  // The exact boundaries are the whole contract, off-by-one here silently
   // changes which relic a player earns.
   it.each([
     [0, "shattered"],

@@ -3,7 +3,7 @@
  *
  * The PRD deliberately kept characters out of scope: at the time, credits were
  * finite and the risk was blurring the one moment that matters. Both have
- * changed — the pipeline is proven, credits are replenishable, and a boss built
+ * changed, the pipeline is proven, credits are replenishable, and a boss built
  * from boxes undercuts a game whose whole argument is that generated 3D belongs
  * in the runtime.
  *
@@ -30,7 +30,7 @@ import { optimizeGlb } from "../src/generation/optimizeGlb.js";
  * Different from the weapon one for a reason: a weapon needs tip-up framing so
  * the mesh arrives axis-aligned, while a character needs a front-on A-pose so
  * it arrives upright, symmetrical and facing the camera. The shared clauses are
- * the ones that keep the mesh clean — isolated subject, neutral background, and
+ * the ones that keep the mesh clean, isolated subject, neutral background, and
  * absolutely no lettering.
  */
 const CHARACTER_COMPOSITION = [
@@ -91,7 +91,7 @@ async function main() {
   const outRoot = path.join(env.storageDir, "bosses");
   await mkdir(outRoot, { recursive: true });
 
-  console.log(`\nBoss models — ${targets.length} × (${cfg.imageModel} → meshy-7 + ultra)`);
+  console.log(`\nBoss models, ${targets.length} × (${cfg.imageModel} → meshy-7 + ultra)`);
   console.log(`  estimate ~${targets.length * 44} credits (balance ${startBalance})\n`);
 
   const results: Record<string, unknown>[] = [];
@@ -102,14 +102,14 @@ async function main() {
     const prompt = `${boss.subject}. ${CHARACTER_COMPOSITION}`;
 
     try {
-      console.log(`[${boss.level}] ${boss.slug} — concept…`);
+      console.log(`[${boss.level}] ${boss.slug}, concept…`);
       const conceptTaskId = await createConceptImage(prompt, { imageModel: cfg.imageModel });
       const concept = await waitForTask("text-to-image", conceptTaskId);
       const conceptUrl = concept.image_urls[0];
       if (!conceptUrl) throw new Error("no concept image");
       await writeFile(path.join(dir, "concept.png"), await fetchBuffer(conceptUrl));
 
-      console.log(`[${boss.level}] ${boss.slug} — mesh…`);
+      console.log(`[${boss.level}] ${boss.slug}, mesh…`);
       const meshTaskId = await createMeshFromConceptTask(conceptTaskId, {
         meshyModel: cfg.meshyModel,
         ultraMode: cfg.ultraMode,
@@ -149,7 +149,7 @@ async function main() {
       await writeFile(path.join(dir, "meta.json"), JSON.stringify(meta, null, 2));
       results.push(meta);
       console.log(
-        `[${boss.level}] ${boss.slug} — ${(stats.bytesBefore / 1048576).toFixed(1)} MB → ` +
+        `[${boss.level}] ${boss.slug}, ${(stats.bytesBefore / 1048576).toFixed(1)} MB → ` +
           `${(stats.bytesAfter / 1048576).toFixed(2)} MB\n`,
       );
     } catch (err) {

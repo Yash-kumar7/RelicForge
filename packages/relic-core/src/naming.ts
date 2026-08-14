@@ -3,7 +3,7 @@ import type { Element, RelicDNA, Temperament } from "./types.js";
 
 /**
  * Deterministic naming. An LLM would write better names, but names must never
- * be able to block or fail a generation — so this is the P0 path and LLM
+ * be able to block or fail a generation, so this is the P0 path and LLM
  * flavour text is P1 decoration on top.
  *
  * Same DNA always yields the same name, which also keeps cached relics stable.

@@ -1,5 +1,5 @@
 /**
- * Gate 1 — gameplay legibility.
+ * Gate 1, gameplay legibility.
  *
  * Gate 0 proved the geometry can be equipped. This asks the product question:
  * do two maximally-separated fights actually yield visually different weapons?
@@ -70,7 +70,7 @@ async function main() {
   const outRoot = path.join(env.storageDir, "gate1");
   await mkdir(outRoot, { recursive: true });
 
-  console.log(`\nGate 1 — visual differentiation`);
+  console.log(`\nGate 1, visual differentiation`);
   console.log(`  config:  ${cfg.imageModel} → ${cfg.meshyModel}${cfg.ultraMode ? " + ultra" : ""}`);
   console.log(`  balance: ${startBalance}\n`);
 
@@ -147,7 +147,7 @@ async function main() {
       results.push(meta);
 
       console.log(
-        `  mesh ok (${(meshMs / 1000).toFixed(1)}s) — ` +
+        `  mesh ok (${(meshMs / 1000).toFixed(1)}s), ` +
           `${(stats.bytesBefore / 1048576).toFixed(1)} MB → ${(stats.bytesAfter / 1048576).toFixed(2)} MB\n`,
       );
     } catch (err) {

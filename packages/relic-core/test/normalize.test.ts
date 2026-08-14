@@ -11,7 +11,7 @@ import { CANONICAL_LENGTH } from "../src/config.js";
 
 /**
  * Synthetic weapons. Building geometry by hand is the only way to test the
- * normalizer against a *known* correct answer — a real GLB can only ever be
+ * normalizer against a *known* correct answer, a real GLB can only ever be
  * eyeballed.
  */
 
@@ -37,7 +37,7 @@ function buildWeapon(opts: BuildOptions): MeshSample {
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
   const push = (x: number, y: number, z: number) => {
-    // Rotate about Z so the "up" axis tilts into X — this is what defeats a
+    // Rotate about Z so the "up" axis tilts into X, this is what defeats a
     // naive largest-extent heuristic.
     positions.push(x * cos - y * sin, x * sin + y * cos, z);
   };
@@ -152,7 +152,7 @@ describe("normalizeRelic", () => {
     expect(t.gripT).toBeLessThan(0.4);
   });
 
-  it("is deterministic — same mesh in, identical transform out", () => {
+  it("is deterministic, same mesh in, identical transform out", () => {
     const sample = buildWeapon({ length: 2, profile: swordProfile, tiltDeg: 20 });
     expect(normalizeRelic(sample, "greatsword")).toEqual(normalizeRelic(sample, "greatsword"));
   });

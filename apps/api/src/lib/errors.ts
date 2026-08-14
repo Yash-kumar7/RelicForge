@@ -1,6 +1,6 @@
 /**
  * Error taxonomy. Every one of these renders to the player as
- * "THE FORGE RESISTS…" — the distinctions exist for retry policy and
+ * "THE FORGE RESISTS…", the distinctions exist for retry policy and
  * the debug route, never for the cinematic.
  */
 export class MeshyError extends Error {
@@ -18,13 +18,13 @@ export class MeshyError extends Error {
   }
 }
 
-/** 401/403 — fail fast, never retry. A bad key will not fix itself. */
+/** 401/403, fail fast, never retry. A bad key will not fix itself. */
 export class MeshyAuthError extends MeshyError {}
 
-/** 400 — our payload is wrong. Retrying sends the same wrong payload. */
+/** 400, our payload is wrong. Retrying sends the same wrong payload. */
 export class MeshyValidationError extends MeshyError {}
 
-/** 429 — back off and retry. */
+/** 429, back off and retry. */
 export class MeshyRateLimitError extends MeshyError {
   override get retryable() {
     return true;
@@ -60,5 +60,5 @@ export class MeshyTimeout extends MeshyError {
   }
 }
 
-/** Below CREDIT_FLOOR — refuse before spending. */
+/** Below CREDIT_FLOOR, refuse before spending. */
 export class InsufficientCredits extends MeshyError {}

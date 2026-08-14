@@ -3,7 +3,7 @@
  *
  *   pnpm --filter @relic/api exec tsx scripts/remesh-spike.ts <taskId>:<slug> ...
  *
- * meshy-7 without `should_remesh` returns 0.9M–3.1M triangle meshes (37–116 MB),
+ * meshy-7 without `should_remesh` returns 0.9M-3.1M triangle meshes (37-116 MB),
  * which no browser game can load. 5 credits per rescue beats ~44 to regenerate.
  */
 import { mkdir, writeFile } from "node:fs/promises";
@@ -26,7 +26,7 @@ async function main() {
   }
 
   const startBalance = await getBalance();
-  console.log(`\nRemesh — ${pairs.length} meshes → ${HERO_GENERATION_CONFIG.targetPolycount} tris`);
+  console.log(`\nRemesh, ${pairs.length} meshes → ${HERO_GENERATION_CONFIG.targetPolycount} tris`);
   console.log(`  estimate: ~${pairs.length * 5} credits (balance ${startBalance})\n`);
 
   const outRoot = path.join(env.storageDir, "spike");
@@ -36,7 +36,7 @@ async function main() {
     const dir = path.join(outRoot, slug);
     await mkdir(dir, { recursive: true });
     try {
-      console.log(`${slug} — remeshing…`);
+      console.log(`${slug}, remeshing…`);
       const remeshId = await createRemesh(taskId, {
         targetPolycount: HERO_GENERATION_CONFIG.targetPolycount,
         targetFormats: HERO_GENERATION_CONFIG.targetFormats,
@@ -58,9 +58,9 @@ async function main() {
       };
       await writeFile(path.join(dir, "meta.json"), JSON.stringify(meta, null, 2));
       results.push(meta);
-      console.log(`${slug} — ${(bytes.byteLength / 1024 / 1024).toFixed(2)} MB\n`);
+      console.log(`${slug}, ${(bytes.byteLength / 1024 / 1024).toFixed(2)} MB\n`);
     } catch (err) {
-      console.error(`${slug} — FAILED: ${(err as Error).message}\n`);
+      console.error(`${slug}, FAILED: ${(err as Error).message}\n`);
       results.push({ slug, error: (err as Error).message });
     }
   }

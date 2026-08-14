@@ -6,7 +6,7 @@ import type { Condition, Element, RelicDNA, Temperament, WeaponClass } from "./t
  *
  * Two jobs, and the second one is easy to miss: it must describe the weapon,
  * AND it must frame the shot. The composition contract below is the only lever
- * controlling the orientation of the mesh Meshy returns — the Gate 0
+ * controlling the orientation of the mesh Meshy returns, the Gate 0
  * measurement (median raw angle 0.1°) holds only while every image is framed
  * this way. It is global and never varied per relic.
  */
@@ -37,7 +37,7 @@ const CLASS_NOUN: Record<WeaponClass, string> = {
 
 /**
  * Fixed framing clause. Changing anything here invalidates the Gate 0
- * measurement and must be re-verified — bump PROMPT_VERSION when it happens.
+ * measurement and must be re-verified, bump PROMPT_VERSION when it happens.
  */
 export const COMPOSITION_CONTRACT = [
   "Designed as a functional fantasy game weapon.",

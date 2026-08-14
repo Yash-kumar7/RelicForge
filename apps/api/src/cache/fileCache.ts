@@ -57,7 +57,7 @@ type Index = z.infer<typeof IndexSchema>;
 /**
  * A factory, not a constant. A shared constant would be shallow-copied by
  * spreading, leaving `relics` and `byCacheKey` pointing at the *same* inner
- * objects — so every write would mutate the shared default, and a recovered
+ * objects, so every write would mutate the shared default, and a recovered
  * index would silently resurrect relics that were supposed to be gone.
  */
 function emptyIndex(): Index {
@@ -92,7 +92,7 @@ async function load(): Promise<Index> {
 
   try {
     const parsed = IndexSchema.safeParse(JSON.parse(await readFile(indexPath(), "utf8")));
-    // A corrupt or outdated index must not take the server down — the assets
+    // A corrupt or outdated index must not take the server down, the assets
     // are still on disk and regenerating costs credits, not correctness.
     cache = parsed.success ? parsed.data : emptyIndex();
     loadedMtimeMs = mtimeMs;

@@ -27,7 +27,7 @@ export const TaskErrorSchema = z
  * Validation posture: strict on the fields we actually consume, permissive on
  * everything else. In-progress tasks legitimately carry `thumbnail_url: ""` and
  * `texture_urls: null`, and rejecting those would fail a task that is merely
- * unfinished — after its credits are already spent. Parse must not be stricter
+ * unfinished, after its credits are already spent. Parse must not be stricter
  * than the contract we depend on.
  */
 const maybeUrl = z.string().nullish().transform((v) => (v ? v : undefined));
@@ -106,7 +106,7 @@ export const RigTaskSchema = z
   .passthrough();
 export type RigTask = z.infer<typeof RigTaskSchema>;
 
-/** GET /openapi/v1/{kind} — recent tasks, newest first. */
+/** GET /openapi/v1/{kind}, recent tasks, newest first. */
 export const TaskListSchema = z.array(z.unknown());
 
 export const BalanceSchema = z.object({ balance: z.number() });

@@ -25,7 +25,7 @@ export async function getTask<K extends TaskKind>(kind: K, id: string): Promise<
 
 /**
  * Meshy exposes native SSE per task. Consuming it directly is why RelicForge
- * needs no webhook receiver and no public tunnel for local development —
+ * needs no webhook receiver and no public tunnel for local development -
  * we simply re-emit these into our own /api/relics/:id/events stream.
  */
 export async function* streamTask<K extends TaskKind>(

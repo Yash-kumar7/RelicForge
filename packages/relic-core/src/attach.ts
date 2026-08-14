@@ -6,7 +6,7 @@ import type { RelicTransform, WeaponClass } from "./types.js";
  *
  * Deliberately separate from normalizeRelic(). "Which way does this mesh point"
  * and "where should a greatsword rest on screen" are different questions with
- * different failure modes — conflating them makes both harder to debug, because
+ * different failure modes, conflating them makes both harder to debug, because
  * a weapon that looks wrong could be either a bad axis or a bad pose.
  *
  * normalizeRelic knows geometry and nothing about the game.
@@ -52,7 +52,7 @@ const CLASS_POSE: Record<WeaponClass, AttachTransform> = {
  * The transform argument is intentionally unused today: normalizeRelic has
  * already reduced every weapon of a class to the same canonical length and
  * grip, which is precisely what lets the pose be a constant. It stays in the
- * signature because that guarantee is the contract between the two functions —
+ * signature because that guarantee is the contract between the two functions -
  * if canonicalization ever stops normalizing scale, the pose has to react, and
  * the call site should not need to change.
  */

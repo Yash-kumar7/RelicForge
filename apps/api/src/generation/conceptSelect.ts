@@ -4,10 +4,10 @@ import { fetchBuffer } from "../lib/fetchBytes.js";
 /**
  * Picks the concept most likely to produce good geometry.
  *
- * Cheapest quality lever in the pipeline: concepts cost 3–9 credits against a
- * 30–35 credit mesh, and mesh quality is dominated by concept quality. The two
+ * Cheapest quality lever in the pipeline: concepts cost 3-9 credits against a
+ * 30-35 credit mesh, and mesh quality is dominated by concept quality. The two
  * failure modes worth rejecting are a subject that drifts off-centre and one
- * that sits too small in frame — both signal a composition the prompt asked for
+ * that sits too small in frame, both signal a composition the prompt asked for
  * but the model did not honour, and both survive into the mesh.
  */
 
@@ -27,7 +27,7 @@ async function measure(buffer: Buffer): Promise<{ coverage: number; centerOffset
   const image = sharp(buffer);
   const { width = 1, height = 1 } = await image.metadata();
 
-  // Downsample hard — this is a composition check, not a quality check.
+  // Downsample hard, this is a composition check, not a quality check.
   const w = 64;
   const h = Math.max(1, Math.round((height / width) * w));
   const { data } = await image
