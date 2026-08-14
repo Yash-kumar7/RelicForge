@@ -3,6 +3,10 @@ import type { Affinity } from "@relic/core";
 import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
 import { BOSSES, highestCleared, isUnlocked } from "../game/bosses";
+import { TitleShowcase } from "./TitleShowcase";
+import { ChampionPreview } from "./ChampionPreview";
+import { rankFor } from "../state/useProgress";
+import { useProgress } from "../state/useProgress";
 
 /**
  * Run setup: what you fight as, then what you fight.
@@ -49,6 +53,9 @@ export function TitleScreen() {
   const chooseBossLevel = useGameStore((s) => s.chooseBossLevel);
   const startFight = useGameStore((s) => s.startFight);
   const owned = useLoadout((s) => s.owned);
+  const xp = useProgress((s) => s.xp);
+  const fightsWon = useProgress((s) => s.fightsWon);
+  const rank = rankFor(xp);
 
   if (phase === "TITLE") {
     return (
@@ -67,6 +74,11 @@ export function TitleScreen() {
           </p>
         </motion.div>
 
+        {/* A real generated relic, spinning, loaded from the same cache the
+            game uses. The page argues that generated 3D belongs in a runtime,
+            so the page should be running some. */}
+        <TitleShowcase />
+
         {/*
           The premise has to be stated on the front page. Players arrive with a
           lifetime of loot tables behind them and will assume the weapon was
@@ -76,7 +88,7 @@ export function TitleScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 1 }}
-          className="mt-14 max-w-2xl px-8 text-center"
+          className="mt-6 max-w-2xl px-8 text-center"
         >
           <p className="text-sm leading-relaxed text-stone-400">
             Most games hand you loot from a list. Kill the boss, roll the table, receive the same
@@ -120,11 +132,16 @@ export function TitleScreen() {
           Enter the Arena
         </motion.button>
 
-        {owned.length > 0 && (
-          <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
-            {owned.length} relic{owned.length === 1 ? "" : "s"} kept · {highestCleared()} boss
-            {highestCleared() === 1 ? "" : "es"} cleared
-          </p>
+        {(owned.length > 0 || fightsWon > 0) && (
+          <div className="mt-8 text-center">
+            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ember-400">
+              {rank.name}
+            </p>
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
+              {xp} xp · {owned.length} relic{owned.length === 1 ? "" : "s"} kept ·{" "}
+              {highestCleared()} boss{highestCleared() === 1 ? "" : "es"} cleared
+            </p>
+          </div>
         )}
 
         <p className="absolute bottom-8 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
@@ -139,9 +156,21 @@ export function TitleScreen() {
       <div className="mx-auto max-w-4xl">
         {/* Affinity */}
         <section>
-          <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Choose your affinity</p>
+          <div className="flex items-baseline justify-between">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">
+              Choose your affinity
+            </p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
+              {rank.name} · {xp} xp
+            </p>
+          </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
+          {/* Who you are, shown rather than described. */}
+          <div className="mt-5">
+            <ChampionPreview affinity={affinity} />
+          </div>
+
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
             {AFFINITIES.map((a) => (
               <button
                 key={a.id}

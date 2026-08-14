@@ -27,6 +27,7 @@ import { DebugOverlay } from "../debug/DebugOverlay";
 import { DamageNumbers } from "../ui/DamageNumbers";
 import { LoadoutPanel } from "../ui/LoadoutPanel";
 import { useLoadout } from "../state/useLoadout";
+import { useProgress } from "../state/useProgress";
 import { sfx, unlockAudio } from "../audio/sfx";
 
 /**
@@ -117,9 +118,23 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
     setPhase("EQUIPPED");
   }, [setPhase]);
 
-  /* Clearing a boss unlocks the next rung of the ladder. */
+  /* Clearing a boss unlocks the next rung and pays out rank experience. */
   useEffect(() => {
-    if (phase === "VICTORY") recordClear(useGameStore.getState().bossLevel);
+    if (phase !== "VICTORY") return;
+    const state = useGameStore.getState();
+    recordClear(state.bossLevel);
+    const telemetry = state.snapshotTelemetry();
+    useProgress.getState().award({
+      bossLevel: state.bossLevel,
+      healthRemaining: telemetry.healthRemaining,
+      dodges: telemetry.dodges,
+      healingUsed: telemetry.healingUsed,
+      forgedRelic: true,
+    });
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase === "DEFEAT") useProgress.getState().recordLoss();
   }, [phase]);
 
   useEffect(() => {

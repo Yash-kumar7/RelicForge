@@ -4,6 +4,7 @@ import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
 import { themeFor } from "../game/theme";
 import { bossAt } from "../game/bosses";
+import { rankFor, useProgress } from "../state/useProgress";
 
 /**
  * Loadout, hold TAB.
@@ -24,6 +25,10 @@ export function LoadoutPanel() {
   const bossLevel = useGameStore((s) => s.bossLevel);
   const forge = useGameStore((s) => s.forge);
   const owned = useLoadout((s) => s.owned);
+  const xp = useProgress((s) => s.xp);
+  const fightsWon = useProgress((s) => s.fightsWon);
+  const fightsLost = useProgress((s) => s.fightsLost);
+  const rank = rankFor(xp);
   const theme = themeFor(affinity);
 
   useEffect(() => {
@@ -75,9 +80,14 @@ export function LoadoutPanel() {
             <div className="w-[min(860px,90vw)]">
               <div className="mb-6 flex items-baseline justify-between border-b border-ash-800 pb-3">
                 <h2 className="font-display text-xl tracking-[0.3em] text-stone-300">LOADOUT</h2>
-                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
-                  level {boss.level} · {boss.title}
-                </span>
+                <div className="text-right">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-ember-400">
+                    {rank.name}
+                  </span>
+                  <span className="ml-3 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
+                    level {boss.level} · {boss.title}
+                  </span>
+                </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -165,6 +175,38 @@ export function LoadoutPanel() {
                       </dl>
                     </>
                   )}
+                </div>
+              </div>
+
+              {/* Rank. Cosmetic on purpose: XP buys no damage, because the
+                  moment progression gates power the relic stops being a record
+                  of one fight and becomes a reward for grinding. */}
+              <div className="mt-6 border border-ash-800 p-4">
+                <div className="flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.2em]">
+                  <span className="text-stone-500">{rank.name}</span>
+                  <span className="text-stone-700">
+                    {rank.next === null ? `${xp} xp · max rank` : `${xp} / ${rank.next} xp`}
+                  </span>
+                </div>
+                <div className="mt-2 h-[2px] w-full bg-ash-800">
+                  <div
+                    className="h-[2px] bg-ember-500"
+                    style={{
+                      width: `${rank.next === null ? 100 : Math.min(100, (rank.into / rank.span) * 100)}%`,
+                    }}
+                  />
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-3 font-mono text-[10px] uppercase tracking-[0.15em]">
+                  {[
+                    ["won", String(fightsWon)],
+                    ["lost", String(fightsLost)],
+                    ["forged", String(owned.length)],
+                  ].map(([k, v]) => (
+                    <div key={k} className="flex justify-between">
+                      <span className="text-stone-700">{k}</span>
+                      <span className="text-stone-400">{v}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
