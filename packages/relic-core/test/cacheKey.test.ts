@@ -95,3 +95,38 @@ describe("composeRelicName", () => {
     }
   });
 });
+
+describe("what the key does and does not split on", () => {
+  const base: RelicDNA = {
+    weaponClass: "greatsword",
+    element: "fire",
+    temperament: "brutal",
+    condition: "shattered",
+    bossInfluence: "the Ashen Warden",
+    rarity: "legendary",
+  };
+
+  it("ignores the achievement, which never reaches Meshy", () => {
+    // The achievement is a label on the run, not an input to the image. When it
+    // was part of the key, two players with identical prompts got two different
+    // keys, so the second waited out a full generation for a mesh already on
+    // disk. That alone multiplied the reachable key space about fivefold.
+    const key = relicCacheKey(base, HERO_GENERATION_CONFIG);
+    for (const achievement of ["DEATH'S DOOR", "UNBROKEN", "SWIFT JUDGMENT", "UNTOUCHABLE"]) {
+      expect(relicCacheKey({ ...base, achievement }, HERO_GENERATION_CONFIG)).toBe(key);
+    }
+  });
+
+  it("still splits on every field the prompt is built from", () => {
+    const key = relicCacheKey(base, HERO_GENERATION_CONFIG);
+    const variants: RelicDNA[] = [
+      { ...base, element: "ice" },
+      { ...base, temperament: "elegant", weaponClass: "spear" },
+      { ...base, condition: "pristine" },
+      { ...base, bossInfluence: "the Drowned Choir" },
+    ];
+    for (const dna of variants) {
+      expect(relicCacheKey(dna, HERO_GENERATION_CONFIG)).not.toBe(key);
+    }
+  });
+});

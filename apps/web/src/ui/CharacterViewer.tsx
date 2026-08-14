@@ -55,9 +55,9 @@ function Model({
 
   // Fitted width, so the hand socket scales with the character instead of
   // assuming every generated champion has the same build.
-  const width = useMemo(() => {
+  const { width, depth } = useMemo(() => {
     const size = new Box3().setFromObject(model).getSize(new Vector3());
-    return size.x * fit.scale;
+    return { width: size.x * fit.scale, depth: size.z * fit.scale };
   }, [model, fit.scale]);
 
   return (
@@ -72,7 +72,7 @@ function Model({
 
       {weapon && (
         <Suspense fallback={null}>
-          <HeldWeapon weapon={weapon} accent={accent} socket={{ height, width }} />
+          <HeldWeapon weapon={weapon} accent={accent} socket={{ height, width, depth }} />
         </Suspense>
       )}
     </group>

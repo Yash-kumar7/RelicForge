@@ -21,6 +21,8 @@ export interface HandSocket {
   height: number;
   /** Character width in world units, as fitted. */
   width: number;
+  /** Character depth in world units, as fitted. */
+  depth: number;
 }
 
 const DEG = Math.PI / 180;
@@ -34,10 +36,27 @@ export function HeldWeapon({
   accent: string;
   socket: HandSocket;
 }) {
-  // Right hand, from the character's own proportions rather than magic numbers.
-  const hand: [number, number, number] = [socket.width * 0.4, socket.height * 0.46, 0.1];
-  // Held slightly out and angled back, the way a fighter rests a blade at ease.
-  const tilt: [number, number, number] = [12 * DEG, 0, -18 * DEG];
+  /*
+   * Right hand, from the character's own proportions rather than magic numbers,
+   * and pushed just clear of the arm: normalizeRelic puts the grip at the
+   * origin, so the shaft runs straight through whatever the socket sits inside.
+   * Sitting it dead centre in the hand ran the blade through the forearm.
+   */
+  const hand: [number, number, number] = [
+    socket.width * 0.44,
+    socket.height * 0.46,
+    socket.depth * 0.42,
+  ];
+  /*
+   * Leaned out and forward rather than stood upright.
+   *
+   * The lean is what actually keeps the blade off the body: the shaft is a line
+   * through the grip, so a vertical weapon tracks the torso for its whole length
+   * no matter where the socket is, while a leaned one departs immediately above
+   * the hand. It also reads as a fighter resting a blade rather than presenting
+   * it.
+   */
+  const tilt: [number, number, number] = [20 * DEG, 0, -30 * DEG];
 
   if (weapon.kind === "iron") {
     return (

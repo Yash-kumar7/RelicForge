@@ -1,3 +1,4 @@
+import { compileRelicPrompt } from "./prompt.js";
 import type { GenerationConfig, RelicDNA } from "./types.js";
 
 /**
@@ -27,15 +28,29 @@ function fnv1a64(input: string): string {
 }
 
 /**
- * The key hashes DNA *and the entire generation config*.
+ * The key hashes the *compiled prompt* and the entire generation config.
  *
- * Keying on DNA alone is the classic trap: you edit the prompt compiler,
- * regenerate, get the old sword back, and lose an afternoon to it. Because
- * promptVersion is part of the config, one constant bump invalidates
- * everything that a prompt change could have affected.
+ * Hashing the config is what stops the classic trap: you edit the prompt
+ * compiler, regenerate, get the old sword back, and lose an afternoon to it.
+ * Because promptVersion is part of the config, one constant bump invalidates
+ * everything a prompt change could have affected.
+ *
+ * Hashing the compiled prompt rather than the raw DNA is what stops the
+ * quieter, more expensive trap. `achievement` never reaches Meshy: it is a
+ * label on the player's run, not an input to the image. Keying on DNA meant
+ * DEATH'S DOOR and UNBROKEN produced two different keys for one identical
+ * prompt, so the second player paid full generation time to be handed a mesh
+ * already sitting on disk. It multiplied the reachable key space roughly
+ * fivefold against a fixed set of cached relics, which is most of the reason a
+ * real playthrough waited at all.
+ *
+ * Deriving the key from the prompt means the key cannot drift from the thing it
+ * is meant to identify. A new field only splits the cache if it actually
+ * changes what gets generated, and it does so without anyone maintaining a list
+ * of which fields count.
  */
 export function relicCacheKey(dna: RelicDNA, config: GenerationConfig): string {
-  return fnv1a64(canonicalJson({ dna, config }));
+  return fnv1a64(canonicalJson({ prompt: compileRelicPrompt(dna), config }));
 }
 
 export { canonicalJson };

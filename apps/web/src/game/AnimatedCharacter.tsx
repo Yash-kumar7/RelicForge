@@ -51,6 +51,21 @@ function findRightHand(root: Object3D): Object3D | null {
 const IDLE_TIME_SCALE = 0.18;
 
 /**
+ * How far the grip sits outside the hand bone, as a fraction of the character's
+ * height.
+ *
+ * The bone sits at the centre of the wrist, and normalizeRelic puts the grip at
+ * the origin, so dropping the weapon straight onto the bone runs its shaft
+ * through the hand. Worse, a weapon at rest is roughly upright and a hanging arm
+ * is roughly vertical too, so the two are near parallel and the blade tracks the
+ * whole length of the forearm rather than merely clipping a palm.
+ *
+ * Expressed against height rather than in world units because the same socket
+ * carries a 1.8-unit champion and a boss half again as large.
+ */
+const HAND_CLEARANCE = 0.035;
+
+/**
  * Places its children at a bone's position, in the root's space.
  *
  * Position only. Rotation and scale are both discarded, for different reasons.
@@ -68,10 +83,12 @@ const IDLE_TIME_SCALE = 0.18;
 function HandFollower({
   root,
   bone,
+  height,
   children,
 }: {
   root: RefObject<Group | null>;
   bone: Object3D;
+  height: number;
   children: ReactNode;
 }) {
   const socket = useRef<Group>(null);
@@ -93,6 +110,18 @@ function HandFollower({
     local.decompose(position, quaternion, scale);
 
     group.position.copy(position);
+
+    /*
+     * Out of the limb, in the character's own frame.
+     *
+     * Which way is "out" is read from the bone rather than assumed, so a rig
+     * that mirrors its skeleton pushes the weapon away from the body instead of
+     * into it. The forward component keeps the shaft in front of the fingers,
+     * which is where a hand closed around a grip would put it.
+     */
+    const clearance = height * HAND_CLEARANCE;
+    group.position.x += (Math.sign(position.x) || 1) * clearance;
+    group.position.z += clearance * 0.8;
   });
 
   return <group ref={socket}>{children}</group>;
@@ -154,7 +183,11 @@ export function AnimatedCharacter({
         discarding its scale, gives the weapon the hand's motion while keeping
         its own size.
       */}
-      {children && hand && <HandFollower root={root} bone={hand}>{children}</HandFollower>}
+      {children && hand && (
+        <HandFollower root={root} bone={hand} height={height}>
+          {children}
+        </HandFollower>
+      )}
       {children && !hand && children}
     </group>
   );

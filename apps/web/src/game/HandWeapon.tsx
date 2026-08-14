@@ -21,18 +21,24 @@ import { bossState, bossSwing } from "./bossState";
  */
 
 /**
- * Blade upright at rest, tipping forward and across as the swing travels.
+ * Blade leaned out at rest, tipping forward and across as the swing travels.
  *
- * The multipliers are deliberately large. The weapon is a child of the body, so
+ * The rest pose leans well clear of vertical on purpose. A weapon is a line
+ * through its grip, so an upright one runs parallel to a hanging arm and reads
+ * as passing through it however far the socket is pushed out. Leaning it means
+ * the shaft departs the body immediately above the hand, which is also how a
+ * fighter actually carries a blade at rest.
+ *
+ * The swing multipliers are deliberately large. The weapon is a child of the body, so
  * it already inherits the body's turn, and a small extra rotation on top of that
  * is indistinguishable from the body moving on its own. To read as a swing
  * rather than as the weapon being carried through a turn, the blade has to
  * travel visibly further than its holder.
  */
 function applySwing(group: Group, swing: number, scale = 1): void {
-  group.rotation.x = -0.25 - swing * 1.45 * scale;
+  group.rotation.x = -0.32 - swing * 1.45 * scale;
   group.rotation.y = -0.18 + swing * 0.35 * scale;
-  group.rotation.z = -0.28 - swing * 0.8 * scale;
+  group.rotation.z = -0.55 - swing * 0.8 * scale;
 }
 
 export function PlayerHandWeapon({
