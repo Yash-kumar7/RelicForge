@@ -227,7 +227,7 @@ export function TitleScreen() {
                     disabled={!unlocked}
                     onClick={() => chooseBossLevel(boss.level)}
                     className={[
-                      "flex items-start gap-4 border px-4 py-3 text-left transition",
+                      "border text-left transition",
                       !unlocked
                         ? "cursor-not-allowed border-ash-800 text-stone-800"
                         : selected
@@ -235,29 +235,45 @@ export function TitleScreen() {
                           : "border-ash-700 text-stone-500 hover:border-stone-500",
                     ].join(" ")}
                   >
-                    {/* Its own generated concept art: the same image that
-                        produced the mesh you fight. */}
-                    <BossPortrait
-                      title={boss.title}
-                      locked={!unlocked}
-                      className="h-20 w-16 shrink-0 border border-ash-800"
-                    />
-                    <span className="mt-0.5 w-7 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em]">
-                      {boss.level.toString().padStart(2, "0")}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-display text-base tracking-[0.1em]">
-                        {unlocked ? boss.title : "??????"}
-                      </span>
-                      <span className="mt-0.5 block text-[11px] leading-relaxed text-stone-600">
-                        {unlocked ? boss.blurb : `Clear level ${boss.level - 1} to face it.`}
-                      </span>
-                    </span>
-                    {!unlocked && (
-                      <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.2em]">
-                        locked
-                      </span>
+                    {/*
+                      Selecting a boss expands the row into a proper portrait.
+                      A 64px thumbnail is enough to tell rows apart but not
+                      enough to decide by, and deciding is the whole purpose of
+                      this screen.
+                    */}
+                    {selected && unlocked && (
+                      <BossPortrait
+                        title={boss.title}
+                        locked={false}
+                        className="h-64 w-full border-b border-ember-500/30"
+                      />
                     )}
+
+                    <span className="flex items-start gap-4 px-4 py-3">
+                      {!selected && (
+                        <BossPortrait
+                          title={boss.title}
+                          locked={!unlocked}
+                          className="h-20 w-16 shrink-0 border border-ash-800"
+                        />
+                      )}
+                      <span className="mt-0.5 w-7 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em]">
+                        {boss.level.toString().padStart(2, "0")}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-display text-base tracking-[0.1em]">
+                          {unlocked ? boss.title : "??????"}
+                        </span>
+                        <span className="mt-0.5 block text-[11px] leading-relaxed text-stone-600">
+                          {unlocked ? boss.blurb : `Clear level ${boss.level - 1} to face it.`}
+                        </span>
+                      </span>
+                      {!unlocked && (
+                        <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.2em]">
+                          locked
+                        </span>
+                      )}
+                    </span>
                   </button>
                 );
               })}
@@ -272,9 +288,15 @@ export function TitleScreen() {
             <button
               type="button"
               onClick={startFight}
-              className="mt-4 w-full border border-ember-500/60 px-10 py-3 text-xs uppercase tracking-[0.35em] text-ember-300 transition hover:bg-ember-500/10"
+              disabled={bossLevel === null}
+              className={[
+                "mt-4 w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
+                bossLevel === null
+                  ? "cursor-not-allowed border-ash-800 text-stone-700"
+                  : "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
+              ].join(" ")}
             >
-              Descend
+              {bossLevel === null ? "Choose a quarry" : "Descend"}
             </button>
           </div>
         </div>

@@ -18,7 +18,7 @@ export function ForgeSequence({ onClaim }: { onClaim: () => void }) {
   const bossLevel = useGameStore((s) => s.bossLevel);
   // Named explicitly: the boss you killed is part of the relic's identity, and
   // it is literally in the prompt that generated it.
-  const boss = bossAt(bossLevel);
+  const boss = bossAt(bossLevel ?? 1);
 
   const showTelemetry = forge.stage !== "IDLE" && forge.stage !== "ANALYZING";
   const headline = STAGE_HEADLINE[forge.stage];

@@ -53,7 +53,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   // Resolved once per run rather than recomputed every frame. Faster bosses
   // also telegraph for less time, which is what actually makes them harder.
   const tuning = useMemo(() => {
-    const level = bossAt(bossLevel);
+    const level = bossAt(bossLevel ?? 1);
     return {
       damage: Math.round(COMBAT.boss.damage * level.damage),
       moveSpeed: COMBAT.boss.moveSpeed * level.speed,
@@ -82,7 +82,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   const [hasModel, setHasModel] = useState(false);
   const onModelLoaded = useCallback((loaded: boolean) => setHasModel(loaded), []);
   const bossSlug = useMemo(
-    () => bossAt(bossLevel).title.toLowerCase().replace(/^the /, "").replace(/\s+/g, "-"),
+    () => bossAt(bossLevel ?? 1).title.toLowerCase().replace(/^the /, "").replace(/\s+/g, "-"),
     [bossLevel],
   );
 

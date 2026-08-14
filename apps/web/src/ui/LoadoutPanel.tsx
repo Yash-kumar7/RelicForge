@@ -58,7 +58,7 @@ export function LoadoutPanel() {
     forge.stage === "COMPLETE" && forge.name && forge.dna
       ? { name: forge.name, dna: forge.dna }
       : null;
-  const boss = bossAt(bossLevel);
+  const boss = bossAt(bossLevel ?? 1);
 
   return (
     <>

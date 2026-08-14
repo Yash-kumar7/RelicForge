@@ -25,7 +25,7 @@ export function Hud() {
   const fighting = phase === "FIGHTING";
   const playerPct = Math.round((playerHp / PLAYER_MAX_HP) * 100);
   const bossPct = Math.ceil((bossHp / Math.max(1, bossMaxHp)) * 100);
-  const boss = bossAt(bossLevel);
+  const boss = bossAt(bossLevel ?? 1);
 
   // The thresholds the relic actually keys off, surfaced so the player can see
   // which band they are about to fall into.

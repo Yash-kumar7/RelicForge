@@ -52,7 +52,12 @@ export interface ForgeState {
 interface GameState {
   phase: GamePhase;
   affinity: Affinity;
-  bossLevel: number;
+  /**
+   * Null until the player picks. Nothing should be pre-selected: a highlighted
+   * level the player never chose reads as a decision already made for them, and
+   * they can descend without ever looking at the ladder.
+   */
+  bossLevel: number | null;
   playerHp: number;
   bossHp: number;
   /** Scaled per run, so the HUD percentage is honest at every difficulty. */
@@ -123,7 +128,7 @@ const EMPTY_FORGE: ForgeState = {
 export const useGameStore = create<GameState>((set, get) => ({
   phase: "TITLE",
   affinity: "fire",
-  bossLevel: 1,
+  bossLevel: null,
   playerHp: PLAYER_MAX_HP,
   bossHp: BOSS_MAX_HP,
   bossMaxHp: BOSS_MAX_HP,
@@ -137,7 +142,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   setPhase: (phase) => set({ phase }),
   chooseAffinity: (affinity) => set({ affinity }),
   chooseBossLevel: (bossLevel) => set({ bossLevel }),
-  boss: () => bossAt(get().bossLevel),
+  // Resolves for consumers mid-fight, by which point a level is always set.
+  boss: () => bossAt(get().bossLevel ?? 1),
 
   startFight: () =>
     set((state) => {
@@ -145,7 +151,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       // slider would scale the same numbers while changing nothing about the
       // weapon you earn, whereas each rung changes bossInfluence and therefore
       // the relic itself.
-      const maxHp = Math.round(BOSS_MAX_HP * bossAt(state.bossLevel).hp);
+      const maxHp = Math.round(BOSS_MAX_HP * bossAt(state.bossLevel ?? 1).hp);
       return {
       phase: "FIGHTING" as GamePhase,
       playerHp: PLAYER_MAX_HP,

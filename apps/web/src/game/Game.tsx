@@ -112,7 +112,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
         conceptUrl: f.conceptUrl,
         forgedMs: f.cached ? null : f.totalMs,
         earnedAt: Date.now(),
-        bossLevel: state.bossLevel,
+        bossLevel: state.bossLevel ?? 1,
       });
     }
     setPhase("EQUIPPED");
@@ -122,10 +122,10 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   useEffect(() => {
     if (phase !== "VICTORY") return;
     const state = useGameStore.getState();
-    recordClear(state.bossLevel);
+    recordClear(state.bossLevel ?? 1);
     const telemetry = state.snapshotTelemetry();
     useProgress.getState().award({
-      bossLevel: state.bossLevel,
+      bossLevel: state.bossLevel ?? 1,
       healthRemaining: telemetry.healthRemaining,
       dodges: telemetry.dodges,
       healingUsed: telemetry.healingUsed,
