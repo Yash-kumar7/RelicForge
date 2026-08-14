@@ -15,7 +15,9 @@ import { fitCharacter } from "../lib/characterFit";
  * without breaking the fight.
  */
 
-const BOSS_HEIGHT = 3.9;
+// Head and shoulders above the player rather than twice their size: a boss
+// should be intimidating, not a different scale of creature.
+const BOSS_HEIGHT = 2.75;
 
 function LoadedBoss({ slug, onLoaded }: { slug: string; onLoaded: () => void }) {
   const { scene } = useGLTF(`/assets/bosses/${slug}/model.glb`);

@@ -6,9 +6,10 @@ import { COMBAT, isWithinArc } from "./combat";
 import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
 import { themeForBoss } from "./theme";
-import { registerPlayerHurt } from "./feedback";
+import { registerPlayerHurt, registerTelegraph } from "./feedback";
 import { bossAt } from "./bosses";
 import { BossModel } from "./BossModel";
+import { BossWeapon } from "./BossWeapon";
 
 /**
  * The Ashen Warden.
@@ -147,6 +148,8 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         } else {
           state.current = "TELEGRAPH";
           stateUntil.current = now + tuning.telegraphMs;
+          sfx.telegraph();
+          registerTelegraph();
         }
         break;
       }
@@ -155,6 +158,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         if (now >= stateUntil.current) {
           state.current = "STRIKE";
           stateUntil.current = now + COMBAT.boss.activeMs;
+          sfx.bossSwing();
 
           const hit = isWithinArc(
             { x: position.current.x, z: position.current.z },
@@ -308,6 +312,15 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         ))}
         </group>
 
+        {/* Its own generated armament. The weapon a boss swings is made of the
+            same material the relic will be forged from, so what hits you
+            foreshadows what you take from it. */}
+        <BossWeapon
+          slug={bossSlug}
+          weaponClass={bossAt(bossLevel ?? 1).weaponClass}
+          height={2.75}
+        />
+
         {/* The core stays in both cases: it is the hit-feedback surface, and
             it reads as the thing you are actually breaking. */}
         <mesh ref={coreMesh} position={[0, 2.0, 0.58]}>
@@ -324,7 +337,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
 
       {/* Attack telegraph, flat on the floor and scaled to the boss's reach. */}
       <mesh ref={dangerRing} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} visible={false}>
-        <ringGeometry args={[COMBAT.boss.reach - 0.5, COMBAT.boss.reach, 48]} />
+        <ringGeometry args={[COMBAT.boss.reach - 1.4, COMBAT.boss.reach, 56]} />
         <meshBasicMaterial color={theme.bossCore} transparent opacity={0.4} toneMapped={false} side={2} />
       </mesh>
 

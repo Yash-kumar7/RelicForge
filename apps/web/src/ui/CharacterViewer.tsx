@@ -12,7 +12,7 @@ import type { WeaponClass } from "@relic/core";
  */
 export type HeldWeaponSpec =
   | { kind: "iron" }
-  | { kind: "relic"; url: string; weaponClass: WeaponClass };
+  | { kind: "relic"; url: string; weaponClass: WeaponClass; scale?: number };
 
 /**
  * Interactive viewer for a generated character.

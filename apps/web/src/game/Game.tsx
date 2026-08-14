@@ -27,6 +27,7 @@ import { LiveRelicPanel } from "../ui/LiveRelicPanel";
 import { DebugOverlay } from "../debug/DebugOverlay";
 import { DamageNumbers } from "../ui/DamageNumbers";
 import { DamageFlash } from "../ui/DamageFlash";
+import { TelegraphWarning } from "../ui/TelegraphWarning";
 import { LoadoutPanel } from "../ui/LoadoutPanel";
 import { useLoadout } from "../state/useLoadout";
 import { useProgress } from "../state/useProgress";
@@ -213,6 +214,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
       <PauseOverlay />
       <DamageNumbers />
       <DamageFlash />
+      <TelegraphWarning />
       <LoadoutPanel />
       <DebugOverlay />
 

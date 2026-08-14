@@ -248,6 +248,7 @@ export function TitleScreen() {
                     */}
                     {selected && (
                       <BossPreview
+                        level={boss.level}
                         title={boss.title}
                         accent={boss.accent}
                         className="h-72 w-full border-b border-ember-500/30 bg-ash-950"

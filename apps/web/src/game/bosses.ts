@@ -20,8 +20,14 @@ export interface BossLevel {
   hp: number;
   damage: number;
   speed: number;
-  /** Core and eye colour; the arena palette still comes from your affinity. */
+  /** Core and eye colour. */
   accent: string;
+  /**
+   * The weapon it carries, generated separately so it can be socketed rather
+   * than fused into the body mesh. Its class drives the grip heuristic, exactly
+   * as it does for a relic.
+   */
+  weaponClass: "greatsword" | "spear" | "warhammer";
 }
 
 export const BOSSES: BossLevel[] = [
@@ -34,6 +40,7 @@ export const BOSSES: BossLevel[] = [
     damage: 1,
     speed: 1,
     accent: "#ff4d1a",
+    weaponClass: "greatsword",
   },
   {
     level: 2,
@@ -44,6 +51,7 @@ export const BOSSES: BossLevel[] = [
     damage: 1.15,
     speed: 1.15,
     accent: "#2f8fd0",
+    weaponClass: "spear",
   },
   {
     level: 3,
@@ -54,6 +62,7 @@ export const BOSSES: BossLevel[] = [
     damage: 1.3,
     speed: 1.1,
     accent: "#d8b02a",
+    weaponClass: "spear",
   },
   {
     level: 4,
@@ -64,6 +73,7 @@ export const BOSSES: BossLevel[] = [
     damage: 1.4,
     speed: 0.95,
     accent: "#5fae5a",
+    weaponClass: "warhammer",
   },
   {
     level: 5,
@@ -74,6 +84,7 @@ export const BOSSES: BossLevel[] = [
     damage: 1.75,
     speed: 1.3,
     accent: "#a855f7",
+    weaponClass: "greatsword",
   },
 ];
 

@@ -83,7 +83,8 @@ export function PreFightBriefing() {
               ["Mouse", "look"],
               ["Left click", "light attack"],
               ["Right click", "heavy attack"],
-              ["Space", "dodge · brief invulnerability"],
+              ["Space", "jump"],
+              ["Shift", "dodge · brief invulnerability"],
               ["Q", "heal · 2 charges"],
               ["V", "first or third person"],
             ].map(([key, action]) => (

@@ -10,26 +10,29 @@ export const COMBAT = {
     maxHp: 100,
     moveSpeed: 5.2,
     dodgeSpeed: 15,
+    jumpSpeed: 6.2,
+    gravity: 18,
     dodgeDurationMs: 300,
     dodgeCooldownMs: 1200,
     healAmount: 30,
     healCharges: 2,
   },
+  // Reach must exceed the boss's standoff distance or attacks cannot land.
   lightAttack: {
     damage: 25,
     windupMs: 120,
     activeMs: 140,
     recoveryMs: 180,
-    reach: 3.2,
-    arcDeg: 110,
+    reach: 4.2,
+    arcDeg: 130,
   },
   heavyAttack: {
     damage: 60,
     windupMs: 420,
     activeMs: 180,
     recoveryMs: 380,
-    reach: 3.8,
-    arcDeg: 140,
+    reach: 4.8,
+    arcDeg: 160,
   },
   boss: {
     maxHp: 1000,
@@ -39,8 +42,11 @@ export const COMBAT = {
     damage: 22,
     reach: 4.2,
     moveSpeed: 2.3,
-    /** Keeps the boss from standing inside the player. */
-    preferredRange: 3.4,
+    /**
+     * Close enough that a light attack reaches it, far enough that it is not
+     * standing inside the player. Must stay below lightAttack.reach.
+     */
+    preferredRange: 3.1,
   },
 } as const;
 

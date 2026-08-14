@@ -47,7 +47,15 @@ export function HeldWeapon({
     );
   }
 
-  return <HeldRelic url={weapon.url} weaponClass={weapon.weaponClass} hand={hand} tilt={tilt} />;
+  return (
+    <HeldRelic
+      url={weapon.url}
+      weaponClass={weapon.weaponClass}
+      hand={hand}
+      tilt={tilt}
+      scale={weapon.scale ?? 1}
+    />
+  );
 }
 
 function HeldRelic({
@@ -55,14 +63,16 @@ function HeldRelic({
   weaponClass,
   hand,
   tilt,
+  scale,
 }: {
   url: string;
   weaponClass: WeaponClass;
   hand: [number, number, number];
   tilt: [number, number, number];
+  scale: number;
 }) {
   return (
-    <group position={hand} rotation={tilt}>
+    <group position={hand} rotation={tilt} scale={scale}>
       <HeldRelicMesh url={url} weaponClass={weaponClass} />
     </group>
   );

@@ -82,6 +82,18 @@ export function subscribePops(listener: (pops: DamagePop[]) => void): () => void
   return () => popListeners.delete(listener);
 }
 
+/** Boss wind-up, so the UI can warn even when the boss is off screen. */
+const telegraphListeners = new Set<(at: number) => void>();
+
+export function registerTelegraph(): void {
+  telegraphListeners.forEach((listener) => listener(performance.now()));
+}
+
+export function subscribeTelegraph(listener: (at: number) => void): () => void {
+  telegraphListeners.add(listener);
+  return () => telegraphListeners.delete(listener);
+}
+
 export function resetFeedback(): void {
   pops.length = 0;
   playerHurt.at = 0;

@@ -25,7 +25,7 @@ import { HeldRelicMesh } from "./HeldRelicMesh";
  * person distance, and it is the same constraint the boss works under.
  */
 
-const AVATAR_HEIGHT = 1.75;
+const AVATAR_HEIGHT = 1.9;
 
 export function PlayerAvatar() {
   const affinity = useGameStore((s) => s.affinity);
@@ -74,7 +74,9 @@ function AvatarBody({
     // The avatar stands where the player is, on the floor rather than at eye
     // height, and faces where the camera looks.
     g.position.set(playerHandle.position.x, 0, playerHandle.position.z);
-    g.rotation.y = Math.atan2(playerHandle.forward.x, playerHandle.forward.z) + Math.PI;
+    // The mesh faces +Z at rotation zero, which is exactly what atan2 gives
+    // for a direction vector. Adding PI turned the champion backwards.
+    g.rotation.y = Math.atan2(playerHandle.forward.x, playerHandle.forward.z);
 
     if (!body.current) return;
     const t = clock.getElapsedTime();

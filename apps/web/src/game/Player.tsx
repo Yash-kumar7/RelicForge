@@ -46,6 +46,8 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
   const pitch = useRef(0);
   const velocity = useRef(new Vector3());
   const dodge = useRef({ until: 0, readyAt: 0, dir: new Vector3() });
+  const vertical = useRef(0);
+  const grounded = useRef(true);
   const attackLanded = useRef(false);
   const healCharges = useRef<number>(COMBAT.player.healCharges);
 
@@ -65,7 +67,12 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
       if (state.phase !== "FIGHTING" || !state.combatActive) return;
       const now = performance.now();
 
-      if (e.code === "Space" && now >= dodge.current.readyAt) {
+      if (e.code === "Space" && grounded.current) {
+        vertical.current = COMBAT.player.jumpSpeed;
+        grounded.current = false;
+      }
+
+      if ((e.code === "ShiftLeft" || e.code === "ShiftRight") && now >= dodge.current.readyAt) {
         const dir = new Vector3(
           (keys.current["KeyD"] ? 1 : 0) - (keys.current["KeyA"] ? 1 : 0),
           0,
@@ -177,7 +184,23 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
         playerHandle.position.x *= scale;
         playerHandle.position.z *= scale;
       }
-      playerHandle.position.y = 1.7;
+      /**
+       * Vertical motion is integrated separately from the ground plane so a
+       * jump cannot be cancelled by the arena clamp. Eye height is 1.7 when
+       * standing, and playerHandle.position stays the authoritative position
+       * every hit test reads.
+       */
+      if (!grounded.current || vertical.current !== 0) {
+        vertical.current -= COMBAT.player.gravity * delta;
+        playerHandle.position.y += vertical.current * delta;
+        if (playerHandle.position.y <= 1.7) {
+          playerHandle.position.y = 1.7;
+          vertical.current = 0;
+          grounded.current = true;
+        }
+      } else {
+        playerHandle.position.y = 1.7;
+      }
 
       /* ------------------------------------------------------ attack */
       const attack = playerHandle.attacking;

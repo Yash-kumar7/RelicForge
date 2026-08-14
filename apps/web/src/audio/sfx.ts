@@ -104,6 +104,18 @@ export const sfx = {
     tone({ frequency: 180, sweepTo: 60, duration: 0.32, type: "sawtooth", gain: 0.16 });
   },
 
+  /** Wind-up. Rising, so it reads as "about to happen" rather than "happened". */
+  telegraph: () => {
+    tone({ frequency: 90, sweepTo: 340, duration: 0.75, type: "sawtooth", gain: 0.16 });
+    tone({ frequency: 180, sweepTo: 500, duration: 0.7, type: "triangle", gain: 0.08, delay: 0.05 });
+  },
+
+  /** The swing itself, distinct from the wind-up. */
+  bossSwing: () => {
+    noise(0.34, 0.24, 1100);
+    tone({ frequency: 150, sweepTo: 46, duration: 0.36, type: "sawtooth", gain: 0.2 });
+  },
+
   hitBoss: () => {
     tone({ frequency: 160, sweepTo: 70, duration: 0.2, type: "square", gain: 0.18 });
     noise(0.12, 0.22, 3200);

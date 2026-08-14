@@ -137,7 +137,7 @@ export function Hud() {
         // attention during the fight.
         <div className="absolute bottom-8 right-8 text-right font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-stone-700">
           <div>LMB light · RMB heavy</div>
-          <div>Space dodge · Q heal</div>
+          <div>Space jump · Shift dodge · Q heal</div>
           <div>V view</div>
         </div>
       )}
