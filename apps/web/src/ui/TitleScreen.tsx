@@ -206,7 +206,12 @@ export function TitleScreen() {
         {/* Right: affinity, then quarry, then descend. */}
         <div className="flex flex-col">
           <section>
-            <p className={`${SECTION_HEADING} mb-2`}>Choose your affinity</p>
+            {/*
+              Affinity is the field name and the fiction, but on a first-run
+              screen it explains nothing. The choice is an element, so it says
+              element, and the cards carry the flavour instead.
+            */}
+            <p className={`${SECTION_HEADING} mb-2`}>Choose your element</p>
             {/*
               Stated once rather than repeated in all three cards.
               Without it the champion's damage and the armament panel's damage
@@ -214,9 +219,8 @@ export function TitleScreen() {
               screen explains which one the fight will actually use.
             */}
             <p className="mt-2 text-[10px] leading-relaxed text-stone-600">
-              Bare-handed numbers, before your armament. Whatever you carry
-              changes them, and the relic below shows the totals you will
-              actually swing.
+              Numbers below are for bare hands. The weapon you carry changes
+              them, and the panel underneath shows what you will actually swing.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {AFFINITIES.map((a) => (
@@ -277,9 +281,13 @@ export function TitleScreen() {
           </div>
 
           <section className="mt-8">
-            <p className={`${SECTION_HEADING} mb-2`}>Choose your quarry</p>
+            {/*
+              "Quarry" is a hunting word most players will not have met, and it
+              was doing no work that "who you fight" does not do better.
+            */}
+            <p className={`${SECTION_HEADING} mb-2`}>Choose who you fight</p>
             <p className="mt-2 text-[11px] leading-relaxed text-stone-600">
-              Each boss forges a different kind of weapon. What you kill becomes part of what you
+              Each one forges a different kind of weapon. What you kill becomes part of what you
               carry.
             </p>
 

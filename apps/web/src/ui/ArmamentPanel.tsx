@@ -40,7 +40,11 @@ export function ArmamentPanel() {
 
   return (
     <section>
-      <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Your armament</p>
+      {/*
+        "Armament" is the state field's name, not a word a player would reach
+        for. The panel is about the thing in your hands, so it says so.
+      */}
+      <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Your weapon</p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {/* The blade you always have. Selecting it unequips the relic. */}
@@ -105,7 +109,7 @@ export function ArmamentPanel() {
                 something they can decide with.
               */}
               <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
-                with this relic, in hand
+carrying this weapon
               </p>
               <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.12em]">
                 <div className="flex justify-between">
