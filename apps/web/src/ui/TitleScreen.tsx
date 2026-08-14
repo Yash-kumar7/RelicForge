@@ -7,6 +7,7 @@ import { TitleShowcase } from "./TitleShowcase";
 import { ChampionPreview } from "./ChampionPreview";
 import { TitleBackdrop } from "./TitleBackdrop";
 import { BossPortrait } from "./BossPortrait";
+import { BossPreview } from "./BossPreview";
 import { rankFor } from "../state/useProgress";
 import { useProgress } from "../state/useProgress";
 
@@ -242,10 +243,10 @@ export function TitleScreen() {
                       this screen.
                     */}
                     {selected && unlocked && (
-                      <BossPortrait
+                      <BossPreview
                         title={boss.title}
-                        locked={false}
-                        className="h-64 w-full border-b border-ember-500/30"
+                        accent={boss.accent}
+                        className="h-72 w-full border-b border-ember-500/30 bg-ash-950"
                       />
                     )}
 
