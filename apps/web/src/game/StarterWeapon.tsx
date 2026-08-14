@@ -3,7 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Group } from "three";
 import { weaponSway } from "@relic/core";
 import { playerHandle } from "./Player";
-import { attackSpec } from "./combat";
+import { swingProgress } from "./swing";
 import { useGameStore } from "../state/useGameStore";
 import { themeFor } from "./theme";
 import { IronSwordMesh } from "./IronSwordMesh";
@@ -36,20 +36,7 @@ export function StarterWeapon() {
 
     const sway = weaponSway(clock.getElapsedTime(), playerHandle.moving);
 
-    let swing = 0;
-    const attack = playerHandle.attacking;
-    if (attack) {
-      const spec = attackSpec(attack.kind);
-      const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
-      const t = Math.min(1, (performance.now() - attack.startedAt) / total);
-      const windupPortion = spec.windupMs / total;
-      // Pull back, then commit. Heavy swings travel further.
-      const amplitude = attack.kind === "heavy" ? 2.9 : 2.1;
-      swing =
-        t < windupPortion
-          ? -(t / windupPortion) * 0.6
-          : Math.sin(((t - windupPortion) / (1 - windupPortion)) * Math.PI) * amplitude - 0.6;
-    }
+    const swing = swingProgress(playerHandle.attacking);
 
     group.translateX(0.32 + sway.x);
     group.translateY(-0.42 + sway.y);

@@ -5,6 +5,7 @@ import { useGameStore } from "../state/useGameStore";
 import { ARENA_RADIUS } from "./Arena";
 import { COMBAT, attackSpec, isWithinArc, type AttackKind } from "./combat";
 import { sfx } from "../audio/sfx";
+import { registerDodge } from "./feedback";
 
 /**
  * First-person player.
@@ -88,6 +89,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
         // fast sidestep and the telemetry stops meaning "played evasively".
         playerHandle.invulnerableUntil = now + COMBAT.player.dodgeDurationMs;
         recordDodge();
+        registerDodge();
         sfx.dodge();
       }
 

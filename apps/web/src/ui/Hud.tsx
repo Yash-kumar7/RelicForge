@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { PLAYER_MAX_HP, useGameStore } from "../state/useGameStore";
 import { bossTitleFor } from "../game/bosses";
 import { accentFor, themeForBoss } from "../game/theme";
 import { useLoadout } from "../state/useLoadout";
+import { COMBAT } from "../game/combat";
+import { lastDodge } from "../game/feedback";
 
 /**
  * Minimal HUD. The relic should hold the frame, not the interface.
@@ -11,6 +14,35 @@ import { useLoadout } from "../state/useLoadout";
  * battle-worn or shattered. A player choosing whether to push on at 22% needs
  * to know it is 22 and not "about a fifth".
  */
+/** Dodge count plus a cooldown bar, so both the input and its recharge read. */
+function DodgeReadout({ count }: { count: number }) {
+  const [now, setNow] = useState(() => performance.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(performance.now()), 80);
+    return () => clearInterval(timer);
+  }, []);
+
+  const since = now - lastDodge.at;
+  const cooling = lastDodge.at > 0 && since < COMBAT.player.dodgeCooldownMs;
+  const ready = cooling ? since / COMBAT.player.dodgeCooldownMs : 1;
+
+  return (
+    <div className="mt-2">
+      <div className="flex items-baseline justify-between font-mono text-[9px] uppercase tracking-[0.2em]">
+        <span className="text-stone-700">dodges</span>
+        <span className={cooling ? "text-stone-600" : "text-stone-300"}>{count}</span>
+      </div>
+      <div className="mt-1 h-[2px] w-full bg-ash-800">
+        <div
+          className={cooling ? "h-[2px] bg-stone-600" : "h-[2px] bg-frost-400"}
+          style={{ width: `${Math.min(100, ready * 100)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function Hud() {
   const phase = useGameStore((s) => s.phase);
   const playerHp = useGameStore((s) => s.playerHp);
@@ -34,6 +66,7 @@ export function Hud() {
   if (phase !== "FIGHTING" && phase !== "EQUIPPED") return null;
 
   const fighting = phase === "FIGHTING";
+  const telemetry = useGameStore((s) => s.telemetry);
   const playerPct = Math.round((playerHp / PLAYER_MAX_HP) * 100);
   const bossPct = Math.ceil((bossHp / Math.max(1, bossMaxHp)) * 100);
   const bossName = bossTitleFor(bossLevel ?? 1, affinity);
@@ -95,9 +128,15 @@ export function Hud() {
           />
         </div>
         {fighting && (
-          <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
-            relic → {conditionBand}
-          </p>
+          <>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
+              relic → {conditionBand}
+            </p>
+            {/* Dodge had no readout, so a player could not tell whether it had
+                registered at all, and it is one of the inputs that decides the
+                relic. */}
+            <DodgeReadout count={telemetry.dodges} />
+          </>
         )}
       </div>
 

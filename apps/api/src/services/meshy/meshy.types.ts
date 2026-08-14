@@ -76,6 +76,36 @@ export const MeshTaskSchema = z
   .passthrough();
 export type MeshTask = z.infer<typeof MeshTaskSchema>;
 
+/**
+ * Rigging task. Shaped differently from generation tasks: the payload lives
+ * under `result`, and the free walking and running clips arrive as separate
+ * skinned GLBs rather than as clips inside the rigged model.
+ */
+export const RigTaskSchema = z
+  .object({
+    id: z.string(),
+    status: TaskStatusSchema,
+    progress: z.number().nullish(),
+    task_error: TaskErrorSchema,
+    consumed_credits: z.number().nullish(),
+    result: z
+      .object({
+        rigged_character_glb_url: maybeUrl,
+        rigged_character_fbx_url: maybeUrl,
+        basic_animations: z
+          .object({
+            walking_glb_url: maybeUrl,
+            walking_fbx_url: maybeUrl,
+            running_glb_url: maybeUrl,
+            running_fbx_url: maybeUrl,
+          })
+          .nullish(),
+      })
+      .nullish(),
+  })
+  .passthrough();
+export type RigTask = z.infer<typeof RigTaskSchema>;
+
 /** GET /openapi/v1/{kind} — recent tasks, newest first. */
 export const TaskListSchema = z.array(z.unknown());
 

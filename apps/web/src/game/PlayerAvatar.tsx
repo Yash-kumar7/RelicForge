@@ -8,7 +8,7 @@ import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
 import { themeFor } from "./theme";
 import { playerHandle } from "./Player";
-import { attackSpec } from "./combat";
+import { swingProgress } from "./swing";
 import { IronSwordMesh } from "./IronSwordMesh";
 import { HeldRelicMesh } from "./HeldRelicMesh";
 
@@ -63,6 +63,7 @@ function AvatarBody({
 }) {
   const root = useRef<Group>(null);
   const body = useRef<Group>(null);
+  const arm = useRef<Group>(null);
   const { scene } = useGLTF(`/assets/champions/${slug}/model.glb`);
   const model = useMemo(() => scene.clone(true), [scene]);
   const fit = useMemo(() => fitCharacter(model as Group, AVATAR_HEIGHT), [model]);
@@ -86,21 +87,19 @@ function AvatarBody({
     body.current.position.y = bob;
     body.current.rotation.z = playerHandle.moving ? Math.sin(t * 4.5) * 0.04 : 0;
 
-    // Lean into the swing. Same timing the hit test uses, so what you see is
-    // what actually connects.
-    let swing = 0;
-    const attack = playerHandle.attacking;
-    if (attack) {
-      const spec = attackSpec(attack.kind);
-      const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
-      const p = Math.min(1, (performance.now() - attack.startedAt) / total);
-      const windup = spec.windupMs / total;
-      swing =
-        p < windup
-          ? -(p / windup) * 0.35
-          : Math.sin(((p - windup) / (1 - windup)) * Math.PI) * 0.75 - 0.35;
+    // The body leans into it, and the weapon actually travels. A lean alone
+    // reads as the character flinching while damage happens by itself.
+    const swing = swingProgress(playerHandle.attacking);
+    body.current.rotation.x = swing * 0.18;
+    body.current.rotation.y = swing * -0.22;
+
+    if (arm.current) {
+      // A diagonal overhead arc: back and up on the wind-up, down and across
+      // through the strike.
+      arm.current.rotation.x = 0.2 - swing * 0.85;
+      arm.current.rotation.z = -0.3 - swing * 0.75;
+      arm.current.position.z = 0.12 + Math.max(0, swing) * 0.22;
     }
-    body.current.rotation.x = swing * 0.5;
   });
 
   return (
@@ -113,6 +112,7 @@ function AvatarBody({
 
         {/* The weapon, socketed at the estimated right hand. */}
         <group
+          ref={arm}
           position={[AVATAR_HEIGHT * 0.28, AVATAR_HEIGHT * 0.46, 0.12]}
           rotation={[0.2, 0, -0.3]}
           scale={0.9}

@@ -82,6 +82,13 @@ export function subscribePops(listener: (pops: DamagePop[]) => void): () => void
   return () => popListeners.delete(listener);
 }
 
+/** Dodge, so the HUD can confirm it registered. */
+export const lastDodge = { at: 0 };
+
+export function registerDodge(): void {
+  lastDodge.at = performance.now();
+}
+
 /** Boss wind-up, so the UI can warn even when the boss is off screen. */
 const telegraphListeners = new Set<(at: number) => void>();
 

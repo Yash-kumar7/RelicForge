@@ -11,7 +11,7 @@ import {
 } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
 import { playerHandle } from "./Player";
-import { attackSpec } from "./combat";
+import { swingProgress } from "./swing";
 
 /**
  * Mounts a generated relic in the player's hand.
@@ -66,18 +66,7 @@ export function WeaponSocket({ modelUrl, weaponClass, onNormalized }: WeaponSock
 
     // Swing: a short arc driven by the same timing the hit test uses, so what
     // you see matches what actually landed.
-    let swing = 0;
-    const attack = playerHandle.attacking;
-    if (attack) {
-      const spec = attackSpec(attack.kind);
-      const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
-      const t = Math.min(1, (performance.now() - attack.startedAt) / total);
-      const windupPortion = spec.windupMs / total;
-      swing =
-        t < windupPortion
-          ? -(t / windupPortion) * 0.5
-          : Math.sin(((t - windupPortion) / (1 - windupPortion)) * Math.PI) * 2.1 - 0.5;
-    }
+    const swing = swingProgress(playerHandle.attacking);
 
     group.translateX(pose.position[0] + sway.x);
     group.translateY(pose.position[1] + sway.y);
