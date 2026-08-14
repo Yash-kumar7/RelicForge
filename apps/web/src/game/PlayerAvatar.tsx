@@ -1,9 +1,10 @@
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import { Group } from "three";
 import type { WeaponClass } from "@relic/core";
 import { fitCharacter } from "../lib/characterFit";
+import { AnimatedCharacter } from "./AnimatedCharacter";
 import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
 import { themeFor } from "./theme";
@@ -28,6 +29,7 @@ import { HeldRelicMesh } from "./HeldRelicMesh";
 const AVATAR_HEIGHT = 1.9;
 
 export function PlayerAvatar() {
+  const [rigged, setRigged] = useState(false);
   const affinity = useGameStore((s) => s.affinity);
   const phase = useGameStore((s) => s.phase);
   const theme = themeFor(affinity);
@@ -45,9 +47,21 @@ export function PlayerAvatar() {
     return null;
   }, [phase, forgeRelic, carried]);
 
+  // A rig may not exist for every champion, so its absence must degrade to the
+  // static mesh rather than fail.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/assets/champions/${slug}/rig/walking.glb`, { method: "HEAD" })
+      .then((res) => !cancelled && setRigged(res.ok))
+      .catch(() => !cancelled && setRigged(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
   return (
     <Suspense fallback={null}>
-      <AvatarBody slug={slug} accent={theme.forge} held={held} />
+      <AvatarBody slug={slug} accent={theme.forge} held={held} rigged={rigged} />
     </Suspense>
   );
 }
@@ -56,14 +70,17 @@ function AvatarBody({
   slug,
   accent,
   held,
+  rigged,
 }: {
   slug: string;
   accent: string;
   held: { url: string; weaponClass: WeaponClass } | null;
+  rigged: boolean;
 }) {
   const root = useRef<Group>(null);
   const body = useRef<Group>(null);
   const arm = useRef<Group>(null);
+  const [walkSpeed, setWalkSpeed] = useState(0);
   const { scene } = useGLTF(`/assets/champions/${slug}/model.glb`);
   const model = useMemo(() => scene.clone(true), [scene]);
   const fit = useMemo(() => fitCharacter(model as Group, AVATAR_HEIGHT), [model]);
@@ -82,10 +99,18 @@ function AvatarBody({
     if (!body.current) return;
     const t = clock.getElapsedTime();
 
-    // Walk bob, so movement does not look like sliding.
-    const bob = playerHandle.moving ? Math.abs(Math.sin(t * 9)) * 0.06 : Math.sin(t * 1.6) * 0.012;
-    body.current.position.y = bob;
-    body.current.rotation.z = playerHandle.moving ? Math.sin(t * 4.5) * 0.04 : 0;
+    if (rigged) {
+      // A real walk cycle replaces the bob. Throttled to state changes rather
+      // than set every frame, since it crosses into React.
+      const target = playerHandle.moving ? 1.35 : 0;
+      setWalkSpeed((current) => (Math.abs(current - target) > 0.01 ? target : current));
+    } else {
+      // Fallback bob, so an unrigged character still does not look like it is
+      // sliding across the floor.
+      const bob = playerHandle.moving ? Math.abs(Math.sin(t * 9)) * 0.06 : Math.sin(t * 1.6) * 0.012;
+      body.current.position.y = bob;
+      body.current.rotation.z = playerHandle.moving ? Math.sin(t * 4.5) * 0.04 : 0;
+    }
 
     // The body leans into it, and the weapon actually travels. A lean alone
     // reads as the character flinching while damage happens by itself.
@@ -105,10 +130,18 @@ function AvatarBody({
   return (
     <group ref={root}>
       <group ref={body}>
-        <group position={fit.offset} scale={fit.scale}>
-          {/* Concepts face +Z out of the image; the root turns to face forward. */}
-          <primitive object={model} />
-        </group>
+        {rigged ? (
+          <AnimatedCharacter
+            url={`/assets/champions/${slug}/rig/walking.glb`}
+            height={AVATAR_HEIGHT}
+            speed={walkSpeed}
+          />
+        ) : (
+          <group position={fit.offset} scale={fit.scale}>
+            {/* Concepts face +Z out of the image; the root turns to face forward. */}
+            <primitive object={model} />
+          </group>
+        )}
 
         {/* The weapon, socketed at the estimated right hand. */}
         <group

@@ -80,6 +80,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   // level; the primitives stay as the fallback so a missing generation
   // degrades the look without breaking the fight.
   const [hasModel, setHasModel] = useState(false);
+  const [walking, setWalking] = useState(0);
   const onModelLoaded = useCallback((loaded: boolean) => setHasModel(loaded), []);
   const bossSlug = useMemo(
     () => bossAt(bossLevel ?? 1).title.toLowerCase().replace(/^the /, "").replace(/\s+/g, "-"),
@@ -145,7 +146,10 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         const speed = tuning.moveSpeed * (1 - stagger.current * 0.8);
         if (distance > COMBAT.boss.preferredRange) {
           position.current.addScaledVector(forward, speed * delta);
+          // Drives the walk clip, so the feet move at the speed the body does.
+          setWalking((current) => (current < 0.99 ? 1 : current));
         } else {
+          setWalking((current) => (current > 0.01 ? 0 : current));
           state.current = "TELEGRAPH";
           stateUntil.current = now + tuning.telegraphMs;
           sfx.telegraph();
@@ -260,7 +264,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   return (
     <group ref={group} position={[0, 0, -4]}>
       <group ref={body}>
-        <BossModel slug={bossSlug} onLoaded={onModelLoaded} />
+        <BossModel slug={bossSlug} walking={walking} onLoaded={onModelLoaded} />
 
         {/* Primitive fallback, hidden the moment a generated mesh loads. */}
         <group visible={!hasModel}>
