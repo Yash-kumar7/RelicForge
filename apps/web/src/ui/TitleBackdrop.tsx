@@ -78,23 +78,20 @@ function ForgeGlow() {
     light.current.intensity = 24 + Math.sin(t * 2.7) * 6 + Math.sin(t * 6.3) * 3;
   });
 
+  /**
+   * Light only, no visible geometry.
+   *
+   * An emissive box read as a stray glowing rectangle rather than as a forge:
+   * at this camera distance there is no context to tell you what the shape is,
+   * so it looked like a UI defect. The embers and the bloom carry the idea on
+   * their own, and a light source with nothing to read as a box cannot be
+   * mistaken for one.
+   */
   return (
     <group position={[0, -3.4, -4]}>
-      <mesh>
-        <boxGeometry args={[5.2, 2.6, 2]} />
-        <meshStandardMaterial color="#1a1512" roughness={0.9} metalness={0.3} />
-      </mesh>
-      {/* The mouth of the forge. Everything else in frame is lit by this. */}
-      <mesh position={[0, 0.2, 1.05]}>
-        <boxGeometry args={[3, 1.5, 0.15]} />
-        <meshStandardMaterial
-          color="#ff6b1a"
-          emissive="#ff6b1a"
-          emissiveIntensity={4}
-          toneMapped={false}
-        />
-      </mesh>
       <pointLight ref={light} position={[0, 0.6, 2]} color="#ff7a2a" distance={34} decay={2} />
+      {/* A second, dimmer source further back gives the glow some depth. */}
+      <pointLight position={[0, 1.6, -1]} color="#ff5a12" intensity={8} distance={22} decay={2} />
     </group>
   );
 }
