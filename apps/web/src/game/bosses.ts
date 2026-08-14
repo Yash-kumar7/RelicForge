@@ -79,6 +79,27 @@ export const BOSSES: BossLevel[] = [
 
 export const MAX_LEVEL = BOSSES.length;
 
+/**
+ * The same boss, marked by the affinity that came for it.
+ *
+ * Affinity deliberately does not change *which* boss you fight: the headline
+ * comparison is "same boss, different story, different relic", and swapping the
+ * enemy per affinity would confound the one variable the project is trying to
+ * isolate. What it changes is how the encounter presents, so two runs still
+ * read as two different runs.
+ */
+export const AFFINITY_EPITHET: Record<string, string> = {
+  fire: "Ember-Scarred",
+  ice: "Frost-Bound",
+  storm: "Storm-Struck",
+};
+
+export function bossTitleFor(level: number, affinity: string): string {
+  const epithet = AFFINITY_EPITHET[affinity];
+  const boss = bossAt(level);
+  return epithet ? `${boss.title}, ${epithet}` : boss.title;
+}
+
 export function bossAt(level: number): BossLevel {
   return BOSSES[Math.min(Math.max(level, 1), MAX_LEVEL) - 1]!;
 }

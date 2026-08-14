@@ -236,6 +236,8 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         dangerRing.current.scale.setScalar(scale);
         const material = dangerRing.current.material as MeshBasicMaterial;
         material.opacity = striking ? 0.85 : 0.15 + charge * 0.5;
+        // Tinted by affinity so an ember fight and a frost fight do not
+        // telegraph identically.
         material.color = new Color(striking ? "#ffffff" : theme.bossCore);
       }
     }
@@ -324,7 +326,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
       {/* Attack telegraph, flat on the floor and scaled to the boss's reach. */}
       <mesh ref={dangerRing} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} visible={false}>
         <ringGeometry args={[COMBAT.boss.reach - 0.5, COMBAT.boss.reach, 48]} />
-        <meshBasicMaterial color="#ff4d1a" transparent opacity={0.4} toneMapped={false} side={2} />
+        <meshBasicMaterial color={theme.bossCore} transparent opacity={0.4} toneMapped={false} side={2} />
       </mesh>
 
       <group ref={plates} position={[0, 1.8, 0]}>

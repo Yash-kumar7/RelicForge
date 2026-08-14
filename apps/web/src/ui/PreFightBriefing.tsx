@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
+import { bossTitleFor } from "../game/bosses";
 
 /**
  * Onboarding, in one screen.
@@ -17,6 +18,7 @@ export function PreFightBriefing() {
   const phase = useGameStore((s) => s.phase);
   const affinity = useGameStore((s) => s.affinity);
   const combatActive = useGameStore((s) => s.combatActive);
+  const bossLevel = useGameStore((s) => s.bossLevel);
   const fightStartedAt = useGameStore((s) => s.fightStartedAt);
   const armCombat = useGameStore((s) => s.armCombat);
 
@@ -61,7 +63,7 @@ export function PreFightBriefing() {
         <div className="max-w-2xl px-8 text-center">
           <p className="text-[11px] uppercase tracking-[0.45em] text-stone-600">Your objective</p>
           <h2 className={`mt-4 font-display text-4xl tracking-[0.12em] ${accent}`}>
-            DEFEAT THE ASHEN WARDEN
+            DEFEAT {bossTitleFor(bossLevel ?? 1, affinity).toUpperCase()}
           </h2>
 
           <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-stone-400">

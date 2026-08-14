@@ -1,5 +1,5 @@
 import { PLAYER_MAX_HP, useGameStore } from "../state/useGameStore";
-import { bossAt } from "../game/bosses";
+import { bossTitleFor } from "../game/bosses";
 import { themeFor } from "../game/theme";
 
 /**
@@ -25,7 +25,7 @@ export function Hud() {
   const fighting = phase === "FIGHTING";
   const playerPct = Math.round((playerHp / PLAYER_MAX_HP) * 100);
   const bossPct = Math.ceil((bossHp / Math.max(1, bossMaxHp)) * 100);
-  const boss = bossAt(bossLevel ?? 1);
+  const bossName = bossTitleFor(bossLevel ?? 1, affinity);
 
   // The thresholds the relic actually keys off, surfaced so the player can see
   // which band they are about to fall into.
@@ -40,7 +40,7 @@ export function Hud() {
           <div className="absolute left-1/2 top-8 w-[min(560px,70vw)] -translate-x-1/2">
             <div className="mb-1 flex items-baseline justify-between">
               <span className="font-display text-xs uppercase tracking-[0.4em] text-stone-400">
-                {boss.title}
+                {bossName}
               </span>
               <span className="font-mono text-xs tabular-nums text-stone-300">{bossPct}%</span>
             </div>
