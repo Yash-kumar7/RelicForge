@@ -5,6 +5,8 @@ import { useLoadout } from "../state/useLoadout";
 import { BOSSES, highestCleared, isUnlocked } from "../game/bosses";
 import { TitleShowcase } from "./TitleShowcase";
 import { ChampionPreview } from "./ChampionPreview";
+import { TitleBackdrop } from "./TitleBackdrop";
+import { BossGallery } from "./BossGallery";
 import { rankFor } from "../state/useProgress";
 import { useProgress } from "../state/useProgress";
 
@@ -59,7 +61,13 @@ export function TitleScreen() {
 
   if (phase === "TITLE") {
     return (
-      <div className="flex h-full flex-col items-center justify-center overflow-y-auto bg-ash-950 py-12">
+      <div className="relative flex h-full flex-col items-center overflow-y-auto bg-ash-950 py-12">
+        {/* Always-on motion. The showcase below needs relics to exist; the very
+            first thing a visitor sees cannot be a static page waiting on a
+            fetch. */}
+        <TitleBackdrop />
+
+        <div className="relative flex w-full flex-col items-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -144,9 +152,14 @@ export function TitleScreen() {
           </div>
         )}
 
-        <p className="absolute bottom-8 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
-          weapons generated at runtime by meshy-7
+        <div className="mt-12">
+          <BossGallery />
+        </div>
+
+        <p className="mt-12 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
+          weapons, bosses and champions generated at runtime by meshy-7
         </p>
+        </div>
       </div>
     );
   }

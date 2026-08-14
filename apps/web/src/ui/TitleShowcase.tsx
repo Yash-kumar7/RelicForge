@@ -58,9 +58,16 @@ function SpinningRelic({
 
   return (
     <group ref={pivot}>
-      <group position={gripOffset}>
-        <group quaternion={quaternion} scale={canonical.scale}>
-          <primitive object={model} />
+      {/*
+        Canonical form puts the grip at the origin and the blade above it, so a
+        camera aimed at the origin frames the handle and crops the blade.
+        Dropping the relic by half a canonical length centres the weapon.
+      */}
+      <group position={[0, -0.9, 0]}>
+        <group position={gripOffset}>
+          <group quaternion={quaternion} scale={canonical.scale}>
+            <primitive object={model} />
+          </group>
         </group>
       </group>
     </group>
@@ -95,7 +102,7 @@ export function TitleShowcase() {
 
   return (
     <div className="pointer-events-none relative h-[46vh] w-full max-w-3xl">
-      <Canvas camera={{ position: [2.6, 0.5, 2.6], fov: 40 }} gl={{ antialias: true }}>
+      <Canvas camera={{ position: [2.4, 0.2, 2.4], fov: 42 }} gl={{ antialias: true }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[4, 6, 3]} intensity={2.2} />
         <directionalLight position={[-4, 2, -3]} intensity={0.8} color="#ff8c42" />
