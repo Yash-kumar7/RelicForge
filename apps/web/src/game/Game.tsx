@@ -10,6 +10,11 @@ import { Player } from "./Player";
 import { WeaponSocket } from "./WeaponSocket";
 import { RelicPedestal } from "./RelicPedestal";
 import { Embers } from "./Embers";
+import { StarterWeapon } from "./StarterWeapon";
+import { PlayerHands } from "./PlayerHands";
+import { CameraShake } from "./CameraShake";
+import { registerHit, resetFeedback } from "./feedback";
+import { recordClear } from "./bosses";
 import { useGameStore } from "../state/useGameStore";
 import { useForgeRun } from "../forge/useForgeRun";
 import { ForgeSequence } from "../forge/ForgeSequence";
@@ -19,6 +24,9 @@ import { PreFightBriefing } from "../ui/PreFightBriefing";
 import { PauseOverlay } from "../ui/PauseOverlay";
 import { LiveRelicPanel } from "../ui/LiveRelicPanel";
 import { DebugOverlay } from "../debug/DebugOverlay";
+import { DamageNumbers } from "../ui/DamageNumbers";
+import { LoadoutPanel } from "../ui/LoadoutPanel";
+import { useLoadout } from "../state/useLoadout";
 import { sfx, unlockAudio } from "../audio/sfx";
 
 /**
@@ -73,8 +81,11 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
 
   const onHitBoss = useCallback(
     (kind: "light" | "heavy", damage: number) => {
-      boss.current?.hit();
+      boss.current?.hit(kind);
       sfx.hitBoss();
+      // Impact arrives on four channels at once: sound, a staggering boss,
+      // a floating number, and a shaken camera. Any one alone reads as weak.
+      registerHit(damage, kind);
       damageBoss(damage, kind);
     },
     [damageBoss],
@@ -87,8 +98,33 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
 
   const claim = useCallback(() => {
     sfx.equip();
+    const state = useGameStore.getState();
+    const { forge: f } = state;
+    // The relic is yours from here: it persists across runs and shows up in
+    // the loadout on every later fight.
+    if (f.relicId && f.name && f.dna && f.modelUrl) {
+      useLoadout.getState().claim({
+        relicId: f.relicId,
+        name: f.name,
+        dna: f.dna,
+        modelUrl: f.modelUrl,
+        conceptUrl: f.conceptUrl,
+        forgedMs: f.cached ? null : f.totalMs,
+        earnedAt: Date.now(),
+        bossLevel: state.bossLevel,
+      });
+    }
     setPhase("EQUIPPED");
   }, [setPhase]);
+
+  /* Clearing a boss unlocks the next rung of the ladder. */
+  useEffect(() => {
+    if (phase === "VICTORY") recordClear(useGameStore.getState().bossLevel);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase === "FIGHTING") resetFeedback();
+  }, [phase]);
 
   const relicReady = Boolean(forge.modelUrl && forge.dna);
   const showPedestal = relicReady && forge.stage === "COMPLETE" && phase !== "EQUIPPED";
@@ -106,6 +142,11 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
           <Arena />
           <Boss ref={boss} />
           <Player bossPosition={bossPosition} onHitBoss={onHitBoss} />
+          <CameraShake />
+          <PlayerHands />
+          {/* The blade you arrive with — plain, mass-produced, and exactly the
+              thing the generated relic is meant to replace. */}
+          <StarterWeapon />
           <Embers active={phase !== "FIGHTING"} />
 
           {showPedestal && (
@@ -134,6 +175,8 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
       <LiveRelicPanel />
       <PreFightBriefing />
       <PauseOverlay />
+      <DamageNumbers />
+      <LoadoutPanel />
       <DebugOverlay />
 
       {(phase === "FORGING" || phase === "VICTORY") && <ForgeSequence onClaim={claim} />}

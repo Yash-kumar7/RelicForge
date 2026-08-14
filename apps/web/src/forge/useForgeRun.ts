@@ -24,7 +24,7 @@ export function useForgeRun() {
       patchForge({ stage: "ANALYZING" });
 
       try {
-        const relic = await requestRelic(telemetry, "the Ashen Warden", mode);
+        const relic = await requestRelic(telemetry, useGameStore.getState().boss().name, mode);
 
         patchForge({
           relicId: relic.relicId,

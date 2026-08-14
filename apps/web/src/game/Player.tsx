@@ -47,7 +47,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
   const velocity = useRef(new Vector3());
   const dodge = useRef({ until: 0, readyAt: 0, dir: new Vector3() });
   const attackLanded = useRef(false);
-  const healCharges = useRef(COMBAT.player.healCharges);
+  const healCharges = useRef<number>(COMBAT.player.healCharges);
 
   const phase = useGameStore((s) => s.phase);
   const combatActive = useGameStore((s) => s.combatActive);

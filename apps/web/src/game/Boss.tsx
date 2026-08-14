@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle, useMemo, useRef, useState, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Color, Group, Mesh, MeshStandardMaterial, Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
@@ -6,43 +6,96 @@ import { COMBAT, isWithinArc } from "./combat";
 import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
 import { themeFor } from "./theme";
+import { registerPlayerHurt } from "./feedback";
+import { bossAt } from "./bosses";
+import { BossModel } from "./BossModel";
 
 /**
  * The Ashen Warden.
  *
- * A three-state loop — approach, telegraph, strike — built from primitives.
- * It only has to be readable enough that surviving at 8% health feels earned;
- * anything more elaborate is polish spent on the wrong half of the demo.
+ * Still primitives — spending Meshy generations on the boss would blur the one
+ * moment that matters — but arranged to read as a hulking armoured figure
+ * rather than a capsule: heavy torso, pauldrons, horns, an exposed core, and a
+ * ring of broken plates orbiting on their own axis.
+ *
+ * Behaviour is a three-state loop. Readability beats depth here: the player has
+ * to see the wind-up coming for dodging to be a real decision, and surviving at
+ * 8% health has to feel earned rather than arbitrary.
  */
 
 type BossState = "APPROACH" | "TELEGRAPH" | "STRIKE" | "RECOVER" | "DYING";
 
 export interface BossHandle {
   position: () => Vector3;
-  hit: () => void;
+  hit: (kind: "light" | "heavy") => void;
 }
 
 export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   const group = useRef<Group>(null);
+  const body = useRef<Group>(null);
+  const plates = useRef<Group>(null);
   const coreMesh = useRef<Mesh>(null);
   const position = useRef(new Vector3(0, 0, -4));
   const state = useRef<BossState>("APPROACH");
   const stateUntil = useRef(0);
   const hitFlash = useRef(0);
+  const stagger = useRef(0);
+  const knockback = useRef(new Vector3());
   const deathAt = useRef(0);
 
   const phase = useGameStore((s) => s.phase);
   const bossHp = useGameStore((s) => s.bossHp);
   const combatActive = useGameStore((s) => s.combatActive);
   const affinity = useGameStore((s) => s.affinity);
+  const bossLevel = useGameStore((s) => s.bossLevel);
   const theme = themeFor(affinity);
+  // Resolved once per run rather than recomputed every frame. Faster bosses
+  // also telegraph for less time, which is what actually makes them harder.
+  const tuning = useMemo(() => {
+    const level = bossAt(bossLevel);
+    return {
+      damage: Math.round(COMBAT.boss.damage * level.damage),
+      moveSpeed: COMBAT.boss.moveSpeed * level.speed,
+      telegraphMs: Math.round(COMBAT.boss.telegraphMs / level.speed),
+    };
+  }, [bossLevel]);
 
   useImperativeHandle(ref, () => ({
     position: () => position.current,
-    hit: () => {
+    hit: (kind) => {
       hitFlash.current = 1;
+      // Heavy hits visibly rock it. Without a reaction the boss absorbs
+      // everything silently and the fight feels inert no matter the numbers.
+      stagger.current = kind === "heavy" ? 1 : 0.45;
+      const away = new Vector3()
+        .subVectors(position.current, playerHandle.position)
+        .setY(0)
+        .normalize();
+      knockback.current.addScaledVector(away, kind === "heavy" ? 0.55 : 0.2);
     },
   }));
+
+  // A generated model replaces the primitive body when one exists for this
+  // level; the primitives stay as the fallback so a missing generation
+  // degrades the look without breaking the fight.
+  const [hasModel, setHasModel] = useState(false);
+  const onModelLoaded = useCallback((loaded: boolean) => setHasModel(loaded), []);
+  const bossSlug = useMemo(
+    () => bossAt(bossLevel).title.toLowerCase().replace(/^the /, "").replace(/\s+/g, "-"),
+    [bossLevel],
+  );
+
+  const brokenPlates = useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, i) => ({
+        key: i,
+        angle: (i / 7) * Math.PI * 2,
+        radius: 1.5 + ((i * 13) % 5) / 12,
+        height: ((i * 29) % 9) / 7 - 0.3,
+        size: 0.22 + ((i * 17) % 7) / 26,
+      })),
+    [],
+  );
 
   useFrame((_, delta) => {
     const now = performance.now();
@@ -56,16 +109,27 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
     }
 
     if (state.current === "DYING") {
-      // Sink and fade rather than play a death animation — no rig, no clips.
-      const t = Math.min(1, (now - deathAt.current) / 1400);
-      g.position.y = -t * 2.2;
-      g.rotation.z = t * 0.5;
-      g.scale.setScalar(1 - t * 0.25);
+      // Collapse rather than a death animation — no rig, no clips.
+      const t = Math.min(1, (now - deathAt.current) / 1600);
+      g.position.y = -t * 2.4;
+      g.rotation.z = t * 0.6;
+      g.scale.setScalar(1 - t * 0.3);
+      if (plates.current) {
+        plates.current.scale.setScalar(1 + t * 2.4);
+        plates.current.rotation.y += delta * 2.2;
+      }
+      const material = coreMesh.current?.material as MeshStandardMaterial | undefined;
+      if (material) material.emissiveIntensity = Math.max(0, 5 * (1 - t));
       return;
     }
 
-    // Standing still until the player has actually begun. Attacking someone
-    // who is still reading the briefing is not difficulty, it is a bug.
+    // Damage reactions keep resolving even while combat is frozen, so a hit
+    // landed on the frame before a pause still plays out.
+    if (stagger.current > 0) stagger.current = Math.max(0, stagger.current - delta * 3.4);
+    if (hitFlash.current > 0) hitFlash.current = Math.max(0, hitFlash.current - delta * 5);
+    knockback.current.multiplyScalar(1 - Math.min(1, delta * 9));
+    position.current.add(knockback.current);
+
     if (phase !== "FIGHTING" || !combatActive) return;
 
     const toPlayer = new Vector3().subVectors(playerHandle.position, position.current);
@@ -75,17 +139,19 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
 
     switch (state.current) {
       case "APPROACH": {
+        // Staggering interrupts the advance, which is what makes a heavy
+        // attack worth its slower wind-up.
+        const speed = tuning.moveSpeed * (1 - stagger.current * 0.8);
         if (distance > COMBAT.boss.preferredRange) {
-          position.current.addScaledVector(forward, COMBAT.boss.moveSpeed * delta);
+          position.current.addScaledVector(forward, speed * delta);
         } else {
           state.current = "TELEGRAPH";
-          stateUntil.current = now + COMBAT.boss.telegraphMs;
+          stateUntil.current = now + tuning.telegraphMs;
         }
         break;
       }
       case "TELEGRAPH": {
-        // Slow drift during the wind-up so a dodge is a real decision.
-        position.current.addScaledVector(forward, COMBAT.boss.moveSpeed * 0.25 * delta);
+        position.current.addScaledVector(forward, tuning.moveSpeed * 0.25 * delta);
         if (now >= stateUntil.current) {
           state.current = "STRIKE";
           stateUntil.current = now + COMBAT.boss.activeMs;
@@ -99,8 +165,9 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
           );
           // i-frames from a dodge are checked here, at the moment of impact.
           if (hit && now >= playerHandle.invulnerableUntil) {
-            useGameStore.getState().damagePlayer(COMBAT.boss.damage);
+            useGameStore.getState().damagePlayer(tuning.damage);
             sfx.playerHurt();
+            registerPlayerHurt();
           }
         }
         break;
@@ -121,44 +188,118 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
     g.position.set(position.current.x, position.current.y, position.current.z);
     g.lookAt(playerHandle.position.x, 0, playerHandle.position.z);
 
-    // Wind-up reads as a rising glow; the strike is a lunge.
-    const material = coreMesh.current?.material as MeshStandardMaterial | undefined;
-    if (material) {
-      const charge =
-        state.current === "TELEGRAPH"
-          ? 1 - (stateUntil.current - now) / COMBAT.boss.telegraphMs
-          : state.current === "STRIKE"
-            ? 1
-            : 0.15;
-      material.emissiveIntensity = 0.4 + charge * 4;
-      material.emissive = new Color(hitFlash.current > 0 ? "#ffffff" : theme.bossCore);
-    }
-    if (hitFlash.current > 0) hitFlash.current = Math.max(0, hitFlash.current - delta * 6);
-
     const lunge = state.current === "STRIKE" ? 0.6 : 0;
     g.position.addScaledVector(forward, lunge);
+
+    /* -------------------------------------------------------- presentation */
+    const charge =
+      state.current === "TELEGRAPH"
+        ? 1 - (stateUntil.current - now) / tuning.telegraphMs
+        : state.current === "STRIKE"
+          ? 1
+          : 0;
+
+    if (body.current) {
+      // Coils on the wind-up, rocks back when staggered. Both read at a glance
+      // from across the arena, which is the whole job.
+      body.current.rotation.x = -charge * 0.22 + stagger.current * 0.3;
+      body.current.position.y = -charge * 0.18;
+      body.current.scale.setScalar(1 + charge * 0.06);
+    }
+
+    if (plates.current) {
+      // The armour agitates before it swings.
+      plates.current.rotation.y += delta * (state.current === "TELEGRAPH" ? 2.6 : 0.5);
+    }
+
+    const material = coreMesh.current?.material as MeshStandardMaterial | undefined;
+    if (material) {
+      material.emissiveIntensity = 0.4 + (charge || 0.15) * 5 + hitFlash.current * 4;
+      material.emissive = new Color(hitFlash.current > 0.4 ? "#ffffff" : theme.bossCore);
+    }
   });
 
   return (
     <group ref={group} position={[0, 0, -4]}>
-      <mesh position={[0, 1.6, 0]} castShadow>
-        <capsuleGeometry args={[0.85, 1.7, 8, 16]} />
-        <meshStandardMaterial color="#241c17" roughness={0.85} metalness={0.2} />
-      </mesh>
-      <mesh ref={coreMesh} position={[0, 2.1, 0.7]}>
-        <sphereGeometry args={[0.34, 20, 20]} />
-        <meshStandardMaterial
-          color="#3a1a0d"
-          emissive={theme.bossCore}
-          emissiveIntensity={1.2}
-          toneMapped={false}
-        />
-      </mesh>
-      {/* Shoulder mass, so the silhouette reads as a warden and not a pill. */}
-      <mesh position={[0, 2.7, 0]} rotation={[0, 0, Math.PI / 8]}>
-        <boxGeometry args={[2.3, 0.4, 0.9]} />
-        <meshStandardMaterial color="#1b1511" roughness={0.9} />
-      </mesh>
+      <group ref={body}>
+        <BossModel slug={bossSlug} onLoaded={onModelLoaded} />
+
+        {/* Primitive fallback — hidden the moment a generated mesh loads. */}
+        <group visible={!hasModel}>
+        <mesh position={[0, 1.9, 0]} castShadow>
+          <boxGeometry args={[1.5, 1.9, 1.1]} />
+          <meshStandardMaterial color="#241c17" roughness={0.85} metalness={0.35} />
+        </mesh>
+        <mesh position={[0, 0.75, 0]}>
+          <boxGeometry args={[1.05, 1.1, 0.85]} />
+          <meshStandardMaterial color="#1b1511" roughness={0.9} metalness={0.2} />
+        </mesh>
+        {[-0.4, 0.4].map((x) => (
+          <mesh key={x} position={[x, 0.2, 0]}>
+            <boxGeometry args={[0.42, 0.9, 0.5]} />
+            <meshStandardMaterial color="#181310" roughness={0.95} />
+          </mesh>
+        ))}
+        {[-1, 1].map((side) => (
+          <mesh key={`pauldron${side}`} position={[side * 1.05, 2.6, 0]} rotation={[0, 0, side * 0.4]}>
+            <boxGeometry args={[0.85, 0.55, 1.15]} />
+            <meshStandardMaterial color="#2c231c" roughness={0.75} metalness={0.5} />
+          </mesh>
+        ))}
+        {[-1, 1].map((side) => (
+          <mesh key={`arm${side}`} position={[side * 1.0, 1.6, 0.1]}>
+            <boxGeometry args={[0.42, 1.5, 0.44]} />
+            <meshStandardMaterial color="#1f1913" roughness={0.9} metalness={0.3} />
+          </mesh>
+        ))}
+        <mesh position={[0, 3.15, 0]}>
+          <boxGeometry args={[0.72, 0.62, 0.72]} />
+          <meshStandardMaterial color="#15100d" roughness={0.9} metalness={0.4} />
+        </mesh>
+        {[-1, 1].map((side) => (
+          <mesh
+            key={`horn${side}`}
+            position={[side * 0.34, 3.55, -0.05]}
+            rotation={[-0.35, 0, side * 0.55]}
+          >
+            <coneGeometry args={[0.11, 0.75, 6]} />
+            <meshStandardMaterial color="#3a2f26" roughness={0.7} metalness={0.4} />
+          </mesh>
+        ))}
+        {[-0.17, 0.17].map((x) => (
+          <mesh key={`eye${x}`} position={[x, 3.18, 0.37]}>
+            <boxGeometry args={[0.12, 0.05, 0.03]} />
+            <meshBasicMaterial color={theme.bossCore} toneMapped={false} />
+          </mesh>
+        ))}
+        </group>
+
+        {/* The core stays in both cases: it is the hit-feedback surface, and
+            it reads as the thing you are actually breaking. */}
+        <mesh ref={coreMesh} position={[0, 2.0, 0.58]}>
+          <sphereGeometry args={[0.34, 20, 20]} />
+          <meshStandardMaterial
+            color="#3a1a0d"
+            emissive={theme.bossCore}
+            emissiveIntensity={1.2}
+            toneMapped={false}
+          />
+        </mesh>
+        <pointLight position={[0, 2.0, 0.9]} color={theme.bossCore} intensity={6} distance={9} />
+      </group>
+
+      <group ref={plates} position={[0, 1.8, 0]}>
+        {brokenPlates.map((p) => (
+          <mesh
+            key={p.key}
+            position={[Math.cos(p.angle) * p.radius, p.height, Math.sin(p.angle) * p.radius]}
+            rotation={[p.angle, p.angle * 1.7, 0]}
+          >
+            <boxGeometry args={[p.size, p.size * 1.5, 0.06]} />
+            <meshStandardMaterial color="#332a22" roughness={0.8} metalness={0.55} />
+          </mesh>
+        ))}
+      </group>
     </group>
   );
 });

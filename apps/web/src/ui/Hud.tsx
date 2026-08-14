@@ -1,4 +1,5 @@
-import { BOSS_MAX_HP, PLAYER_MAX_HP, useGameStore } from "../state/useGameStore";
+import { PLAYER_MAX_HP, useGameStore } from "../state/useGameStore";
+import { bossAt } from "../game/bosses";
 import { themeFor } from "../game/theme";
 
 /**
@@ -13,6 +14,8 @@ export function Hud() {
   const phase = useGameStore((s) => s.phase);
   const playerHp = useGameStore((s) => s.playerHp);
   const bossHp = useGameStore((s) => s.bossHp);
+  const bossMaxHp = useGameStore((s) => s.bossMaxHp);
+  const bossLevel = useGameStore((s) => s.bossLevel);
   const affinity = useGameStore((s) => s.affinity);
   const theme = themeFor(affinity);
 
@@ -20,7 +23,8 @@ export function Hud() {
 
   const fighting = phase === "FIGHTING";
   const playerPct = Math.round((playerHp / PLAYER_MAX_HP) * 100);
-  const bossPct = Math.ceil((bossHp / BOSS_MAX_HP) * 100);
+  const bossPct = Math.ceil((bossHp / Math.max(1, bossMaxHp)) * 100);
+  const boss = bossAt(bossLevel);
 
   // The thresholds the relic actually keys off, surfaced so the player can see
   // which band they are about to fall into.
@@ -35,14 +39,14 @@ export function Hud() {
           <div className="absolute left-1/2 top-8 w-[min(560px,70vw)] -translate-x-1/2">
             <div className="mb-1 flex items-baseline justify-between">
               <span className="font-display text-xs uppercase tracking-[0.4em] text-stone-400">
-                The Ashen Warden
+                {boss.title}
               </span>
               <span className="font-mono text-xs tabular-nums text-stone-300">{bossPct}%</span>
             </div>
             <div className="h-[3px] w-full bg-ash-800">
               <div
                 className="h-[3px] transition-[width] duration-200"
-                style={{ width: `${(bossHp / BOSS_MAX_HP) * 100}%`, background: theme.forge }}
+                style={{ width: `${(bossHp / Math.max(1, bossMaxHp)) * 100}%`, background: theme.forge }}
               />
             </div>
           </div>

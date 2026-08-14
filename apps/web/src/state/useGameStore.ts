@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Affinity, CombatTelemetry, RelicDNA, RelicTransform } from "@relic/core";
+import { bossAt, type BossLevel } from "../game/bosses";
 
 /**
  * Game phase, combat telemetry, and the forge lifecycle.
@@ -31,6 +32,7 @@ export type ForgeStage =
   | "FAILED";
 
 export const PLAYER_MAX_HP = 100;
+/** Base value; the live maximum is scaled by difficulty and boss level. */
 export const BOSS_MAX_HP = 1000;
 
 export interface ForgeState {
@@ -50,8 +52,11 @@ export interface ForgeState {
 interface GameState {
   phase: GamePhase;
   affinity: Affinity;
+  bossLevel: number;
   playerHp: number;
   bossHp: number;
+  /** Scaled per run, so the HUD percentage is honest at every difficulty. */
+  bossMaxHp: number;
   fightStartedAt: number | null;
   /**
    * Whether combat is actually live.
@@ -76,6 +81,8 @@ interface GameState {
 
   setPhase: (phase: GamePhase) => void;
   chooseAffinity: (affinity: Affinity) => void;
+  chooseBossLevel: (level: number) => void;
+  boss: () => BossLevel;
   startFight: () => void;
   armCombat: () => void;
   pauseCombat: () => void;
@@ -116,8 +123,10 @@ const EMPTY_FORGE: ForgeState = {
 export const useGameStore = create<GameState>((set, get) => ({
   phase: "TITLE",
   affinity: "fire",
+  bossLevel: 1,
   playerHp: PLAYER_MAX_HP,
   bossHp: BOSS_MAX_HP,
+  bossMaxHp: BOSS_MAX_HP,
   fightStartedAt: null,
   combatActive: false,
   pausedTotalMs: 0,
@@ -127,12 +136,21 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   setPhase: (phase) => set({ phase }),
   chooseAffinity: (affinity) => set({ affinity }),
+  chooseBossLevel: (bossLevel) => set({ bossLevel }),
+  boss: () => bossAt(get().bossLevel),
 
   startFight: () =>
-    set({
-      phase: "FIGHTING",
+    set((state) => {
+      // The ladder is the only difficulty knob. A separate easy/normal/hard
+      // slider would scale the same numbers while changing nothing about the
+      // weapon you earn, whereas each rung changes bossInfluence and therefore
+      // the relic itself.
+      const maxHp = Math.round(BOSS_MAX_HP * bossAt(state.bossLevel).hp);
+      return {
+      phase: "FIGHTING" as GamePhase,
       playerHp: PLAYER_MAX_HP,
-      bossHp: BOSS_MAX_HP,
+      bossHp: maxHp,
+      bossMaxHp: maxHp,
       // Deliberately null: the clock starts when combat is armed, not when the
       // briefing appears, or reading time would inflate fightDuration.
       fightStartedAt: null,
@@ -141,6 +159,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       pausedAt: null,
       telemetry: { ...EMPTY_TELEMETRY },
       forge: { ...EMPTY_FORGE },
+      };
     }),
 
   armCombat: () =>
@@ -228,6 +247,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       phase: "TITLE",
       playerHp: PLAYER_MAX_HP,
       bossHp: BOSS_MAX_HP,
+      bossMaxHp: BOSS_MAX_HP,
       fightStartedAt: null,
       combatActive: false,
       pausedTotalMs: 0,
