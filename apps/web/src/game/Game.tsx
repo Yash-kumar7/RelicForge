@@ -9,6 +9,7 @@ import { Boss, type BossHandle } from "./Boss";
 import { Player } from "./Player";
 import { WeaponSocket } from "./WeaponSocket";
 import { RelicPedestal } from "./RelicPedestal";
+import { PersistRelicTransform } from "./PersistRelicTransform";
 import { Embers } from "./Embers";
 import { StarterWeapon } from "./StarterWeapon";
 import { PlayerHands } from "./PlayerHands";
@@ -210,12 +211,21 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
           {showPedestal && (
             <RelicPedestal modelUrl={forge.modelUrl!} weaponClass={forge.dna!.weaponClass} />
           )}
+
+          {/* Persisted regardless of camera. It used to ride on the first-person
+              socket, so with third person as the default the transform was never
+              saved at all. */}
+          {relicReady && (
+            <Suspense fallback={null}>
+              <PersistRelicTransform
+                modelUrl={forge.modelUrl!}
+                weaponClass={forge.dna!.weaponClass}
+                onComputed={onNormalized}
+              />
+            </Suspense>
+          )}
           {showEquipped && view === "first" && (
-            <WeaponSocket
-              modelUrl={forge.modelUrl!}
-              weaponClass={forge.dna!.weaponClass}
-              onNormalized={onNormalized}
-            />
+            <WeaponSocket modelUrl={forge.modelUrl!} weaponClass={forge.dna!.weaponClass} />
           )}
 
           <Environment preset="night" />

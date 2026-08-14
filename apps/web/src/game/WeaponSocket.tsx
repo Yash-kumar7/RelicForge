@@ -1,14 +1,8 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import { Group, Quaternion, Vector3 } from "three";
-import {
-  attachRelic,
-  normalizeRelic,
-  weaponSway,
-  type RelicTransform,
-  type WeaponClass,
-} from "@relic/core";
+import { attachRelic, normalizeRelic, weaponSway, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
 import { playerHandle } from "./Player";
 import { swingProgress } from "./swing";
@@ -24,10 +18,14 @@ import { swingProgress } from "./swing";
 interface WeaponSocketProps {
   modelUrl: string;
   weaponClass: WeaponClass;
-  onNormalized?: (transform: RelicTransform) => void;
 }
 
-export function WeaponSocket({ modelUrl, weaponClass, onNormalized }: WeaponSocketProps) {
+/**
+ * Persisting the canonical transform used to happen here as a side effect, which
+ * tied it to the first-person camera. It lives in PersistRelicTransform now, so
+ * this component only draws.
+ */
+export function WeaponSocket({ modelUrl, weaponClass }: WeaponSocketProps) {
   const { camera } = useThree();
   const socket = useRef<Group>(null);
   const { scene } = useGLTF(modelUrl);
@@ -42,10 +40,6 @@ export function WeaponSocket({ modelUrl, weaponClass, onNormalized }: WeaponSock
   ]);
 
   const pose = useMemo(() => attachRelic(canonical, weaponClass), [canonical, weaponClass]);
-
-  useEffect(() => {
-    onNormalized?.(canonical);
-  }, [canonical, onNormalized]);
 
   const canonicalQuat = useMemo(() => {
     const [x, y, z, w] = canonical.quaternion;
