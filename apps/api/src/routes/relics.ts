@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { CombatTelemetrySchema, OrientationHintSchema } from "@relic/core";
-import { getRelic, listRelics, patchRelic } from "../cache/fileCache.js";
+import { findArchetypeFallback, getRelic, listRelics, patchRelic } from "../cache/fileCache.js";
 import { onRelicEvent, type RelicEvent } from "../generation/events.js";
 import { retryRelic, startRelic } from "../generation/pipeline.js";
 import { currentBalance } from "../generation/credits.js";
@@ -10,6 +10,8 @@ const CreateRelicSchema = z.object({
   boss: z.string().min(1).default("the Ashen Warden"),
   telemetry: CombatTelemetrySchema,
   mode: z.enum(["dev", "hero"]).optional(),
+  /** Dev seam for exercising the failure path; spends nothing. */
+  forceFail: z.boolean().optional(),
 });
 
 /** Public shape — the browser never learns Meshy's endpoint structure. */
@@ -36,11 +38,12 @@ export async function relicRoutes(app: FastifyInstance): Promise<void> {
 
     // exactOptionalPropertyTypes distinguishes an absent key from an explicit
     // undefined, so an optional field has to be spread in rather than assigned.
-    const { boss, telemetry, mode } = parsed.data;
+    const { boss, telemetry, mode, forceFail } = parsed.data;
     const { record, cacheHit } = await startRelic({
       boss,
       telemetry,
       ...(mode ? { mode } : {}),
+      ...(forceFail ? { forceFail } : {}),
     });
     // 200 means "already exists, nothing spent"; 202 means work has started.
     return reply.status(cacheHit ? 200 : 202).send(toPublic(record));
@@ -106,6 +109,24 @@ export async function relicRoutes(app: FastifyInstance): Promise<void> {
     if (record.conceptUrl) {
       send({ type: "concept.ready", conceptUrl: record.conceptUrl, ms: record.conceptMs ?? 0 });
     }
+    /**
+     * A relic can fail faster than the client can subscribe, which is exactly
+     * what happens when the failure is early (bad payload, no credits, forced).
+     * Without replaying the terminal state the client waits forever for an
+     * event that already fired, and the forge appears to hang rather than fail.
+     */
+    if (record.status === "FAILED") {
+      const fallback = await findArchetypeFallback(record.dna.weaponClass, record.dna.element);
+      send({
+        type: "relic.failed",
+        stage: "FORGING_3D",
+        retryable: true,
+        ...(fallback ? { fallbackRelicId: fallback.relicId } : {}),
+      });
+      reply.raw.end();
+      return reply;
+    }
+
     if (record.status === "COMPLETE" && record.modelUrl) {
       send({
         type: "relic.complete",

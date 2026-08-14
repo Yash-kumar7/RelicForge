@@ -10,7 +10,13 @@ import { bossAt } from "../game/bosses";
  * sees is always the true state of a real generation, including the concept
  * image, which is a reveal in its own right rather than a loading screen.
  */
-export function ForgeSequence({ onClaim }: { onClaim: () => void }) {
+export function ForgeSequence({
+  onClaim,
+  onRetry,
+}: {
+  onClaim: () => void;
+  onRetry: () => void;
+}) {
   const forge = useGameStore((s) => s.forge);
   const telemetry = useGameStore((s) => s.telemetry);
   const playerHp = useGameStore((s) => s.playerHp);
@@ -165,13 +171,25 @@ export function ForgeSequence({ onClaim }: { onClaim: () => void }) {
         {forge.stage === "FAILED" && (
           <div className="pointer-events-auto text-center">
             <p className="text-sm text-stone-500">The forge could not hold the shape.</p>
-            <button
-              type="button"
-              onClick={onClaim}
-              className="mt-4 border border-stone-700 px-8 py-2 text-xs uppercase tracking-[0.3em] text-stone-400 hover:border-stone-500"
-            >
-              Continue
-            </button>
+            <div className="mt-5 flex justify-center gap-3">
+              {/* Retry reuses the same relic record, so the DNA and prompt are
+                  unchanged and a second attempt is the same weapon, not a
+                  different one. */}
+              <button
+                type="button"
+                onClick={onRetry}
+                className="border border-ember-500/60 px-8 py-2 text-xs uppercase tracking-[0.3em] text-ember-300 transition hover:bg-ember-500/10"
+              >
+                Stoke the forge
+              </button>
+              <button
+                type="button"
+                onClick={onClaim}
+                className="border border-stone-700 px-8 py-2 text-xs uppercase tracking-[0.3em] text-stone-400 hover:border-stone-500"
+              >
+                Walk away
+              </button>
+            </div>
           </div>
         )}
       </div>

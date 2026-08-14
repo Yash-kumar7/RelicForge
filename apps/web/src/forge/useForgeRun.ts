@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useGameStore } from "../state/useGameStore";
-import { requestRelic, saveTransform, streamRelic } from "../lib/relicClient";
+import { requestRelic, retryRelic, saveTransform, streamRelic } from "../lib/relicClient";
 import type { RelicTransform } from "@relic/core";
 
 /**
@@ -94,11 +94,61 @@ export function useForgeRun() {
     [patchForge, setPhase],
   );
 
+  /**
+   * Retries a failed forge, reusing the same relic record so its DNA, prompt and
+   * cache key are unchanged. Re-subscribes because the previous stream closed
+   * when the failure arrived.
+   */
+  const retry = useCallback(async () => {
+    const relicId = useGameStore.getState().forge.relicId;
+    if (!relicId) return;
+
+    unsubscribe.current?.();
+    patchForge({ stage: "ANALYZING", error: null, meshPercent: 0 });
+
+    try {
+      await retryRelic(relicId);
+      unsubscribe.current = streamRelic(relicId, (event) => {
+        switch (event.type) {
+          case "concept.generating":
+            patchForge({ stage: "GENERATING_CONCEPT" });
+            break;
+          case "concept.ready":
+            patchForge({ conceptUrl: event.conceptUrl, stage: "CONCEPT_READY" });
+            break;
+          case "mesh.generating":
+            patchForge({ stage: "FORGING_3D", meshPercent: 0 });
+            break;
+          case "mesh.progress":
+            patchForge({ meshPercent: event.percent });
+            break;
+          case "mesh.ready":
+            patchForge({ modelUrl: event.modelUrl, meshPercent: 100, stage: "MODEL_READY" });
+            break;
+          case "relic.complete":
+            patchForge({
+              modelUrl: event.modelUrl,
+              conceptUrl: event.conceptUrl,
+              transform: event.transform,
+              totalMs: event.totalMs,
+              stage: "COMPLETE",
+            });
+            break;
+          case "relic.failed":
+            patchForge({ stage: "FAILED", error: event.retryable ? "retryable" : "fatal" });
+            break;
+        }
+      });
+    } catch (err) {
+      patchForge({ stage: "FAILED", error: (err as Error).message });
+    }
+  }, [patchForge]);
+
   /** Persists the canonical transform so re-equipping is stable across reloads. */
   const persistTransform = useCallback((transform: RelicTransform) => {
     const relicId = useGameStore.getState().forge.relicId;
     if (relicId) void saveTransform(relicId, transform);
   }, []);
 
-  return { start, persistTransform };
+  return { start, retry, persistTransform };
 }

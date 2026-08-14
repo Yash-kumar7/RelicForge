@@ -32,6 +32,15 @@ export interface StartRelicInput {
   boss: string;
   telemetry: CombatTelemetry;
   mode?: GenerationMode;
+  /**
+   * Dev-only: forces the pipeline to fail after the DNA stage.
+   *
+   * The failure path, the retry and the archetype fallback are the parts of
+   * this system most likely to be broken and least likely to be noticed, since
+   * they only run when something has already gone wrong. This makes them
+   * reachable without unplugging the network mid-forge.
+   */
+  forceFail?: boolean;
 }
 
 export interface StartRelicResult {
@@ -72,14 +81,14 @@ export async function startRelic(input: StartRelicInput): Promise<StartRelicResu
     createdAt: Date.now(),
   });
 
-  void runGeneration(record).catch(() => {
+  void runGeneration(record, input.forceFail === true).catch(() => {
     /* runGeneration owns its own error handling */
   });
 
   return { record, cacheHit: false };
 }
 
-async function runGeneration(initial: RelicRecord): Promise<void> {
+async function runGeneration(initial: RelicRecord, forceFail = false): Promise<void> {
   const relicId = initial.relicId;
   const config = configForMode(initial.generationMode);
   const startedAt = Date.now();
@@ -91,6 +100,10 @@ async function runGeneration(initial: RelicRecord): Promise<void> {
   try {
     /* ------------------------------------------------------------ concept */
     await patchRelic(relicId, { status: "GENERATING_CONCEPT" });
+
+    if (forceFail) {
+      throw new MeshyError("Forced failure (dev seam) before any credits were spent");
+    }
 
     const conceptStart = Date.now();
     const candidates: { taskId: string; url: string }[] = [];

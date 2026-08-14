@@ -95,6 +95,12 @@ export function streamRelic(
   };
 }
 
+/** Re-runs a failed relic from the top, reusing its DNA and prompt. */
+export async function retryRelic(relicId: string): Promise<void> {
+  const res = await fetch(`/api/relics/${relicId}/retry`, { method: "POST" });
+  if (!res.ok && res.status !== 202) throw new Error(`Retry failed (${res.status})`);
+}
+
 /** Persists the client-computed canonical transform so re-equip is stable. */
 export async function saveTransform(relicId: string, transform: RelicTransform): Promise<void> {
   await fetch(`/api/relics/${relicId}/transform`, {

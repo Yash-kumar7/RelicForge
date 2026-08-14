@@ -47,7 +47,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   const forge = useGameStore((s) => s.forge);
   const damageBoss = useGameStore((s) => s.damageBoss);
   const setPhase = useGameStore((s) => s.setPhase);
-  const { start, persistTransform } = useForgeRun();
+  const { start, retry, persistTransform } = useForgeRun();
   const started = useRef(false);
 
   useEffect(() => unlockAudio(), []);
@@ -218,7 +218,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
       <LoadoutPanel />
       <DebugOverlay />
 
-      {(phase === "FORGING" || phase === "VICTORY") && <ForgeSequence onClaim={claim} />}
+      {(phase === "FORGING" || phase === "VICTORY") && <ForgeSequence onClaim={claim} onRetry={() => void retry()} />}
       {phase === "DEFEAT" && <DefeatScreen />}
 
       {phase === "EQUIPPED" && (
