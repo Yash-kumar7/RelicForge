@@ -22,7 +22,7 @@ export interface RelicResponse {
 
 export type RelicStreamEvent =
   | { type: "dna.ready"; dna: RelicDNA; name: string }
-  | { type: "concept.generating"; taskId: string }
+  | { type: "concept.generating"; taskId: string; index: number; total: number }
   | { type: "concept.ready"; conceptUrl: string; ms: number }
   | { type: "mesh.generating"; taskId: string }
   | { type: "mesh.progress"; percent: number }
@@ -93,6 +93,23 @@ export function streamRelic(
     for (const type of types) source.removeEventListener(type, handler as EventListener);
     source.close();
   };
+}
+
+/**
+ * Reads a relic's current state directly.
+ *
+ * The stream is the fast path, not the only path. A server restart or a dropped
+ * connection can end it silently, and without a way to re-read the record the UI
+ * waits forever on an event that will never arrive.
+ */
+export async function fetchRelic(relicId: string): Promise<RelicResponse | null> {
+  try {
+    const res = await fetch(`/api/relics/${relicId}`);
+    if (!res.ok) return null;
+    return (await res.json()) as RelicResponse;
+  } catch {
+    return null;
+  }
 }
 
 /** Re-runs a failed relic from the top, reusing its DNA and prompt. */

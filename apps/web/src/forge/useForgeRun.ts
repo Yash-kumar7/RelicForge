@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useGameStore } from "../state/useGameStore";
-import { requestRelic, retryRelic, saveTransform, streamRelic } from "../lib/relicClient";
+import {
+  fetchRelic,
+  requestRelic,
+  retryRelic,
+  saveTransform,
+  streamRelic,
+} from "../lib/relicClient";
 import type { RelicTransform } from "@relic/core";
 
 /**
@@ -10,12 +16,86 @@ import type { RelicTransform } from "@relic/core";
  * The stage machine is what the cinematic renders from, no booleans, so an
  * impossible on-screen state is impossible by construction.
  */
+/** No event for this long means the stream is probably dead, not merely quiet. */
+const SILENCE_BEFORE_RESYNC_MS = 25_000;
+/** Total silence after which the forge is declared failed rather than pending. */
+const SILENCE_BEFORE_FAILURE_MS = 8 * 60_000;
+
 export function useForgeRun() {
   const unsubscribe = useRef<(() => void) | null>(null);
+  const watchdog = useRef<number | null>(null);
+  const lastEventAt = useRef(0);
   const patchForge = useGameStore((s) => s.patchForge);
   const setPhase = useGameStore((s) => s.setPhase);
 
-  useEffect(() => () => unsubscribe.current?.(), []);
+  const stopWatchdog = useCallback(() => {
+    if (watchdog.current !== null) {
+      clearInterval(watchdog.current);
+      watchdog.current = null;
+    }
+  }, []);
+
+  /**
+   * Watches for a stream that has gone quiet and re-reads the record.
+   *
+   * A dev-server restart, a dropped connection or a proxy timeout ends the
+   * stream without an error the client can see, and the forge then waits on an
+   * event that will never arrive. This is what left a run sitting on "A SHAPE IS
+   * BEING IMAGINED" indefinitely. Polling only after a long silence keeps the
+   * stream as the fast path while making it impossible to hang on it.
+   */
+  const startWatchdog = useCallback(
+    (relicId: string) => {
+      stopWatchdog();
+      lastEventAt.current = performance.now();
+
+      watchdog.current = window.setInterval(() => {
+        const silence = performance.now() - lastEventAt.current;
+        if (silence < SILENCE_BEFORE_RESYNC_MS) return;
+
+        void fetchRelic(relicId).then((relic) => {
+          if (!relic) return;
+
+          if (relic.status === "COMPLETE" && relic.modelUrl) {
+            patchForge({
+              modelUrl: relic.modelUrl,
+              conceptUrl: relic.conceptUrl,
+              transform: relic.transform,
+              totalMs: relic.totalMs,
+              meshPercent: 100,
+              stage: "COMPLETE",
+            });
+            stopWatchdog();
+            return;
+          }
+
+          if (relic.status === "FAILED") {
+            patchForge({ stage: "FAILED", error: "The stream ended before the forge did" });
+            stopWatchdog();
+            return;
+          }
+
+          // Still working: the record advanced even if the stream did not, so
+          // reflect where it actually is.
+          if (relic.conceptUrl) patchForge({ conceptUrl: relic.conceptUrl });
+
+          if (silence > SILENCE_BEFORE_FAILURE_MS) {
+            patchForge({ stage: "FAILED", error: "The forge stopped responding" });
+            stopWatchdog();
+          }
+        });
+      }, 5000);
+    },
+    [patchForge, stopWatchdog],
+  );
+
+  useEffect(
+    () => () => {
+      unsubscribe.current?.();
+      stopWatchdog();
+    },
+    [stopWatchdog],
+  );
 
   const start = useCallback(
     async (mode: "dev" | "hero" = "hero") => {
@@ -55,13 +135,22 @@ export function useForgeRun() {
           return;
         }
 
+        startWatchdog(relic.relicId);
+
         unsubscribe.current = streamRelic(relic.relicId, (event) => {
+          lastEventAt.current = performance.now();
           switch (event.type) {
             case "dna.ready":
               patchForge({ dna: event.dna, name: event.name, stage: "DNA_READY" });
               break;
             case "concept.generating":
-              patchForge({ stage: "GENERATING_CONCEPT" });
+              // Carries which candidate is being imagined, so a minute of work
+              // is not a single motionless headline.
+              patchForge({
+                stage: "GENERATING_CONCEPT",
+                conceptAttempt: event.index,
+                conceptAttempts: event.total,
+              });
               break;
             case "concept.ready":
               patchForge({ conceptUrl: event.conceptUrl, stage: "CONCEPT_READY" });
@@ -83,6 +172,7 @@ export function useForgeRun() {
                 totalMs: event.totalMs,
                 stage: "COMPLETE",
               });
+              stopWatchdog();
               break;
             case "relic.failed":
               // The player sees "THE FORGE RESISTS", never a stack trace.
@@ -90,14 +180,16 @@ export function useForgeRun() {
                 stage: "FAILED",
                 error: event.retryable ? "retryable" : "fatal",
               });
+              stopWatchdog();
               break;
           }
         });
       } catch (err) {
         patchForge({ stage: "FAILED", error: (err as Error).message });
+        stopWatchdog();
       }
     },
-    [patchForge, setPhase],
+    [patchForge, setPhase, startWatchdog, stopWatchdog],
   );
 
   /**
@@ -114,7 +206,9 @@ export function useForgeRun() {
 
     try {
       await retryRelic(relicId);
+      startWatchdog(relicId);
       unsubscribe.current = streamRelic(relicId, (event) => {
+        lastEventAt.current = performance.now();
         switch (event.type) {
           case "concept.generating":
             patchForge({ stage: "GENERATING_CONCEPT" });
@@ -148,7 +242,7 @@ export function useForgeRun() {
     } catch (err) {
       patchForge({ stage: "FAILED", error: (err as Error).message });
     }
-  }, [patchForge]);
+  }, [patchForge, startWatchdog]);
 
   /** Persists the canonical transform so re-equipping is stable across reloads. */
   const persistTransform = useCallback((transform: RelicTransform) => {

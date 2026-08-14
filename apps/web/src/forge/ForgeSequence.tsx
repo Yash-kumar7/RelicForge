@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
 import { STAGE_HEADLINE, forgeLabelFor } from "./forgeCopy";
@@ -10,6 +11,24 @@ import { bossAt } from "../game/bosses";
  * sees is always the true state of a real generation, including the concept
  * image, which is a reveal in its own right rather than a loading screen.
  */
+/**
+ * Seconds since this mounted.
+ *
+ * Deliberately not the relic's real start time: what matters is that something
+ * on screen is moving while a long stage runs, not that the number is a precise
+ * measure of anything.
+ */
+function Elapsed() {
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return <span className="ml-3 text-stone-700">{seconds}s</span>;
+}
+
 export function ForgeSequence({
   onClaim,
   onRetry,
@@ -109,6 +128,26 @@ export function ForgeSequence({
                 </div>
               )}
             </motion.dl>
+          )}
+        </AnimatePresence>
+
+        {/*
+          The concept stage has no percentage to report, so it gets a candidate
+          count and an elapsed clock instead. A minute under one motionless
+          headline reads as a hang; the same minute with something moving reads
+          as work.
+        */}
+        <AnimatePresence>
+          {forge.stage === "GENERATING_CONCEPT" && forge.conceptAttempts > 0 && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mx-auto mb-6 text-center font-mono text-[11px] uppercase tracking-[0.3em] text-stone-500"
+            >
+              vision {forge.conceptAttempt} of {forge.conceptAttempts}
+              <Elapsed />
+            </motion.p>
           )}
         </AnimatePresence>
 

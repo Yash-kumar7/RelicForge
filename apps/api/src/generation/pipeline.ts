@@ -140,7 +140,14 @@ async function runGeneration(initial: RelicRecord, forceFail = false): Promise<v
     for (let i = 0; i < config.conceptCandidates; i++) {
       await assertBudget(conceptOp(config.imageModel));
       const taskId = await createConceptImage(initial.prompt, { imageModel: config.imageModel });
-      if (i === 0) emitRelicEvent(relicId, { type: "concept.generating", taskId });
+      // Emitted per candidate, not just the first: hero mode generates three
+      // sequentially, so a single event left the UI motionless for a minute.
+      emitRelicEvent(relicId, {
+        type: "concept.generating",
+        taskId,
+        index: i + 1,
+        total: config.conceptCandidates,
+      });
       const task = await waitForTask("text-to-image", taskId);
       const url = task.image_urls[0];
       if (url) candidates.push({ taskId, url });

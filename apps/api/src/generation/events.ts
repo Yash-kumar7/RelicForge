@@ -12,7 +12,7 @@ import type { RelicDNA, RelicStatus, RelicTransform } from "@relic/core";
 
 export type RelicEvent =
   | { type: "dna.ready"; dna: RelicDNA; name: string }
-  | { type: "concept.generating"; taskId: string }
+  | { type: "concept.generating"; taskId: string; index: number; total: number }
   | { type: "concept.ready"; conceptUrl: string; ms: number }
   | { type: "mesh.generating"; taskId: string }
   | { type: "mesh.progress"; percent: number }

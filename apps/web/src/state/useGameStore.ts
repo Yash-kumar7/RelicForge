@@ -45,6 +45,9 @@ export interface ForgeState {
   modelUrl: string | null;
   transform: RelicTransform | null;
   meshPercent: number;
+  /** Which concept candidate is being generated, and how many there are. */
+  conceptAttempt: number;
+  conceptAttempts: number;
   totalMs: number | null;
   cached: boolean;
   error: string | null;
@@ -127,6 +130,8 @@ const EMPTY_FORGE: ForgeState = {
   modelUrl: null,
   transform: null,
   meshPercent: 0,
+  conceptAttempt: 0,
+  conceptAttempts: 0,
   totalMs: null,
   cached: false,
   error: null,
