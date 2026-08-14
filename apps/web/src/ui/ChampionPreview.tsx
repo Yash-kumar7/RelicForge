@@ -61,7 +61,7 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
   if (available === false) return null;
 
   return (
-    <div className="relative h-[32rem] w-full cursor-grab border border-ash-800 bg-ash-900/40 active:cursor-grabbing">
+    <div className="relative h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full cursor-grab border border-ash-800 bg-ash-900/40 active:cursor-grabbing">
       {available && (
         <Canvas camera={{ position: [0, 0.35, 4.3], fov: 38 }}>
           <ambientLight intensity={0.55} />
