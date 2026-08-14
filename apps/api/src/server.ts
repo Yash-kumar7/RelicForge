@@ -4,6 +4,7 @@ import { mkdir } from "node:fs/promises";
 import { env } from "./env.js";
 import { getBalance } from "./services/meshy/meshy.balance.js";
 import { relicRoutes } from "./routes/relics.js";
+import { reapInterruptedRelics } from "./cache/fileCache.js";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -40,6 +41,9 @@ app.get("/api/health", async () => {
 });
 
 await app.register(relicRoutes);
+
+const reaped = await reapInterruptedRelics();
+if (reaped > 0) app.log.warn(`Failed ${reaped} relic(s) left in flight by a previous run`);
 
 const port = env.PORT;
 await app.listen({ port, host: "0.0.0.0" });

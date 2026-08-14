@@ -171,7 +171,34 @@ export async function findArchetypeFallback(
   );
 }
 
+/**
+ * Marks relics that were mid-generation when the process died.
+ *
+ * Generation state lives in memory, so a restart orphans anything in flight:
+ * the record sits in a non-terminal status forever and a client streaming it
+ * waits for events that will never arrive. Failing them at boot makes the
+ * situation visible and retryable instead of silent.
+ */
+export async function reapInterruptedRelics(): Promise<number> {
+  const index = await load();
+  let reaped = 0;
+
+  for (const record of Object.values(index.relics)) {
+    if (record.status === "COMPLETE" || record.status === "FAILED") continue;
+    index.relics[record.relicId] = {
+      ...record,
+      status: "FAILED",
+      error: "Interrupted by a server restart",
+    };
+    reaped++;
+  }
+
+  if (reaped > 0) await persist();
+  return reaped;
+}
+
 /** Test seam. */
 export function __resetCache(): void {
   cache = null;
+  loadedMtimeMs = 0;
 }
