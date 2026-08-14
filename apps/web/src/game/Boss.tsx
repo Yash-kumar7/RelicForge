@@ -5,7 +5,7 @@ import { useGameStore } from "../state/useGameStore";
 import { COMBAT, isWithinArc } from "./combat";
 import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
-import { themeFor } from "./theme";
+import { themeForBoss } from "./theme";
 import { registerPlayerHurt } from "./feedback";
 import { bossAt } from "./bosses";
 import { BossModel } from "./BossModel";
@@ -47,9 +47,8 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   const phase = useGameStore((s) => s.phase);
   const bossHp = useGameStore((s) => s.bossHp);
   const combatActive = useGameStore((s) => s.combatActive);
-  const affinity = useGameStore((s) => s.affinity);
   const bossLevel = useGameStore((s) => s.bossLevel);
-  const theme = themeFor(affinity);
+  const theme = themeForBoss(bossLevel ?? 1);
   // Resolved once per run rather than recomputed every frame. Faster bosses
   // also telegraph for less time, which is what actually makes them harder.
   const tuning = useMemo(() => {

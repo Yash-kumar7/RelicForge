@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { PointLight } from "three";
 import { useGameStore } from "../state/useGameStore";
-import { themeFor } from "./theme";
+import { themeForBoss } from "./theme";
 
 export const ARENA_RADIUS = 14;
 
@@ -16,18 +16,21 @@ export const ARENA_RADIUS = 14;
  */
 export function Arena() {
   const phase = useGameStore((s) => s.phase);
-  const affinity = useGameStore((s) => s.affinity);
-  const theme = themeFor(affinity);
+  const bossLevel = useGameStore((s) => s.bossLevel) ?? 1;
+  // The arena is the boss's domain, so it wears the boss's colours.
+  const theme = themeForBoss(bossLevel);
   const forgeLight = useRef<PointLight>(null);
 
   // Pillar count and jitter vary per affinity: fire is a tight brawling ring,
   // ice is open and colonnaded, storm is broken and irregular.
   const pillars = useMemo(() => {
     const config = {
-      fire: { count: 10, inset: 1.2, base: 4.8, jitter: 1.0 },
-      ice: { count: 16, inset: 0.9, base: 6.4, jitter: 0.4 },
-      storm: { count: 7, inset: 1.8, base: 3.6, jitter: 2.6 },
-    }[affinity];
+      1: { count: 10, inset: 1.2, base: 4.8, jitter: 1.0 },
+      2: { count: 16, inset: 0.9, base: 6.4, jitter: 0.4 },
+      3: { count: 12, inset: 1.0, base: 7.2, jitter: 0.6 },
+      4: { count: 8, inset: 1.6, base: 5.4, jitter: 2.2 },
+      5: { count: 6, inset: 2.0, base: 3.4, jitter: 2.8 },
+    }[bossLevel] ?? { count: 10, inset: 1.2, base: 4.8, jitter: 1.0 };
 
     return Array.from({ length: config.count }, (_, i) => {
       const angle = (i / config.count) * Math.PI * 2;
@@ -42,10 +45,10 @@ export function Arena() {
           Math.sin(angle) * (ARENA_RADIUS - config.inset),
         ] as [number, number, number],
         height: config.base + wobble * config.jitter,
-        tilt: affinity === "storm" ? (wobble - 0.5) * 0.28 : 0,
+        tilt: bossLevel >= 4 ? (wobble - 0.5) * 0.28 : 0,
       };
     });
-  }, [affinity]);
+  }, [bossLevel]);
 
   // The forge wakes when the boss dies: the arena dims and the only warm light
   // left in the scene is the thing about to make your weapon.
@@ -57,7 +60,7 @@ export function Arena() {
     const base = forgeActive ? 26 : 6;
     // Storm flickers rather than breathes.
     const pulse =
-      affinity === "storm"
+      bossLevel === 5
         ? Math.sin(t * 13) * 4 + Math.sin(t * 31) * 2
         : Math.sin(t * 3.1) * 3 + Math.sin(t * 7.7) * 1.5;
     forgeLight.current.intensity = base + pulse;

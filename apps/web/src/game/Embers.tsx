@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { AdditiveBlending, Color, InstancedMesh, Object3D } from "three";
 import { ARENA_RADIUS } from "./Arena";
 import { useGameStore } from "../state/useGameStore";
-import { themeFor } from "./theme";
+import { themeForBoss } from "./theme";
 
 /**
  * Instanced embers drifting toward the forge.
@@ -16,8 +16,8 @@ const COUNT = 400;
 export function Embers({ active }: { active: boolean }) {
   const mesh = useRef<InstancedMesh>(null);
   const dummy = useMemo(() => new Object3D(), []);
-  const affinity = useGameStore((s) => s.affinity);
-  const theme = themeFor(affinity);
+  const bossLevel = useGameStore((s) => s.bossLevel) ?? 1;
+  const theme = themeForBoss(bossLevel);
 
   const particles = useMemo(
     () =>

@@ -1,6 +1,6 @@
 import { PLAYER_MAX_HP, useGameStore } from "../state/useGameStore";
 import { bossTitleFor } from "../game/bosses";
-import { themeFor } from "../game/theme";
+import { accentFor, themeForBoss } from "../game/theme";
 import { useLoadout } from "../state/useLoadout";
 
 /**
@@ -28,7 +28,8 @@ export function Hud() {
       : carried
         ? { name: carried.name, weaponClass: carried.dna.weaponClass }
         : null;
-  const theme = themeFor(affinity);
+  const bossTheme = themeForBoss(bossLevel ?? 1);
+  const accent = accentFor(affinity);
 
   if (phase !== "FIGHTING" && phase !== "EQUIPPED") return null;
 
@@ -57,7 +58,7 @@ export function Hud() {
             <div className="h-[3px] w-full bg-ash-800">
               <div
                 className="h-[3px] transition-[width] duration-200"
-                style={{ width: `${(bossHp / Math.max(1, bossMaxHp)) * 100}%`, background: theme.forge }}
+                style={{ width: `${(bossHp / Math.max(1, bossMaxHp)) * 100}%`, background: bossTheme.forge }}
               />
             </div>
           </div>
@@ -110,7 +111,7 @@ export function Hud() {
           <>
             <p
               className="mt-1 font-display text-sm tracking-[0.18em]"
-              style={{ color: theme.forge }}
+              style={{ color: accent.primary }}
             >
               {inHand.name.toUpperCase()}
             </p>
