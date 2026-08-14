@@ -1,12 +1,12 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Group } from "three";
+import { Group, Mesh, MeshBasicMaterial } from "three";
 import type { WeaponClass } from "@relic/core";
 import { HeldRelicMesh } from "./HeldRelicMesh";
 import { IronSwordMesh } from "./IronSwordMesh";
 import { playerHandle } from "./Player";
 import { swingProgress } from "./swing";
-import { bossSwing } from "./bossState";
+import { bossState, bossSwing } from "./bossState";
 
 /**
  * A weapon in a rigged character's hand, swinging under its own power.
@@ -20,11 +20,19 @@ import { bossSwing } from "./bossState";
  * hand bone's rotation instead would hang it downward along the forearm.
  */
 
-/** Blade upright at rest, tipping forward and across as the swing travels. */
-function applySwing(group: Group, swing: number): void {
-  group.rotation.x = -0.25 - swing * 0.95;
-  group.rotation.y = -0.18;
-  group.rotation.z = -0.28 - swing * 0.55;
+/**
+ * Blade upright at rest, tipping forward and across as the swing travels.
+ *
+ * The multipliers are deliberately large. The weapon is a child of the body, so
+ * it already inherits the body's turn, and a small extra rotation on top of that
+ * is indistinguishable from the body moving on its own. To read as a swing
+ * rather than as the weapon being carried through a turn, the blade has to
+ * travel visibly further than its holder.
+ */
+function applySwing(group: Group, swing: number, scale = 1): void {
+  group.rotation.x = -0.25 - swing * 1.45 * scale;
+  group.rotation.y = -0.18 + swing * 0.35 * scale;
+  group.rotation.z = -0.28 - swing * 0.8 * scale;
 }
 
 export function PlayerHandWeapon({
@@ -60,13 +68,40 @@ export function BossHandWeaponSwing({
 }) {
   const arm = useRef<Group>(null);
 
+  const slash = useRef<Mesh>(null);
+
   useFrame(() => {
-    if (arm.current) applySwing(arm.current, bossSwing());
+    const swing = bossSwing();
+    if (arm.current) applySwing(arm.current, swing, 1.15);
+
+    /**
+     * A slash that appears only as the blow lands.
+     *
+     * The rotation alone competes with the boss's own body turn for attention.
+     * An arc that exists for a fraction of a second and nowhere else is
+     * unambiguous: it means the weapon just travelled through that space.
+     */
+    if (slash.current) {
+      const striking = bossState.action === "strike";
+      slash.current.visible = striking;
+      if (striking) {
+        const t = bossState.progress;
+        slash.current.rotation.z = -1.1 + t * 2.2;
+        const material = slash.current.material as MeshBasicMaterial;
+        material.opacity = Math.sin(Math.min(1, t) * Math.PI) * 0.75;
+      }
+    }
   });
 
   return (
     <group ref={arm} scale={1.15}>
       <HeldRelicMesh url={url} weaponClass={weaponClass} />
+
+      {/* Sits along the blade, so the arc sweeps where the weapon sweeps. */}
+      <mesh ref={slash} position={[0, 0.9, 0]} rotation={[0, 0, 0]} visible={false}>
+        <torusGeometry args={[1.1, 0.05, 6, 24, Math.PI * 0.8]} />
+        <meshBasicMaterial color="#ffd9b3" transparent opacity={0} toneMapped={false} />
+      </mesh>
     </group>
   );
 }
