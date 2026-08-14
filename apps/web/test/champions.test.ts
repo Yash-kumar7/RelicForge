@@ -76,10 +76,17 @@ describe("champions", () => {
         expect(stat.label.length).toBeGreaterThan(2);
         expect(stat.value.length).toBeGreaterThan(0);
       }
-      expect(stats.map((s) => s.label)).toContain("your health");
-      // Every label says whose number it is. "light hit" did not, so a value
-      // beside it could as easily have been what the boss does to you.
-      for (const stat of stats) expect(stat.label).toMatch(/your|you deal/);
+      expect(stats.map((s) => s.label)).toContain("health");
+      // Labels are plain words, and any value that is not a bare count carries
+      // its own unit. "38/71 dmg" and "you deal - light" both failed this by
+      // needing the reader to already know the convention.
+      for (const stat of stats) {
+        expect(stat.label).toMatch(/^[a-z ]+$/);
+        expect(stat.label).not.toContain("·");
+      }
+      for (const stat of stats.filter((s) => s.label.includes("attack"))) {
+        expect(stat.value).toContain("damage");
+      }
     }
   });
 

@@ -137,16 +137,18 @@ export function championStats(champion: Champion): ChampionStats {
 export function describeChampion(champion: Champion): { label: string; value: string }[] {
   const stats = championStats(champion);
   /*
-   * Named from the player's side of the fight.
+   * Plain words, with the unit on the value.
    *
-   * "light hit" did not say whose hit it was, so a number next to it could just
-   * as easily have been what the boss does to you, which is the reading that
-   * matters most on a screen where you are also choosing what to fight.
+   * This went through two worse versions. "light hit" never said whose hit it
+   * was, so the number beside it could as easily have been what the boss does
+   * to you. "you deal - light" said whose it was and stopped being English.
+   * Naming the action and letting the value carry the unit needs no decoding:
+   * a row reading "light attack: 30 damage" cannot be misread.
    */
   return [
-    { label: "your health", value: `${stats.health}` },
-    { label: "you deal · light", value: `${stats.lightDamage}` },
-    { label: "you deal · heavy", value: `${stats.heavyDamage}` },
+    { label: "health", value: `${stats.health}` },
+    { label: "light attack", value: `${stats.lightDamage} damage` },
+    { label: "heavy attack", value: `${stats.heavyDamage} damage` },
   ];
   /*
    * Dodge cooldown is deliberately not a row.
