@@ -126,8 +126,22 @@ export async function relicRoutes(app: FastifyInstance): Promise<void> {
       "X-Accel-Buffering": "no",
     });
 
+    /**
+     * Writes to a socket the client may already have dropped.
+     *
+     * A network drop or a closed laptop lid leaves the connection half dead, and
+     * an unguarded write throws from inside a timer callback, where there is no
+     * request context to catch it. That takes the process down instead of the
+     * connection.
+     */
+    let alive = true;
     const send = (event: RelicEvent) => {
-      reply.raw.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
+      if (!alive || reply.raw.destroyed) return;
+      try {
+        reply.raw.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
+      } catch {
+        alive = false;
+      }
     };
 
     // Replay current state so a client that connects late, or reconnects -
@@ -181,9 +195,21 @@ export async function relicRoutes(app: FastifyInstance): Promise<void> {
 
     // Proxies drop idle connections; a forge can legitimately be silent for
     // stretches of a multi-minute mesh generation.
-    const heartbeat = setInterval(() => reply.raw.write(": keep-alive\n\n"), 15_000);
+    const heartbeat = setInterval(() => {
+      if (!alive || reply.raw.destroyed) {
+        clearInterval(heartbeat);
+        return;
+      }
+      try {
+        reply.raw.write(": keep-alive\n\n");
+      } catch {
+        alive = false;
+        clearInterval(heartbeat);
+      }
+    }, 15_000);
 
     request.raw.on("close", () => {
+      alive = false;
       clearInterval(heartbeat);
       unsubscribe();
     });

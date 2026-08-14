@@ -19,6 +19,12 @@ export function useForgeRun() {
 
   const start = useCallback(
     async (mode: "dev" | "hero" = "hero") => {
+      // Close any stream still open from a previous run. Overwriting the handle
+      // without this leaks an EventSource, and the orphan keeps pushing events
+      // into the store for a relic nobody is looking at any more.
+      unsubscribe.current?.();
+      unsubscribe.current = null;
+
       const telemetry = useGameStore.getState().snapshotTelemetry();
       setPhase("FORGING");
       patchForge({ stage: "ANALYZING" });

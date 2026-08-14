@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { COMBAT, isWithinArc } from "./combat";
+import { ARENA_RADIUS } from "./Arena";
 import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
 import { themeForBoss } from "./theme";
@@ -11,6 +12,7 @@ import { setBossAction } from "./bossState";
 import { bossAt } from "./bosses";
 import { BossModel } from "./BossModel";
 import { BossWeapon, BossHandWeapon } from "./BossWeapon";
+import { BossDamagePopups } from "./BossDamagePopups";
 
 /**
  * The Ashen Warden.
@@ -100,7 +102,10 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
     [],
   );
 
-  useFrame((_, delta) => {
+  useFrame((_, rawDelta) => {
+    // Same ceiling as the player: a backgrounded tab must not let the boss
+    // cross the arena in a single frame.
+    const delta = Math.min(rawDelta, 0.05);
     const now = performance.now();
     const g = group.current;
     if (!g) return;
@@ -132,6 +137,25 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
     if (hitFlash.current > 0) hitFlash.current = Math.max(0, hitFlash.current - delta * 5);
     knockback.current.multiplyScalar(1 - Math.min(1, delta * 9));
     position.current.add(knockback.current);
+
+    /**
+     * The boss needs the same arena bound the player has.
+     *
+     * Knockback moved it and nothing held it in, so a heavy hit near the edge
+     * shoved it through the wall and the fight continued with the boss standing
+     * outside the arena. Kept slightly further in than the player's limit,
+     * because it is a wider body.
+     */
+    const bossRadial = Math.hypot(position.current.x, position.current.z);
+    const bossLimit = ARENA_RADIUS - 1.8;
+    if (bossRadial > bossLimit) {
+      const scale = bossLimit / bossRadial;
+      position.current.x *= scale;
+      position.current.z *= scale;
+      // Kill the outward component too, or it presses against the wall every
+      // frame and slides along it.
+      knockback.current.multiplyScalar(0.2);
+    }
 
     if (phase !== "FIGHTING" || !combatActive) return;
 
@@ -371,6 +395,10 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         <ringGeometry args={[COMBAT.boss.reach - 1.4, COMBAT.boss.reach, 56]} />
         <meshBasicMaterial color={theme.bossCore} transparent opacity={0.4} toneMapped={false} side={2} />
       </mesh>
+
+      {/* Damage numbers live on the boss, so a bare number cannot be mistaken
+          for anything other than damage dealt to it. */}
+      <BossDamagePopups />
 
       <group ref={plates} position={[0, 1.8, 0]}>
         {brokenPlates.map((p) => (

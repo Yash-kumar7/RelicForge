@@ -27,7 +27,6 @@ import { PreFightBriefing } from "../ui/PreFightBriefing";
 import { PauseOverlay } from "../ui/PauseOverlay";
 import { LiveRelicPanel } from "../ui/LiveRelicPanel";
 import { DebugOverlay } from "../debug/DebugOverlay";
-import { DamageNumbers } from "../ui/DamageNumbers";
 import { DamageFlash } from "../ui/DamageFlash";
 import { TelegraphWarning } from "../ui/TelegraphWarning";
 import { LoadoutPanel } from "../ui/LoadoutPanel";
@@ -234,7 +233,6 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
       <LiveRelicPanel />
       <PreFightBriefing />
       <PauseOverlay />
-      <DamageNumbers />
       <DamageFlash />
       <TelegraphWarning />
       <LoadoutPanel />

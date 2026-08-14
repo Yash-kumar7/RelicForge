@@ -57,6 +57,16 @@ export interface StartRelicResult {
  * background. Returns immediately either way so the client can open its event
  * stream before the slow work starts.
  */
+/**
+ * Relics currently being generated, keyed by cache key.
+ *
+ * Without this, two requests for the same DNA both miss the cache, both start a
+ * generation and both pay: a double-click on Claim, a reconnecting client, or
+ * two people demoing at once is enough. The cache only dedupes work that has
+ * already finished, so in-flight work needs its own guard.
+ */
+const inFlight = new Map<string, StartRelicResult>();
+
 export async function startRelic(input: StartRelicInput): Promise<StartRelicResult> {
   const mode = input.mode ?? "hero";
   const config = configForMode(mode);
@@ -72,6 +82,11 @@ export async function startRelic(input: StartRelicInput): Promise<StartRelicResu
     return { record: { ...hit, cached: true }, cacheHit: true };
   }
 
+  // Already generating this exact relic: hand back the same record so the
+  // second caller streams the first caller's work instead of paying again.
+  const pending = inFlight.get(cacheKey);
+  if (pending) return pending;
+
   const record = await putRelic({
     relicId: randomUUID(),
     cacheKey,
@@ -84,11 +99,20 @@ export async function startRelic(input: StartRelicInput): Promise<StartRelicResu
     createdAt: Date.now(),
   });
 
-  void runGeneration(record, input.forceFail === true).catch(() => {
-    /* runGeneration owns its own error handling */
-  });
+  const result: StartRelicResult = { record, cacheHit: false };
+  inFlight.set(cacheKey, result);
 
-  return { record, cacheHit: false };
+  void runGeneration(record, input.forceFail === true)
+    .catch(() => {
+      /* runGeneration owns its own error handling */
+    })
+    .finally(() => {
+      // Released on both paths: a failure that stayed in the map would block
+      // every future attempt at that relic, including a retry.
+      inFlight.delete(cacheKey);
+    });
+
+  return result;
 }
 
 async function runGeneration(initial: RelicRecord, forceFail = false): Promise<void> {

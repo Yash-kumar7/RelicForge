@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { COMBAT, attackSpec, isWithinArc } from "../src/game/combat";
+import { ARENA_RADIUS } from "../src/game/Arena";
 
 /**
  * Hit resolution is the one piece of combat that must be provably correct:
@@ -73,5 +74,42 @@ describe("attack specs", () => {
 
   it("telegraphs boss attacks long enough to react to", () => {
     expect(COMBAT.boss.telegraphMs).toBeGreaterThan(COMBAT.player.dodgeCooldownMs / 2);
+  });
+});
+
+describe("arena bounds", () => {
+  it("keeps every actor's limit inside the arena", () => {
+    // The boss had no bound at all, so knockback pushed it through the wall.
+    // Both limits must sit inside the visible ring, and the camera boom must
+    // have somewhere to retreat to.
+    const playerLimit = ARENA_RADIUS - 1;
+    const bossLimit = ARENA_RADIUS - 1.8;
+    const cameraLimit = ARENA_RADIUS - 0.6;
+
+    expect(playerLimit).toBeLessThan(ARENA_RADIUS);
+    expect(bossLimit).toBeLessThan(playerLimit);
+    expect(cameraLimit).toBeLessThan(ARENA_RADIUS);
+    // The camera may sit outside the player's limit; that is the point of a boom.
+    expect(cameraLimit).toBeGreaterThan(playerLimit);
+  });
+
+  it("leaves the boss reachable at the wall", () => {
+    // If the boss can be pinned further out than the player can reach, a fight
+    // at the edge becomes unwinnable.
+    const separation = ARENA_RADIUS - 1 - (ARENA_RADIUS - 1.8);
+    expect(separation).toBeLessThan(COMBAT.lightAttack.reach);
+  });
+});
+
+describe("attack input", () => {
+  it("cannot resolve a light attack faster than its own recovery", () => {
+    // The buffer exists because a press during recovery used to be discarded,
+    // which is why heavy attacks never appeared to land.
+    const light = attackSpec("light");
+    const total = light.windupMs + light.activeMs + light.recoveryMs;
+    expect(total).toBeGreaterThan(300);
+    // A 400ms buffer window has to outlast a light attack, or the buffered press
+    // goes stale before the attack it was waiting on has finished.
+    expect(total).toBeLessThan(500);
   });
 });

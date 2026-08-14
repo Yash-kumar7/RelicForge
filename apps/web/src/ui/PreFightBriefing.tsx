@@ -77,7 +77,15 @@ export function PreFightBriefing() {
             elegant and pristine. Watch the panel on the left change as you fight.
           </p>
 
-          <dl className="mx-auto mt-10 grid max-w-md grid-cols-2 gap-x-10 gap-y-3 text-left font-mono text-[11px] uppercase tracking-[0.15em]">
+          {/* The telegraph ring is a mechanic, and an unexplained red circle on
+              the floor reads as a graphical fault rather than a warning. */}
+          <p className="mx-auto mt-8 max-w-lg border border-red-500/30 px-4 py-3 text-[11px] leading-relaxed text-stone-400">
+            <span className="text-red-400">A ring on the ground</span> means the Warden is winding
+            up. It grows as the blow gets closer, and everything inside it will be hit. Dodge out,
+            or dodge through.
+          </p>
+
+          <dl className="mx-auto mt-8 grid max-w-md grid-cols-2 gap-x-10 gap-y-3 text-left font-mono text-[11px] uppercase tracking-[0.15em]">
             {[
               ["WASD", "move"],
               ["Mouse", "look"],
