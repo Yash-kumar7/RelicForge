@@ -167,10 +167,10 @@ export function TitleScreen() {
    * "who am I" and deserves the space.
    */
   return (
-    <div className="h-full overflow-y-auto bg-ash-950 px-6 py-8">
-      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2">
+    <div className="h-full overflow-y-auto bg-ash-950 px-6 py-6">
+      <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.25fr_1fr]">
         {/* Left: the champion, as large as the viewport allows. */}
-        <div className="lg:sticky lg:top-8 lg:self-start">
+        <div className="lg:sticky lg:top-6 lg:self-start">
           <div className="mb-3 flex items-baseline justify-between">
             <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Your champion</p>
             <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">

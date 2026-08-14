@@ -61,9 +61,9 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
   if (available === false) return null;
 
   return (
-    <div className="relative h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full cursor-grab border border-ash-800 bg-ash-900/40 active:cursor-grabbing">
+    <div className="relative h-[calc(100vh-6rem)] max-h-[60rem] min-h-[30rem] w-full cursor-grab border border-ash-800 bg-ash-900/40 active:cursor-grabbing">
       {available && (
-        <Canvas camera={{ position: [0, 0.35, 4.3], fov: 38 }}>
+        <Canvas camera={{ position: [0, 0.3, 3.7], fov: 38 }}>
           <ambientLight intensity={0.55} />
           <directionalLight position={[3, 5, 4]} intensity={2.1} />
           <directionalLight position={[-3, 2, -2]} intensity={0.9} color={theme.forge} />
@@ -83,7 +83,7 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
             autoRotate
             autoRotateSpeed={0.7}
             enablePan={false}
-            minDistance={2}
+            minDistance={1.6}
             maxDistance={7}
             minPolarAngle={0.25}
             maxPolarAngle={Math.PI - 0.25}
