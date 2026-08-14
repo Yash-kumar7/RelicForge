@@ -66,6 +66,19 @@ const IDLE_TIME_SCALE = 0.18;
 const HAND_CLEARANCE = 0.035;
 
 /**
+ * Draws a marker where the weapon is being attached, via ?debug=socket.
+ *
+ * These rigs are third-party auto-rigs over generated meshes, so "the weapon
+ * looks wrong in the hand" has two very different causes: the socket is not on
+ * the hand, or the socket is on the hand and the weapon is posed badly around
+ * it. They need opposite fixes and are impossible to tell apart by looking at a
+ * weapon. A marker at the socket separates them in one glance.
+ */
+const SHOW_SOCKET =
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("debug") === "socket";
+
+/**
  * Places its children at a bone's position, in the root's space.
  *
  * Position only. Rotation and scale are both discarded, for different reasons.
@@ -124,7 +137,17 @@ function HandFollower({
     group.position.z += clearance * 0.8;
   });
 
-  return <group ref={socket}>{children}</group>;
+  return (
+    <group ref={socket}>
+      {SHOW_SOCKET && (
+        <mesh>
+          <sphereGeometry args={[height * 0.03, 8, 8]} />
+          <meshBasicMaterial color="#00ff88" toneMapped={false} depthTest={false} />
+        </mesh>
+      )}
+      {children}
+    </group>
+  );
 }
 
 export function AnimatedCharacter({

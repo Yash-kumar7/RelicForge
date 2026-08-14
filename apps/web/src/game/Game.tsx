@@ -22,6 +22,7 @@ import { recordClear } from "./bosses";
 import { useGameStore } from "../state/useGameStore";
 import { useForgeRun } from "../forge/useForgeRun";
 import { ForgeSequence } from "../forge/ForgeSequence";
+import { setEquippedRelic } from "./equipped";
 import { Hud } from "../ui/Hud";
 import { DefeatScreen } from "../ui/DefeatScreen";
 import { PreFightBriefing } from "../ui/PreFightBriefing";
@@ -182,6 +183,10 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
     resetFeedback();
     resetPlayerHandle();
     resetBossState();
+    // Read once here rather than every frame: the relic cannot change mid-fight,
+    // and pinning it at the start means a swing can never resolve with different
+    // numbers than the ones it began with.
+    setEquippedRelic(useLoadout.getState().equipped());
   }, [phase]);
 
   const relicReady = Boolean(forge.modelUrl && forge.dna);

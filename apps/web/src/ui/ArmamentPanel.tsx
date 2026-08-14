@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { describeTraits, relicTraits } from "@relic/core";
+import { attackSpec } from "../game/combat";
 import { IRON, useLoadout } from "../state/useLoadout";
 
 /**
@@ -23,6 +25,13 @@ export function ArmamentPanel() {
     [owned, armament],
   );
   const ironChosen = armament === IRON;
+
+  // Derived from the same function the fight uses, so the panel cannot promise
+  // a number the swing does not deliver.
+  const traits = useMemo(() => relicTraits(selected?.dna), [selected]);
+  const light = attackSpec("light", traits);
+  const heavy = attackSpec("heavy", traits);
+  const notes = describeTraits(traits);
 
   return (
     <section>
@@ -76,6 +85,29 @@ export function ArmamentPanel() {
               <p className="mt-1 text-[11px] leading-relaxed text-stone-600">
                 {selected.dna.element} · {selected.dna.temperament} · {selected.dna.condition}
               </p>
+
+              {/*
+                The numbers, not just the adjectives.
+                Without these the relic is a skin: the fight decides what it
+                looks like and carrying it changes nothing. Showing the trade
+                here is also what makes keeping an older relic a real decision
+                rather than always taking the newest one.
+              */}
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.12em]">
+                <div className="flex justify-between">
+                  <dt className="text-stone-700">light</dt>
+                  <dd className="text-stone-400">{light.damage}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-stone-700">heavy</dt>
+                  <dd className="text-stone-400">{heavy.damage}</dd>
+                </div>
+              </dl>
+              {notes.length > 0 && (
+                <p className="mt-2 text-[10px] leading-relaxed text-ember-400/80">
+                  {notes.join(" · ")}
+                </p>
+              )}
             </>
           ) : (
             <>

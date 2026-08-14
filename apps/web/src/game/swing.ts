@@ -1,4 +1,5 @@
 import { attackSpec, type AttackKind } from "./combat";
+import { equipped } from "./equipped";
 
 /**
  * Swing progress as a single curve, shared by every view.
@@ -15,7 +16,8 @@ export function swingProgress(
   now = performance.now(),
 ): number {
   if (!attack) return 0;
-  const spec = attackSpec(attack.kind);
+  // Same traits the hit test uses, so a faster relic also animates faster.
+  const spec = attackSpec(attack.kind, equipped.traits);
   const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
   const t = Math.min(1, (now - attack.startedAt) / total);
   const windup = spec.windupMs / total;

@@ -7,3 +7,4 @@ export * from "./cacheKey.js";
 export * from "./stateMachine.js";
 export * from "./normalize.js";
 export * from "./attach.js";
+export * from "./traits.js";

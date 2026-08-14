@@ -1,3 +1,5 @@
+import type { RelicTraits } from "@relic/core";
+
 /**
  * Combat tuning.
  *
@@ -61,8 +63,34 @@ export interface AttackSpec {
   arcDeg: number;
 }
 
-export function attackSpec(kind: AttackKind): AttackSpec {
-  return kind === "heavy" ? COMBAT.heavyAttack : COMBAT.lightAttack;
+/**
+ * The base attack, leaned by whatever the player is carrying.
+ *
+ * Traits are applied here rather than at each call site so the swing animation,
+ * the hit test and the input buffer cannot disagree about how long an attack
+ * lasts. They all ask this function, so they all get the same answer.
+ *
+ * Damage is rounded because the player reads it in the damage popups, and 31.2
+ * where the briefing promised 31 is the kind of detail that reads as a bug.
+ */
+export function attackSpec(kind: AttackKind, traits?: RelicTraits): AttackSpec {
+  const base = kind === "heavy" ? COMBAT.heavyAttack : COMBAT.lightAttack;
+  if (!traits) return base;
+
+  const damage = kind === "heavy" ? traits.heavyDamage : traits.lightDamage;
+  const speed = kind === "heavy" ? traits.heavySpeed : traits.lightSpeed;
+
+  return {
+    damage: Math.round(base.damage * damage),
+    // Active frames are untouched: they are the window a hit can land, and
+    // stretching them would change how forgiving the game is rather than how
+    // heavy the weapon feels.
+    windupMs: Math.round(base.windupMs * speed),
+    activeMs: base.activeMs,
+    recoveryMs: Math.round(base.recoveryMs * speed),
+    reach: base.reach * traits.reach,
+    arcDeg: base.arcDeg,
+  };
 }
 
 /**

@@ -1,7 +1,9 @@
 import { useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
-import { COMBAT } from "../game/combat";
+import { COMBAT, attackSpec } from "../game/combat";
+import { relicTraits } from "@relic/core";
+import { useLoadout } from "../state/useLoadout";
 import { bossTitleFor } from "../game/bosses";
 
 /**
@@ -22,6 +24,19 @@ export function PreFightBriefing() {
   const bossLevel = useGameStore((s) => s.bossLevel);
   const fightStartedAt = useGameStore((s) => s.fightStartedAt);
   const armCombat = useGameStore((s) => s.armCombat);
+
+  /*
+   * The numbers the player is actually about to swing.
+   *
+   * The briefing used to quote the base constants, which stopped being true the
+   * moment a relic changed them: it promised 60 and delivered 78. A briefing
+   * that misreports the fight is worse than no briefing, because the player
+   * calibrates against it.
+   */
+  const carried = useLoadout((s) => s.equipped());
+  const traits = relicTraits(carried?.dna);
+  const light = attackSpec("light", traits);
+  const heavy = attackSpec("heavy", traits);
 
   /**
    * One click does both jobs: it starts the fight and takes pointer lock.
@@ -98,7 +113,12 @@ export function PreFightBriefing() {
                 left click · light
               </p>
               <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
-                {COMBAT.lightAttack.damage} dmg
+                {light.damage} dmg
+                {light.damage !== COMBAT.lightAttack.damage && (
+                  <span className="ml-2 text-[11px] text-frost-400">
+                    {carried?.name}
+                  </span>
+                )}
               </p>
               <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
                 Fast and safe to throw. Favour it while dodging and the forge reads
@@ -112,7 +132,12 @@ export function PreFightBriefing() {
                 right click · heavy
               </p>
               <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
-                {COMBAT.heavyAttack.damage} dmg
+                {heavy.damage} dmg
+                {heavy.damage !== COMBAT.heavyAttack.damage && (
+                  <span className="ml-2 text-[11px] text-ember-400">
+                    {carried?.name}
+                  </span>
+                )}
               </p>
               <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
                 Slow to start and it staggers the Warden. Lean on it and the forge

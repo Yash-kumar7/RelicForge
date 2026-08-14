@@ -4,6 +4,7 @@ import { Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { CAMERA_LIMIT, PLAYER_LIMIT } from "./arenaGeometry";
 import { COMBAT, attackSpec, isWithinArc, type AttackKind } from "./combat";
+import { equipped } from "./equipped";
 import { sfx } from "../audio/sfx";
 import { registerDodge } from "./feedback";
 
@@ -279,7 +280,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
       /* ------------------------------------------------------ attack */
       const attack = playerHandle.attacking;
       if (attack) {
-        const spec = attackSpec(attack.kind);
+        const spec = attackSpec(attack.kind, equipped.traits);
         const elapsed = now - attack.startedAt;
         const activeFrom = spec.windupMs;
         const activeTo = spec.windupMs + spec.activeMs;
@@ -314,7 +315,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
       // Animation only: no movement, no hit test, no damage.
       const attack = playerHandle.attacking;
       if (attack) {
-        const spec = attackSpec(attack.kind);
+        const spec = attackSpec(attack.kind, equipped.traits);
         const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
         if (now - attack.startedAt > total) playerHandle.attacking = null;
       }
