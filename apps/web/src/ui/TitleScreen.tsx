@@ -6,7 +6,7 @@ import { BOSSES, highestCleared, isUnlocked } from "../game/bosses";
 import { TitleShowcase } from "./TitleShowcase";
 import { ChampionPreview } from "./ChampionPreview";
 import { TitleBackdrop } from "./TitleBackdrop";
-import { BossGallery } from "./BossGallery";
+import { BossPortrait } from "./BossPortrait";
 import { rankFor } from "../state/useProgress";
 import { useProgress } from "../state/useProgress";
 
@@ -152,10 +152,6 @@ export function TitleScreen() {
           </div>
         )}
 
-        <div className="mt-12">
-          <BossGallery />
-        </div>
-
         <p className="mt-12 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
           weapons, bosses and champions generated at runtime by meshy-7
         </p>
@@ -239,7 +235,14 @@ export function TitleScreen() {
                           : "border-ash-700 text-stone-500 hover:border-stone-500",
                     ].join(" ")}
                   >
-                    <span className="mt-0.5 w-10 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em]">
+                    {/* Its own generated concept art: the same image that
+                        produced the mesh you fight. */}
+                    <BossPortrait
+                      title={boss.title}
+                      locked={!unlocked}
+                      className="h-20 w-16 shrink-0 border border-ash-800"
+                    />
+                    <span className="mt-0.5 w-7 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em]">
                       {boss.level.toString().padStart(2, "0")}
                     </span>
                     <span className="min-w-0 flex-1">
