@@ -73,6 +73,8 @@ export function Hud() {
   const bossTheme = themeForBoss(bossLevel ?? 1);
   const accent = accentFor(affinity);
 
+  // Deliberately absent during VICTORY, FORGING and DEFEAT: bars and control
+  // hints over a cinematic read as leftover interface.
   if (phase !== "FIGHTING" && phase !== "EQUIPPED") return null;
 
   const fighting = phase === "FIGHTING";

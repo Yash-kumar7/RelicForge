@@ -13,7 +13,9 @@ export function DefeatScreen() {
   const bossHp = useGameStore((s) => s.bossHp);
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/85">
+    /* Nothing to reveal here, so the arena is hidden outright rather than left
+       as a distracting backdrop to a failure. */
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-ash-950">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

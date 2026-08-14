@@ -50,8 +50,30 @@ export function ForgeSequence({
   const showTelemetry = forge.stage !== "IDLE" && forge.stage !== "ANALYZING";
   const headline = STAGE_HEADLINE[forge.stage];
 
+  /**
+   * How much of the arena to hide, by stage.
+   *
+   * Watching a corpse lie in an empty arena while text floats over it looks
+   * unfinished, so the scene is almost entirely covered while the forge works.
+   * It cannot simply go black, though: the relic reveal happens in the scene,
+   * above the forge, and that is the payoff the whole sequence exists for. So
+   * the cover lifts exactly when there is finally something worth seeing.
+   */
+  const cover =
+    forge.stage === "MODEL_READY" || forge.stage === "COMPLETE"
+      ? 0.35
+      : forge.stage === "CONCEPT_READY"
+        ? 0.88
+        : 0.94;
+
   return (
-    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-between bg-gradient-to-b from-black/70 via-black/30 to-black/80 p-10">
+    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-between p-10">
+      {/* Sits behind the copy and in front of the arena. */}
+      <motion.div
+        className="absolute inset-0 -z-10 bg-ash-950"
+        animate={{ opacity: cover }}
+        transition={{ duration: 1.2, ease: "easeInOut" }}
+      />
       {/* Headline */}
       <div className="mt-6 h-24 text-center">
         <AnimatePresence mode="wait">
