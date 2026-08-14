@@ -127,7 +127,9 @@ export function PreFightBriefing() {
               ["WASD", "move"],
               ["Mouse", "look"],
               ["Space", "jump"],
-              ["Shift", `dodge · ${COMBAT.player.dodgeDurationMs}ms invulnerable`],
+              // Milliseconds are a tuning value, not something a player thinks
+              // in. What matters is that a well-timed dodge avoids the hit.
+              ["Shift", "dodge · slip through the blow"],
               ["Q", "heal · 2 charges"],
               ["V", "first or third person"],
             ].map(([key, action]) => (

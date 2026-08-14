@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Vector3 } from "three";
+import { Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PointLight, Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { COMBAT, isWithinArc } from "./combat";
 import { ARENA_RADIUS } from "./Arena";
@@ -40,6 +40,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   const dangerRing = useRef<Mesh>(null);
   const plates = useRef<Group>(null);
   const coreMesh = useRef<Mesh>(null);
+  const coreLight = useRef<PointLight>(null);
   const position = useRef(new Vector3(0, 0, -4));
   const state = useRef<BossState>("APPROACH");
   const stateUntil = useRef(0);
@@ -301,6 +302,13 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
       material.emissiveIntensity = 0.4 + (charge || 0.15) * 5 + hitFlash.current * 4;
       material.emissive = new Color(hitFlash.current > 0.4 ? "#ffffff" : theme.bossCore);
     }
+
+    // The light carries the same signal, which is what keeps a generated boss
+    // readable without a sphere bolted to its chest.
+    if (coreLight.current) {
+      coreLight.current.intensity = 6 + charge * 16 + hitFlash.current * 22;
+      coreLight.current.color = new Color(hitFlash.current > 0.4 ? "#ffffff" : theme.bossCore);
+    }
   });
 
   return (
@@ -376,9 +384,15 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
           />
         )}
 
-        {/* The core stays in both cases: it is the hit-feedback surface, and
-            it reads as the thing you are actually breaking. */}
-        <mesh ref={coreMesh} position={[0, 2.0, 0.58]}>
+        {/*
+          The core is only shown on the primitive boss.
+          It was built as the hit-feedback surface and as something that reads as
+          the thing you are breaking, which works on a box figure. On a generated
+          armoured boss it is a glowing ball stuck to the chest with no relation
+          to the model, so the generated case keeps the light and drops the
+          sphere.
+        */}
+        <mesh ref={coreMesh} position={[0, 2.0, 0.58]} visible={!hasModel}>
           <sphereGeometry args={[0.34, 20, 20]} />
           <meshStandardMaterial
             color="#3a1a0d"
@@ -387,7 +401,9 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
             toneMapped={false}
           />
         </mesh>
-        <pointLight position={[0, 2.0, 0.9]} color={theme.bossCore} intensity={6} distance={9} />
+        {/* Kept in both cases: it carries the wind-up and the hit flash without
+            needing a visible object to hang them on. */}
+        <pointLight ref={coreLight} position={[0, 2.0, 0.9]} color={theme.bossCore} intensity={6} distance={9} />
       </group>
 
       {/* Attack telegraph, flat on the floor and scaled to the boss's reach. */}
