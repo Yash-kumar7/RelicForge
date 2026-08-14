@@ -117,7 +117,7 @@ export function PreFightBriefing() {
           */}
           <div className="mx-auto mt-6 max-w-lg border border-stone-700/60 px-4 py-3 text-left">
             <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-500">
-              e · {ability.name}
+              press e · your special move · {ability.name}
             </p>
             <p className="mt-1 text-[11px] leading-relaxed text-stone-500">{ability.blurb}</p>
           </div>
@@ -125,7 +125,7 @@ export function PreFightBriefing() {
           <div className="mx-auto mt-4 grid max-w-lg gap-3 sm:grid-cols-2">
             <div className="border border-frost-500/40 px-4 py-3 text-left">
               <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-frost-400">
-                left click · your quick swing
+                left click · quick attack
               </p>
               <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
                 {light.damage} dmg
@@ -144,7 +144,7 @@ export function PreFightBriefing() {
 
             <div className="border border-ember-500/40 px-4 py-3 text-left">
               <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-ember-400">
-                right click · your strong swing
+                right click · strong attack
               </p>
               <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
                 {heavy.damage} dmg
