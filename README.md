@@ -37,40 +37,38 @@ So RelicForge's first engineering task wasn't the boss fight or the API client. 
 
 ### What the measurement showed
 
-Before writing any geometry math, the spike measured how crooked meshy-7's output actually arrives:
+Before writing any geometry math, the spike measured how crooked meshy-7's
+output actually arrives. Twelve shapes, chosen to be awkward on purpose:
 
-| weapon | raw angle | end confidence | grip | triangles | normalize |
-|---|---|---|---|---|---|
-| greatsword | 0.1° | 0.55 | 0.197 | 11,990 | 9 ms |
-| spear | 0.0° | 0.67 | 0.040 | 11,366 | 5 ms |
-| warhammer | 0.1° | 0.09 | 0.120 | 12,315 | 3 ms |
+| shape | raw angle | end confidence | grip | corpus |
+|---|---|---|---|---|
+| spear | 0.0° | 0.67 | 0.04 | core |
+| ringed staff | 0.0° | 0.74 | 0.08 | stress |
+| twin-headed maul | 0.0° | 1.00 | 0.13 | stress |
+| greatsword | 0.1° | 0.55 | 0.20 | core |
+| warhammer | 0.1° | 0.09 | 0.12 | core |
+| glaive | 0.3° | 0.44 | 0.07 | core |
+| crystalline shard-blade | 0.9° | 0.30 | 0.18 | stress |
+| curved saber | 1.2° | 0.46 | 0.20 | core |
+| chained flail | 2.4° | 0.51 | 0.20 | stress |
+| asymmetric axe | 10.8° | 0.06 | 0.12 | core |
+| dagger | 25.8° | 0.72 | 0.35 | core |
+| ornate longsword | 50.3° | 0.56 | 0.25 | core |
 
-**Median raw angle: 0.1°.** Meshy-7 preserves the framing of the concept image. Because every concept is generated under a fixed composition contract — *vertical, tip up, pommel down, three-quarter view* — the meshes arrive essentially canonical.
+**Median raw angle: 0.9°.** Most shapes arrive essentially canonical, because
+every concept is generated under a fixed composition contract — *vertical, tip
+up, pommel down, three-quarter view* — and image-to-3d preserves that framing.
 
-The expensive version of the problem doesn't exist. That's a finding worth an hour of measurement, and it's why the fallback ladder below stayed unbuilt.
+But look at the bottom of the table. The dagger arrives 26° off and the ornate
+longsword **50° off**. On those two, the PCA is not confirming a lucky result,
+it is the only reason they end up upright at all.
 
-### The normalizer still earns its place
-
-It runs as a verifier rather than a rescue, and it is built to be correct rather than lucky:
-
-**Area-weighted PCA over triangle centroids**, not a bounding box, and not vertex PCA.
-
-- An AABB fails outright on a weapon tilted inside its own local frame — no single X/Y/Z extent dominates.
-- Plain vertex PCA fails on ornamentation: Meshy tessellates unevenly, and a decorative pommel carrying 3× the vertex density of the blade drags the principal axis off the weapon line. Weighting each triangle centroid by triangle area is density-invariant, and about ten lines of code.
-
-Both failure modes are covered by tests built on synthetic geometry, where the correct answer is known rather than eyeballed.
-
-**Tip and grip are measured, not assumed.** Vertices are projected onto the principal axis and binned into a radius profile. A blade tapers toward zero at the tip; a guard appears as a sharp local maximum near the other end; the grip sits just inboard of it.
-
-**And the heuristic admits when it doesn't know.** A double-edged blade, a symmetric staff, a twin-headed maul — none have taper asymmetry to read. So `resolveEnds` returns a confidence:
-
-| confidence | behavior |
-|---|---|
-| > 0.8 | accept automatically |
-| 0.4 – 0.8 | blend toward the weapon-class prior |
-| < 0.4 | defer to the class prior; flag for a hint |
-
-The warhammer above scores **0.09** and correctly falls back rather than confidently guessing wrong. A system that always claims an answer is quietly wrong a fifth of the time.
+That distinction matters, and an earlier version of this README got it wrong.
+Measured on three shapes, the median was 0.1° and the conclusion looked like
+"the hard version of this problem does not exist". Measured on twelve, two of
+eight core shapes need real correction. Trusting the framing would have shipped
+a game where roughly a quarter of weapons are visibly crooked in the player's
+hand.
 
 ### The line that matters
 
