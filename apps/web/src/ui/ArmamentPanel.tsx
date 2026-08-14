@@ -4,6 +4,31 @@ import { championFor } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { attackSpec, type AttackSpec } from "../game/combat";
 
+/**
+ * The two attacks, described rather than tabulated.
+ *
+ * The blurbs state the trade because the numbers alone never did. A strong
+ * attack that hits harder and lands about as often is not a choice, and until
+ * its recovery was lengthened that was literally true. What makes the quick
+ * attack worth throwing is that it ends before the boss's telegraph does.
+ */
+const ATTACKS = [
+  {
+    kind: "light" as const,
+    name: "Quick attack",
+    button: "left click",
+    blurb:
+      "Ends before the boss can punish it. Lean on this and the forge reads you as elegant: a narrow, precise weapon.",
+  },
+  {
+    kind: "heavy" as const,
+    name: "Strong attack",
+    button: "right click",
+    blurb:
+      "Staggers the boss, but commits you for longer than its wind-up lasts. Lean on this and the forge reads you as brutal: an oversized, heavy weapon.",
+  },
+];
+
 /** Total swing time in seconds, which is the unit a player counts attacks in. */
 function swingSeconds(spec: AttackSpec): string {
   return ((spec.windupMs + spec.activeMs + spec.recoveryMs) / 1000).toFixed(2);
@@ -112,39 +137,37 @@ export function ArmamentPanel() {
               </p>
 
               {/*
-                The numbers, not just the adjectives.
-                Without these the relic is a skin: the fight decides what it
-                looks like and carrying it changes nothing. Showing the trade
-                here is also what makes keeping an older relic a real decision
-                rather than always taking the newest one.
+                The two attacks, presented the way the champion card presents
+                its special move: named, keyed, and explained.
+
+                A bare stat table gave the numbers without ever saying why a
+                player would choose one over the other, which is the actual
+                question. It is also where the answer belongs, because the
+                choice between them is what decides the weapon the forge makes.
               */}
-              {/*
-                Real values, not percentages. A relic that says heavy damage
-                plus thirty percent is describing itself against a baseline the
-                player has never been shown; 78 damage over 0.98 seconds is
-                something they can decide with.
-              */}
-              <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
-                what this weapon hits for
-              </p>
-              <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.12em]">
-                <div className="flex justify-between">
-                  <dt className="text-stone-700">left click</dt>
-                  <dd className="text-stone-400">
-                    {light.damage} · {swingSeconds(light)}s
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-stone-700">right click</dt>
-                  <dd className="text-stone-400">
-                    {heavy.damage} · {swingSeconds(heavy)}s
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-stone-700">reach</dt>
-                  <dd className="text-stone-400">{heavy.reach.toFixed(1)}</dd>
-                </div>
-              </dl>
+              <div className="mt-4 space-y-3 border-t border-ash-800 pt-3">
+                {ATTACKS.map((attack) => {
+                  const spec = attack.kind === "heavy" ? heavy : light;
+                  return (
+                    <div key={attack.kind}>
+                      <p className="flex items-baseline justify-between gap-2">
+                        <span className="font-display text-sm tracking-[0.1em] text-stone-300">
+                          {attack.name}
+                        </span>
+                        <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-stone-600">
+                          {attack.button}
+                        </span>
+                      </p>
+                      <p className="mt-0.5 font-mono text-[10px] tabular-nums text-ember-300/80">
+                        {spec.damage} damage · {swingSeconds(spec)}s per swing
+                      </p>
+                      <p className="mt-1 text-[10px] leading-relaxed text-stone-600">
+                        {attack.blurb}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
             </>
           ) : (
             <>
