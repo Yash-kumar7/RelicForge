@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
+import { COMBAT } from "../game/combat";
 import { bossTitleFor } from "../game/bosses";
 
 /**
@@ -85,14 +86,48 @@ export function PreFightBriefing() {
             or dodge through.
           </p>
 
-          <dl className="mx-auto mt-8 grid max-w-md grid-cols-2 gap-x-10 gap-y-3 text-left font-mono text-[11px] uppercase tracking-[0.15em]">
+          {/*
+            The two attacks are the largest single input into the relic, and the
+            plain control list never said what separated them or what choosing
+            one did. A player who does not know that heavy swings produce a
+            brutal weapon cannot make the choice the game is asking them to make.
+          */}
+          <div className="mx-auto mt-8 grid max-w-lg gap-3 sm:grid-cols-2">
+            <div className="border border-ember-500/40 px-4 py-3 text-left">
+              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-ember-400">
+                right click · heavy
+              </p>
+              <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
+                {COMBAT.heavyAttack.damage} dmg
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
+                Slow to start and it staggers the Warden. Lean on it and the forge
+                reads you as <span className="text-ember-300">brutal</span>: an oversized,
+                heavy weapon.
+              </p>
+            </div>
+
+            <div className="border border-frost-500/40 px-4 py-3 text-left">
+              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-frost-400">
+                left click · light
+              </p>
+              <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
+                {COMBAT.lightAttack.damage} dmg
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
+                Fast and safe to throw. Favour it while dodging and the forge reads
+                you as <span className="text-frost-300">elegant</span>: a narrow, precise
+                weapon.
+              </p>
+            </div>
+          </div>
+
+          <dl className="mx-auto mt-6 grid max-w-md grid-cols-2 gap-x-10 gap-y-3 text-left font-mono text-[11px] uppercase tracking-[0.15em]">
             {[
               ["WASD", "move"],
               ["Mouse", "look"],
-              ["Left click", "light attack"],
-              ["Right click", "heavy attack"],
               ["Space", "jump"],
-              ["Shift", "dodge · brief invulnerability"],
+              ["Shift", `dodge · ${COMBAT.player.dodgeDurationMs}ms invulnerable`],
               ["Q", "heal · 2 charges"],
               ["V", "first or third person"],
             ].map(([key, action]) => (

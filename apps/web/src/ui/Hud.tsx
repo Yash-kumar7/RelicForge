@@ -184,7 +184,11 @@ export function Hud() {
         // repeating it here would compete with the live relic panel for
         // attention during the fight.
         <div className="absolute bottom-8 right-8 text-right font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-stone-700">
-          <div>LMB light · RMB heavy</div>
+          {/* Numbers, not just bindings: the difference between the attacks is
+              the point, and it decides the shape of the relic. */}
+          <div>
+            LMB light {COMBAT.lightAttack.damage} · RMB heavy {COMBAT.heavyAttack.damage}
+          </div>
           <div>Space jump · Shift dodge · Q heal</div>
           <div>V view</div>
         </div>
