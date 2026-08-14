@@ -162,15 +162,35 @@ export function ForgeSequence({
             >
               <div className="mb-2 flex justify-between font-mono text-[11px] uppercase tracking-[0.3em] text-ember-400">
                 <span>{forgeLabelFor(forge.meshPercent)}…</span>
-                <span className="text-stone-600">{forge.meshPercent}%</span>
+                <span className="text-stone-600">
+                  {forge.meshPercent}%
+                  <Elapsed />
+                </span>
               </div>
-              <div className="h-px w-full bg-ash-700">
+
+              {/*
+                Meshy reports 0-10% for most of an image-to-3d run and then
+                jumps near the end, so the number genuinely sits still for a
+                minute. A bar that is merely stationary reads as a hang, so a
+                shimmer runs across it: the percentage stays honest while the
+                motion says the work is alive.
+              */}
+              <div className="relative h-px w-full overflow-hidden bg-ash-700">
                 <motion.div
                   className="h-px bg-ember-500"
-                  animate={{ width: `${forge.meshPercent}%` }}
+                  animate={{ width: `${Math.max(2, forge.meshPercent)}%` }}
                   transition={{ ease: "linear", duration: 0.4 }}
                 />
+                <motion.div
+                  className="absolute top-0 h-px w-1/4 bg-gradient-to-r from-transparent via-ember-300 to-transparent"
+                  animate={{ left: ["-25%", "100%"] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
+                />
               </div>
+
+              <p className="mt-2 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-stone-700">
+                meshy-7 usually takes 90 to 120 seconds
+              </p>
             </motion.div>
           )}
         </AnimatePresence>

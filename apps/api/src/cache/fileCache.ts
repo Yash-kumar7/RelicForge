@@ -33,6 +33,10 @@ export const RelicRecordSchema = z.object({
   /** Diagnostics for the debug route and the write-up numbers. */
   conceptTaskId: z.string().nullish(),
   meshTaskId: z.string().nullish(),
+  /** Which concept candidate is in flight, so polling can report progress. */
+  conceptAttempt: z.number().nullish(),
+  conceptAttempts: z.number().nullish(),
+  meshPercent: z.number().nullish(),
   conceptMs: z.number().nullish(),
   meshMs: z.number().nullish(),
   optimizeMs: z.number().nullish(),

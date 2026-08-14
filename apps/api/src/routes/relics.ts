@@ -26,6 +26,10 @@ function toPublic(record: NonNullable<Awaited<ReturnType<typeof getRelic>>>) {
     transform: record.transform ?? null,
     totalMs: record.totalMs ?? null,
     cached: record.cached,
+    // Surfaced so a polling client can show the same progress the stream would.
+    conceptAttempt: record.conceptAttempt ?? 0,
+    conceptAttempts: record.conceptAttempts ?? 0,
+    meshPercent: record.meshPercent ?? 0,
   };
 }
 

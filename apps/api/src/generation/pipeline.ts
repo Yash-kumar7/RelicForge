@@ -133,25 +133,65 @@ async function runGeneration(initial: RelicRecord, forceFail = false): Promise<v
     }
 
     const conceptStart = Date.now();
-    const candidates: { taskId: string; url: string }[] = [];
 
-    // Concepts are 3-9 credits against a 30-35 credit mesh, and mesh quality is
-    // dominated by concept quality, so hero mode buys several and picks.
+    /**
+     * Candidates are generated in parallel, not one after another.
+     *
+     * They are independent tasks with no ordering between them, and running
+     * them sequentially made the concept stage take as long as the sum of all
+     * three: around two minutes before the mesh could even start. In parallel it
+     * costs the slowest one, roughly forty seconds, for exactly the same credits.
+     *
+     * Budget is asserted for all of them up front, so three requests cannot slip
+     * past a floor that only had room for one.
+     */
     for (let i = 0; i < config.conceptCandidates; i++) {
       await assertBudget(conceptOp(config.imageModel));
-      const taskId = await createConceptImage(initial.prompt, { imageModel: config.imageModel });
-      // Emitted per candidate, not just the first: hero mode generates three
-      // sequentially, so a single event left the UI motionless for a minute.
-      emitRelicEvent(relicId, {
-        type: "concept.generating",
-        taskId,
-        index: i + 1,
-        total: config.conceptCandidates,
-      });
-      const task = await waitForTask("text-to-image", taskId);
-      const url = task.image_urls[0];
-      if (url) candidates.push({ taskId, url });
     }
+
+    let completed = 0;
+    const settled = await Promise.all(
+      Array.from({ length: config.conceptCandidates }, async (_unused, i) => {
+        try {
+          const taskId = await createConceptImage(initial.prompt, {
+            imageModel: config.imageModel,
+          });
+          if (i === 0) {
+            emitRelicEvent(relicId, {
+              type: "concept.generating",
+              taskId,
+              index: 1,
+              total: config.conceptCandidates,
+            });
+          }
+
+          const task = await waitForTask("text-to-image", taskId);
+          const url = task.image_urls[0];
+
+          // Reported as they finish rather than as they start, since in parallel
+          // "starting" happens all at once and says nothing about progress.
+          completed += 1;
+          emitRelicEvent(relicId, {
+            type: "concept.generating",
+            taskId,
+            index: completed,
+            total: config.conceptCandidates,
+          });
+          void patchRelic(relicId, {
+            conceptAttempt: completed,
+            conceptAttempts: config.conceptCandidates,
+          });
+
+          return url ? { taskId, url } : null;
+        } catch {
+          // One failed candidate is survivable: the others still give something
+          // to pick from, and only an empty set is fatal.
+          return null;
+        }
+      }),
+    );
+
+    const candidates = settled.filter((c): c is { taskId: string; url: string } => c !== null);
 
     if (candidates.length === 0) throw new MeshyError("No concept candidates were produced");
 
@@ -193,6 +233,10 @@ async function runGeneration(initial: RelicRecord, forceFail = false): Promise<v
       if (percent > lastPercent) {
         lastPercent = percent;
         emitRelicEvent(relicId, { type: "mesh.progress", percent });
+        // Persisted at a coarser interval than it is streamed: every frame of
+        // progress does not need a disk write, but a polling client needs
+        // something better than nothing.
+        if (percent % 10 === 0) void patchRelic(relicId, { meshPercent: percent });
       }
     });
 
@@ -328,6 +372,10 @@ async function runReforge(initial: RelicRecord, sourceMeshTaskId: string): Promi
       if (percent > lastPercent) {
         lastPercent = percent;
         emitRelicEvent(relicId, { type: "mesh.progress", percent });
+        // Persisted at a coarser interval than it is streamed: every frame of
+        // progress does not need a disk write, but a polling client needs
+        // something better than nothing.
+        if (percent % 10 === 0) void patchRelic(relicId, { meshPercent: percent });
       }
     });
 
