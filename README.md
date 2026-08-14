@@ -254,6 +254,7 @@ packages/relic-core   Pure, no I/O. Imported by both.
 - **The file cache is a JSON index.** Correct for one process; SQLite when the schema stops moving.
 - **Concept selection is a composition heuristic**, not a quality judgment — it rejects off-centre and small-in-frame subjects, nothing subtler.
 - **The client bundle is ~1.5 MB (430 KB gzipped)**, dominated by three.js. The dev surfaces are code-split; the engine itself is on the critical path.
+- **No deploy config ships.** Fastify serves the built client in production, so it runs as one process on one origin, but nothing here has been deployed or containerised and I would not claim otherwise.
 - **Losing forfeits the relic.** A weapon forged from a defeat would stop being a record of how you won.
 - **Bosses do not animate.** They are static generated meshes moved as whole bodies. Meshy has rigging and animation endpoints; wiring them up is the obvious next step and is not done here.
 - **The player has hands, not a body.** First person means no character model, which is a deliberate scope choice rather than an oversight.

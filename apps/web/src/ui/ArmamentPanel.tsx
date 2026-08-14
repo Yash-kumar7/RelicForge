@@ -1,9 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, useGLTF } from "@react-three/drei";
-import { Group, Quaternion, Vector3 } from "three";
-import { normalizeRelic, type WeaponClass } from "@relic/core";
-import { meshSampleFrom } from "../lib/meshSample";
+import { useMemo } from "react";
 import { IRON, useLoadout } from "../state/useLoadout";
 
 /**
@@ -15,46 +10,6 @@ import { IRON, useLoadout } from "../state/useLoadout";
  * says plainly that the next slot is filled by fighting rather than by
  * shopping.
  */
-
-const RELIC_FRAME_HEIGHT = 2.1;
-
-function RelicModel({ url, weaponClass }: { url: string; weaponClass: WeaponClass }) {
-  const pivot = useRef<Group>(null);
-  const { scene } = useGLTF(url);
-  const model = useMemo(() => scene.clone(true), [scene]);
-
-  // The same canonicalization the game runs at equip time, so this is the
-  // weapon as it will actually be held.
-  const canonical = useMemo(
-    () => normalizeRelic(meshSampleFrom(model), weaponClass),
-    [model, weaponClass],
-  );
-
-  const quaternion = useMemo(() => {
-    const [x, y, z, w] = canonical.quaternion;
-    return new Quaternion(x, y, z, w);
-  }, [canonical]);
-
-  const gripOffset = useMemo(() => new Vector3(...canonical.gripOffset), [canonical]);
-
-  useFrame(({ clock }) => {
-    if (pivot.current) pivot.current.rotation.y = clock.getElapsedTime() * 0.5;
-  });
-
-  return (
-    <group ref={pivot}>
-      {/* Canonical form puts the grip at the origin with the blade above it, so
-          the rig drops to centre the weapon on the camera's aim point. */}
-      <group position={[0, -RELIC_FRAME_HEIGHT / 2, 0]}>
-        <group position={gripOffset}>
-          <group quaternion={quaternion} scale={canonical.scale}>
-            <primitive object={model} />
-          </group>
-        </group>
-      </group>
-    </group>
-  );
-}
 
 export function ArmamentPanel() {
   const owned = useLoadout((s) => s.owned);
@@ -68,18 +23,6 @@ export function ArmamentPanel() {
     [owned, armament],
   );
   const ironChosen = armament === IRON;
-
-  const [modelOk, setModelOk] = useState(true);
-  useEffect(() => {
-    if (!selected) return;
-    let cancelled = false;
-    fetch(selected.modelUrl, { method: "HEAD" })
-      .then((res) => !cancelled && setModelOk(res.ok))
-      .catch(() => !cancelled && setModelOk(false));
-    return () => {
-      cancelled = true;
-    };
-  }, [selected]);
 
   return (
     <section>
@@ -145,20 +88,12 @@ export function ArmamentPanel() {
         </button>
       </div>
 
-      {/* The relic itself, turning. */}
-      {selected && modelOk && (
-        <div className="mt-3 h-52 border border-ash-800 bg-ash-950">
-          <Canvas camera={{ position: [1.9, 0.1, 1.9], fov: 42 }}>
-            <ambientLight intensity={0.55} />
-            <directionalLight position={[3, 5, 3]} intensity={2.2} />
-            <directionalLight position={[-3, 1, -2]} intensity={0.7} color="#ff8c42" />
-            <Suspense fallback={null}>
-              <RelicModel url={selected.modelUrl} weaponClass={selected.dna.weaponClass} />
-              <Environment preset="night" />
-            </Suspense>
-          </Canvas>
-        </div>
-      )}
+      {/*
+        No second viewport for the relic.
+        The champion beside this panel is already holding whatever is selected,
+        and a spinning copy of the same weapon was both redundant and a third
+        WebGL context on one screen.
+      */}
 
       {/* Switching between relics you have kept. */}
       {owned.length > 0 && (

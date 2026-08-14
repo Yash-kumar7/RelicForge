@@ -4,6 +4,7 @@ import { Environment, Grid, OrbitControls, useGLTF } from "@react-three/drei";
 import { Quaternion, Vector3, type Group } from "three";
 import { normalizeRelic, type RelicTransform, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
+import { useInView } from "../lib/useInView";
 
 /**
  * Gate 0 harness.
@@ -92,13 +93,16 @@ function SpikeCell({ meta }: { meta: SpikeMeta }) {
     () => (t: RelicTransform, ms: number) => setResult({ t, ms }),
     [],
   );
+  // One canvas per cell across the full corpus would be twelve live WebGL
+  // contexts; they are created as they are scrolled to instead.
+  const { ref, inView } = useInView<HTMLDivElement>();
 
   const conf = result?.t.endConfidence ?? 0;
   const confClass =
     conf > 0.8 ? "text-emerald-400" : conf >= 0.4 ? "text-amber-400" : "text-red-400";
 
   return (
-    <div className="rounded border border-ash-700 bg-ash-900">
+    <div ref={ref} className="rounded border border-ash-700 bg-ash-900">
       <div className="flex items-baseline justify-between border-b border-ash-700 px-3 py-2">
         <span className="font-mono text-xs uppercase tracking-widest text-stone-300">
           {meta.slug}
@@ -115,6 +119,12 @@ function SpikeCell({ meta }: { meta: SpikeMeta }) {
       </div>
 
       <div className="h-72 bg-ash-950">
+        {!inView && (
+          <div className="flex h-full items-center justify-center font-mono text-[10px] uppercase tracking-[0.25em] text-stone-800">
+            scroll to load
+          </div>
+        )}
+        {inView && (
         <Canvas camera={{ position: [2.2, 1.0, 2.2], fov: 45 }}>
           <ambientLight intensity={0.6} />
           <directionalLight position={[4, 6, 3]} intensity={1.8} />
@@ -130,6 +140,7 @@ function SpikeCell({ meta }: { meta: SpikeMeta }) {
           />
           <OrbitControls makeDefault target={[0, 0.8, 0]} />
         </Canvas>
+        )}
       </div>
 
       <dl className="grid grid-cols-4 gap-x-2 px-3 py-2 text-center font-mono text-[11px]">
