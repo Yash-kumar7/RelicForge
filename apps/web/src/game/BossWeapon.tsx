@@ -67,9 +67,12 @@ function SwingingWeapon({
   useFrame(() => {
     if (!arm.current) return;
     const swing = bossSwing();
-    arm.current.rotation.x = 0.25 - swing * 0.8;
-    arm.current.rotation.z = -0.35 - swing * 0.55;
-    arm.current.position.z = 0.2 + Math.max(0, swing) * 0.35;
+    // Overhead arc: the weapon rises behind the shoulder and comes down across
+    // the body, travelling far enough to read at third-person distance.
+    arm.current.rotation.x = 0.25 - swing * 1.05;
+    arm.current.rotation.z = -0.35 - swing * 0.45;
+    arm.current.position.z = 0.2 + Math.max(0, swing) * 0.45;
+    arm.current.position.y = height * 0.42 + Math.max(0, -swing) * 0.35;
   });
 
   return (

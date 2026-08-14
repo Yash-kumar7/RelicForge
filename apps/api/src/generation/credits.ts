@@ -18,6 +18,7 @@ export const CREDIT_COST = {
   "mesh:meshy-7": 30,
   "mesh:meshy-7:ultra": 35,
   remesh: 5,
+  retexture: 10,
 } as const;
 
 export type CreditOp = keyof typeof CREDIT_COST;

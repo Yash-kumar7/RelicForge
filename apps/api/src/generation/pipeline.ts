@@ -6,15 +6,18 @@ import {
   compileRelicPrompt,
   composeRelicName,
   configForMode,
+  compileRetexturePrompt,
   relicCacheKey,
   type CombatTelemetry,
   type GenerationMode,
+  type RelicDNA,
 } from "@relic/core";
 import { env } from "../env.js";
 import { fetchBuffer, fetchBytes } from "../lib/fetchBytes.js";
 import { MeshyError } from "../lib/errors.js";
 import { createConceptImage } from "../services/meshy/meshy.image.js";
 import { createMeshFromConceptTask } from "../services/meshy/meshy.imageTo3d.js";
+import { createRetexture } from "../services/meshy/meshy.retexture.js";
 import { waitForTask } from "../services/meshy/meshy.tasks.js";
 import { optimizeGlb } from "./optimizeGlb.js";
 import { assertBudget, conceptOp, meshOp } from "./credits.js";
@@ -217,6 +220,124 @@ async function runGeneration(initial: RelicRecord, forceFail = false): Promise<v
       stage: "FORGING_3D",
       retryable,
       ...(fallback ? { fallbackRelicId: fallback.relicId } : {}),
+    });
+  }
+}
+
+/**
+ * Reforges an existing relic into a different element.
+ *
+ * Keeps the geometry and retextures it, which costs 10 credits against 44 for a
+ * fresh generation, and matters more for what it preserves than what it saves:
+ * the silhouette is the record of how the fight went, so changing the element
+ * must not change the shape. A different shape has to be earned by fighting
+ * differently.
+ *
+ * The result is a new relic with its own DNA and its own cache key, not an edit
+ * of the original, so the relic you earned still exists exactly as earned.
+ */
+export async function reforgeRelic(
+  source: RelicRecord,
+  element: RelicDNA["element"],
+): Promise<StartRelicResult> {
+  const config = configForMode(source.generationMode);
+  const dna: RelicDNA = { ...source.dna, element };
+  const name = composeRelicName(dna);
+  const cacheKey = relicCacheKey(dna, config);
+
+  const hit = await findByCacheKey(cacheKey);
+  if (hit) return { record: { ...hit, cached: true }, cacheHit: true };
+
+  if (!source.meshTaskId) {
+    throw new MeshyError("The source relic has no mesh task to retexture from");
+  }
+
+  const record = await putRelic({
+    relicId: randomUUID(),
+    cacheKey,
+    name,
+    dna,
+    status: "DNA_READY",
+    // The stored prompt describes the material change, since that is what this
+    // generation actually did.
+    prompt: compileRetexturePrompt(dna),
+    generationMode: source.generationMode,
+    conceptUrl: source.conceptUrl ?? null,
+    cached: false,
+    createdAt: Date.now(),
+  });
+
+  void runReforge(record, source.meshTaskId).catch(() => {});
+  return { record, cacheHit: false };
+}
+
+async function runReforge(initial: RelicRecord, sourceMeshTaskId: string): Promise<void> {
+  const relicId = initial.relicId;
+  const startedAt = Date.now();
+  const dir = path.join(env.storageDir, "relics", relicId);
+  await mkdir(dir, { recursive: true });
+
+  emitRelicEvent(relicId, { type: "dna.ready", dna: initial.dna, name: initial.name });
+
+  try {
+    // No concept stage: the geometry already exists, so there is nothing to
+    // imagine. The sequence jumps straight to forging.
+    await patchRelic(relicId, { status: "FORGING_3D" });
+    await assertBudget("retexture");
+
+    const taskId = await createRetexture(sourceMeshTaskId, {
+      stylePrompt: initial.prompt,
+      enablePbr: true,
+    });
+    emitRelicEvent(relicId, { type: "mesh.generating", taskId });
+
+    let lastPercent = -1;
+    const task = await waitForTask("retexture", taskId, (t) => {
+      const percent = Math.round(t.progress ?? 0);
+      if (percent > lastPercent) {
+        lastPercent = percent;
+        emitRelicEvent(relicId, { type: "mesh.progress", percent });
+      }
+    });
+
+    const glbUrl = task.model_urls.glb;
+    if (!glbUrl) throw new MeshyError("Retexture completed without a GLB");
+
+    const { data, stats } = await optimizeGlb(await fetchBytes(glbUrl));
+    await writeFile(path.join(dir, "model.glb"), data);
+    const modelUrl = `/assets/relics/${relicId}/model.glb`;
+    const totalMs = Date.now() - startedAt;
+
+    await patchRelic(relicId, {
+      status: "MODEL_READY",
+      modelUrl,
+      meshTaskId: taskId,
+      meshMs: totalMs,
+      optimizeMs: stats.ms,
+      glbBytes: stats.bytesAfter,
+      rawGlbBytes: stats.bytesBefore,
+    });
+    emitRelicEvent(relicId, { type: "mesh.ready", modelUrl, ms: totalMs, bytes: stats.bytesAfter });
+
+    await patchRelic(relicId, { status: "COMPLETE", totalMs });
+    emitRelicEvent(relicId, {
+      type: "relic.complete",
+      relicId,
+      name: initial.name,
+      dna: initial.dna,
+      conceptUrl: initial.conceptUrl ?? null,
+      modelUrl,
+      transform: null,
+      totalMs,
+      cached: false,
+    });
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
+    await patchRelic(relicId, { status: "FAILED", error });
+    emitRelicEvent(relicId, {
+      type: "relic.failed",
+      stage: "FORGING_3D",
+      retryable: err instanceof MeshyError ? err.retryable : false,
     });
   }
 }

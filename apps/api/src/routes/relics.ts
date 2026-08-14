@@ -3,7 +3,7 @@ import { z } from "zod";
 import { CombatTelemetrySchema, OrientationHintSchema } from "@relic/core";
 import { findArchetypeFallback, getRelic, listRelics, patchRelic } from "../cache/fileCache.js";
 import { onRelicEvent, type RelicEvent } from "../generation/events.js";
-import { retryRelic, startRelic } from "../generation/pipeline.js";
+import { reforgeRelic, retryRelic, startRelic } from "../generation/pipeline.js";
 import { currentBalance } from "../generation/credits.js";
 
 const CreateRelicSchema = z.object({
@@ -71,6 +71,33 @@ export async function relicRoutes(app: FastifyInstance): Promise<void> {
     });
     if (!updated) return reply.status(404).send({ error: "No such relic" });
     return { ok: true };
+  });
+
+  /**
+   * Reforge: same geometry, different element.
+   *
+   * Returns a new relic rather than mutating this one, so the weapon actually
+   * earned still exists exactly as earned.
+   */
+  app.post<{ Params: { id: string } }>("/api/relics/:id/reforge", async (request, reply) => {
+    const body = z.object({ element: z.enum(["fire", "ice", "lightning"]) }).safeParse(request.body);
+    if (!body.success) return reply.status(400).send({ error: "Invalid element" });
+
+    const source = await getRelic(request.params.id);
+    if (!source) return reply.status(404).send({ error: "No such relic" });
+    if (source.status !== "COMPLETE") {
+      return reply.status(409).send({ error: `Relic is ${source.status}, not COMPLETE` });
+    }
+    if (source.dna.element === body.data.element) {
+      return reply.status(409).send({ error: "The relic is already that element" });
+    }
+
+    try {
+      const { record, cacheHit } = await reforgeRelic(source, body.data.element);
+      return reply.status(cacheHit ? 200 : 202).send(toPublic(record));
+    } catch (err) {
+      return reply.status(502).send({ error: (err as Error).message });
+    }
   });
 
   app.post<{ Params: { id: string } }>("/api/relics/:id/retry", async (request, reply) => {

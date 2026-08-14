@@ -115,4 +115,4 @@ export const BalanceSchema = z.object({ balance: z.number() });
  * Each task type is its own REST resource. A remesh task is NOT readable at
  * /v1/image-to-3d/:id even though it produces the same object shape.
  */
-export type TaskKind = "text-to-image" | "image-to-3d" | "remesh";
+export type TaskKind = "text-to-image" | "image-to-3d" | "remesh" | "retexture";

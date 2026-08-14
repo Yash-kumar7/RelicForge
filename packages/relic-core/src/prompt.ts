@@ -55,6 +55,22 @@ export const COMPOSITION_CONTRACT = [
   "Strong readable silhouette. Production-quality game concept art.",
 ].join(" ");
 
+/**
+ * Material-only prompt for retexturing.
+ *
+ * Deliberately built from the same vocabularies as the full prompt, so a relic
+ * re-tempered into ice describes ice the same way a relic born from ice does. A
+ * second, separate description of what fire looks like would drift.
+ */
+export function compileRetexturePrompt(dna: RelicDNA): string {
+  return [
+    `${ELEMENT_MATERIAL[dna.element]},`,
+    `${CONDITION_DAMAGE[dna.condition]}.`,
+    "Surface material only, do not change the shape of the object.",
+    "Production-quality game weapon texture.",
+  ].join(" ");
+}
+
 export function compileRelicPrompt(dna: RelicDNA): string {
   const subject = [
     `A legendary ${CLASS_NOUN[dna.weaponClass]}`,
