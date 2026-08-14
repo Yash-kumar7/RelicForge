@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { Affinity } from "@relic/core";
+import { championFor, describeChampion } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
 import { BOSSES, highestCleared, isCleared } from "../game/bosses";
@@ -206,6 +207,19 @@ export function TitleScreen() {
                   <div className="text-xl">{a.glyph}</div>
                   <div className="mt-2 font-display text-base tracking-[0.15em]">{a.name}</div>
                   <p className="mt-1 text-[10px] leading-relaxed text-stone-600">{a.blurb}</p>
+
+                  {/*
+                    The trade, stated before the choice is made.
+                    The three champions used to look different and play
+                    identically, which made the first decision in the game a
+                    cosmetic one wearing the clothes of a real one.
+                  */}
+                  <p className="mt-2 text-[10px] leading-relaxed text-stone-500">
+                    {championFor(a.id).blurb}
+                  </p>
+                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.15em] text-stone-700">
+                    {describeChampion(championFor(a.id))}
+                  </p>
                 </button>
               ))}
             </div>

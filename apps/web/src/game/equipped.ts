@@ -1,5 +1,7 @@
 import { relicTraits, type RelicTraits } from "@relic/core";
 import type { OwnedRelic } from "../state/useLoadout";
+import { championFor } from "./champions";
+import type { Affinity } from "@relic/core";
 
 /**
  * What the player is carrying, in a form the frame loop can read.
@@ -14,6 +16,18 @@ import type { OwnedRelic } from "../state/useLoadout";
  */
 export const equipped: { traits: RelicTraits | undefined } = { traits: undefined };
 
-export function setEquippedRelic(relic: OwnedRelic | null): void {
-  equipped.traits = relic ? relicTraits(relic.dna) : undefined;
+/**
+ * Champion damage folds in here rather than being applied at the hit test.
+ *
+ * The briefing, the swing curve and the damage popups all read attackSpec, so
+ * anything applied outside it would show one number and deal another.
+ */
+export function setEquippedRelic(relic: OwnedRelic | null, affinity: Affinity): void {
+  const base = relic ? relicTraits(relic.dna) : relicTraits(null);
+  const champion = championFor(affinity).traits;
+  equipped.traits = {
+    ...base,
+    lightDamage: base.lightDamage * champion.damage,
+    heavyDamage: base.heavyDamage * champion.damage,
+  };
 }

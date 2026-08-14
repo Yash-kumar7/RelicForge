@@ -5,6 +5,7 @@ import { useGameStore } from "../state/useGameStore";
 import { CAMERA_LIMIT, PLAYER_LIMIT } from "./arenaGeometry";
 import { COMBAT, attackSpec, isWithinArc, type AttackKind } from "./combat";
 import { equipped } from "./equipped";
+import { activeChampion } from "./champions";
 import { sfx } from "../audio/sfx";
 import { registerDodge } from "./feedback";
 
@@ -119,7 +120,8 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
 
         dodge.current.dir.copy(dir);
         dodge.current.until = now + COMBAT.player.dodgeDurationMs;
-        dodge.current.readyAt = now + COMBAT.player.dodgeCooldownMs;
+        dodge.current.readyAt =
+          now + COMBAT.player.dodgeCooldownMs * activeChampion.traits.dodgeCooldown;
         // i-frames are the whole point of a dodge; without them it is just a
         // fast sidestep and the telemetry stops meaning "played evasively".
         playerHandle.invulnerableUntil = now + COMBAT.player.dodgeDurationMs;
@@ -245,7 +247,9 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
         velocity.current.copy(dodge.current.dir).multiplyScalar(COMBAT.player.dodgeSpeed);
       } else if (input.lengthSq() > 0) {
         input.normalize().applyAxisAngle(new Vector3(0, 1, 0), yaw.current);
-        velocity.current.copy(input).multiplyScalar(COMBAT.player.moveSpeed);
+        velocity.current
+          .copy(input)
+          .multiplyScalar(COMBAT.player.moveSpeed * activeChampion.traits.moveSpeed);
       } else {
         velocity.current.multiplyScalar(0.75);
       }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PLAYER_MAX_HP, useGameStore } from "../state/useGameStore";
+import { useGameStore } from "../state/useGameStore";
 import { bossTitleFor } from "../game/bosses";
 import { accentFor, themeForBoss } from "../game/theme";
 import { useLoadout } from "../state/useLoadout";
@@ -46,6 +46,7 @@ function DodgeReadout({ count }: { count: number }) {
 export function Hud() {
   const phase = useGameStore((s) => s.phase);
   const playerHp = useGameStore((s) => s.playerHp);
+  const playerMaxHp = useGameStore((s) => s.playerMaxHp);
   const bossHp = useGameStore((s) => s.bossHp);
   const bossMaxHp = useGameStore((s) => s.bossMaxHp);
   const bossLevel = useGameStore((s) => s.bossLevel);
@@ -78,7 +79,9 @@ export function Hud() {
   if (phase !== "FIGHTING" && phase !== "EQUIPPED") return null;
 
   const fighting = phase === "FIGHTING";
-  const playerPct = Math.round((playerHp / PLAYER_MAX_HP) * 100);
+  // Against the champion's own maximum, not the base constant: a Frost run has
+  // 125 health, and dividing by 100 would show a full bar reading 125%.
+  const playerPct = Math.round((playerHp / playerMaxHp) * 100);
   const bossPct = Math.ceil((bossHp / Math.max(1, bossMaxHp)) * 100);
   const bossName = bossTitleFor(bossLevel ?? 1, affinity);
 

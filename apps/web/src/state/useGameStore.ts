@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Affinity, CombatTelemetry, RelicDNA, RelicTransform } from "@relic/core";
 import { bossAt, type BossLevel } from "../game/bosses";
+import { championFor } from "../game/champions";
 
 /**
  * Game phase, combat telemetry, and the forge lifecycle.
@@ -63,6 +64,11 @@ interface GameState {
    */
   bossLevel: number | null;
   playerHp: number;
+  /**
+   * Scaled by the champion, so a Frost run genuinely has more to lose than an
+   * Ember one and healthRemaining still reports a true percentage.
+   */
+  playerMaxHp: number;
   bossHp: number;
   /** Scaled per run, so the HUD percentage is honest at every difficulty. */
   bossMaxHp: number;
@@ -142,6 +148,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   affinity: "fire",
   bossLevel: null,
   playerHp: PLAYER_MAX_HP,
+  playerMaxHp: PLAYER_MAX_HP,
   bossHp: BOSS_MAX_HP,
   bossMaxHp: BOSS_MAX_HP,
   fightStartedAt: null,
@@ -165,9 +172,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       // weapon you earn, whereas each rung changes bossInfluence and therefore
       // the relic itself.
       const maxHp = Math.round(BOSS_MAX_HP * bossAt(state.bossLevel ?? 1).hp);
+      const playerMaxHp = Math.round(PLAYER_MAX_HP * championFor(state.affinity).traits.maxHp);
       return {
       phase: "FIGHTING" as GamePhase,
-      playerHp: PLAYER_MAX_HP,
+      playerHp: playerMaxHp,
+      playerMaxHp,
       bossHp: maxHp,
       bossMaxHp: maxHp,
       // Deliberately null: the clock starts when combat is armed, not when the
@@ -235,7 +244,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   heal: (amount) =>
     set((state) => ({
-      playerHp: Math.min(PLAYER_MAX_HP, state.playerHp + amount),
+      playerHp: Math.min(state.playerMaxHp, state.playerHp + amount),
       telemetry: { ...state.telemetry, healingUsed: state.telemetry.healingUsed + 1 },
     })),
 
@@ -247,7 +256,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     return {
       ...state.telemetry,
       affinity: state.affinity,
-      healthRemaining: Math.round((state.playerHp / PLAYER_MAX_HP) * 100),
+      healthRemaining: Math.round((state.playerHp / state.playerMaxHp) * 100),
       fightDuration: state.fightStartedAt
         ? Math.max(
             0,
@@ -263,6 +272,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({
       phase: "TITLE",
       playerHp: PLAYER_MAX_HP,
+      playerMaxHp: PLAYER_MAX_HP,
       bossHp: BOSS_MAX_HP,
       bossMaxHp: BOSS_MAX_HP,
       fightStartedAt: null,
