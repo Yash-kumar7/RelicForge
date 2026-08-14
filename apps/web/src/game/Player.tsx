@@ -50,6 +50,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
   const healCharges = useRef(COMBAT.player.healCharges);
 
   const phase = useGameStore((s) => s.phase);
+  const combatActive = useGameStore((s) => s.combatActive);
   const recordDodge = useGameStore((s) => s.recordDodge);
 
   /* ------------------------------------------------------------- input */
@@ -59,7 +60,8 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
     const onKeyDown = (e: KeyboardEvent) => {
       keys.current[e.code] = true;
 
-      if (useGameStore.getState().phase !== "FIGHTING") return;
+      const state = useGameStore.getState();
+      if (state.phase !== "FIGHTING" || !state.combatActive) return;
       const now = performance.now();
 
       if (e.code === "Space" && now >= dodge.current.readyAt) {
@@ -103,9 +105,12 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
     const onMouseDown = (e: MouseEvent) => {
       if (document.pointerLockElement !== canvas) {
         void canvas.requestPointerLock();
+        // Taking pointer lock is the moment the fight actually begins.
+        useGameStore.getState().armCombat();
         return;
       }
-      if (useGameStore.getState().phase !== "FIGHTING") return;
+      const state = useGameStore.getState();
+      if (state.phase !== "FIGHTING" || !state.combatActive) return;
       if (playerHandle.attacking) return;
 
       const kind: AttackKind = e.button === 2 ? "heavy" : "light";
@@ -135,7 +140,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
   /* ------------------------------------------------------------- update */
   useFrame((_, delta) => {
     const now = performance.now();
-    const fighting = phase === "FIGHTING";
+    const fighting = phase === "FIGHTING" && combatActive;
 
     // Look is allowed after victory too, so the player can watch the forge.
     camera.rotation.order = "YXZ";

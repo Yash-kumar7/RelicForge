@@ -32,6 +32,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
 
   const phase = useGameStore((s) => s.phase);
   const bossHp = useGameStore((s) => s.bossHp);
+  const combatActive = useGameStore((s) => s.combatActive);
 
   useImperativeHandle(ref, () => ({
     position: () => position.current,
@@ -60,7 +61,9 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
       return;
     }
 
-    if (phase !== "FIGHTING") return;
+    // Standing still until the player has actually begun. Attacking someone
+    // who is still reading the briefing is not difficulty, it is a bug.
+    if (phase !== "FIGHTING" || !combatActive) return;
 
     const toPlayer = new Vector3().subVectors(playerHandle.position, position.current);
     toPlayer.y = 0;

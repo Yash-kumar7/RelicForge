@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
 
@@ -16,22 +16,36 @@ import { useGameStore } from "../state/useGameStore";
 export function PreFightBriefing() {
   const phase = useGameStore((s) => s.phase);
   const affinity = useGameStore((s) => s.affinity);
-  const [dismissed, setDismissed] = useState(false);
-  const [locked, setLocked] = useState(false);
+  const combatActive = useGameStore((s) => s.combatActive);
+  const fightStartedAt = useGameStore((s) => s.fightStartedAt);
+  const armCombat = useGameStore((s) => s.armCombat);
 
+  /**
+   * One click does both jobs: it starts the fight and takes pointer lock.
+   * Splitting them would mean the player clicks to dismiss, then clicks again
+   * to look around, with a silent frozen frame in between.
+   */
+  const begin = useCallback(() => {
+    const canvas = document.querySelector("canvas");
+    if (canvas) void canvas.requestPointerLock();
+    armCombat();
+  }, [armCombat]);
+
+  // Enter works too, so the keyboard hand does not have to move.
   useEffect(() => {
-    const onLockChange = () => setLocked(Boolean(document.pointerLockElement));
-    document.addEventListener("pointerlockchange", onLockChange);
-    return () => document.removeEventListener("pointerlockchange", onLockChange);
-  }, []);
+    if (phase !== "FIGHTING" || combatActive || fightStartedAt !== null) return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === "Enter" || e.code === "Space") begin();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [phase, combatActive, fightStartedAt, begin]);
 
-  // A new fight re-arms the briefing.
-  useEffect(() => {
-    if (phase === "CHOOSE_AFFINITY" || phase === "TITLE") setDismissed(false);
-  }, [phase]);
-
-  const visible = phase === "FIGHTING" && !dismissed && !locked;
-  if (!visible) return null;
+  // Visible for exactly as long as the fight is frozen, so what is on screen
+  // always matches whether the boss can actually hurt you.
+  // fightStartedAt distinguishes "not begun yet" from "paused mid-fight",
+  // which the PauseOverlay owns.
+  if (phase !== "FIGHTING" || combatActive || fightStartedAt !== null) return null;
 
   const accent = affinity === "ice" ? "text-frost-300" : affinity === "storm" ? "text-amber-200" : "text-ember-300";
 
@@ -42,7 +56,7 @@ export function PreFightBriefing() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm"
-        onClick={() => setDismissed(true)}
+        onClick={begin}
       >
         <div className="max-w-2xl px-8 text-center">
           <p className="text-[11px] uppercase tracking-[0.45em] text-stone-600">Your objective</p>

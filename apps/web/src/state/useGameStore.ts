@@ -53,6 +53,22 @@ interface GameState {
   playerHp: number;
   bossHp: number;
   fightStartedAt: number | null;
+  /**
+   * Whether combat is actually live.
+   *
+   * Entering FIGHTING is not the same as the fight having started: the briefing
+   * is on screen and the player has not taken pointer lock yet. Without this
+   * gate the boss walks over and hits you while you are still reading, and the
+   * fight duration counts your reading time as combat.
+   */
+  combatActive: boolean;
+  /**
+   * Milliseconds spent paused. Subtracted from the elapsed clock so that
+   * stepping away mid-fight does not read as a slow, cautious victory and
+   * change which relic is forged.
+   */
+  pausedTotalMs: number;
+  pausedAt: number | null;
 
   /** Accumulated during the fight, snapshotted on victory. */
   telemetry: Omit<CombatTelemetry, "affinity" | "healthRemaining" | "fightDuration">;
@@ -61,6 +77,8 @@ interface GameState {
   setPhase: (phase: GamePhase) => void;
   chooseAffinity: (affinity: Affinity) => void;
   startFight: () => void;
+  armCombat: () => void;
+  pauseCombat: () => void;
   damageBoss: (amount: number, kind: "light" | "heavy" | "ability") => void;
   damagePlayer: (amount: number) => void;
   heal: (amount: number) => void;
@@ -101,6 +119,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   playerHp: PLAYER_MAX_HP,
   bossHp: BOSS_MAX_HP,
   fightStartedAt: null,
+  combatActive: false,
+  pausedTotalMs: 0,
+  pausedAt: null,
   telemetry: { ...EMPTY_TELEMETRY },
   forge: { ...EMPTY_FORGE },
 
@@ -112,10 +133,35 @@ export const useGameStore = create<GameState>((set, get) => ({
       phase: "FIGHTING",
       playerHp: PLAYER_MAX_HP,
       bossHp: BOSS_MAX_HP,
-      fightStartedAt: Date.now(),
+      // Deliberately null: the clock starts when combat is armed, not when the
+      // briefing appears, or reading time would inflate fightDuration.
+      fightStartedAt: null,
+      combatActive: false,
+      pausedTotalMs: 0,
+      pausedAt: null,
       telemetry: { ...EMPTY_TELEMETRY },
       forge: { ...EMPTY_FORGE },
     }),
+
+  armCombat: () =>
+    set((state) => {
+      if (state.combatActive) return state;
+      return {
+        combatActive: true,
+        // Preserved across a pause: only the very first arm starts the clock.
+        fightStartedAt: state.fightStartedAt ?? Date.now(),
+        pausedTotalMs:
+          state.pausedAt !== null
+            ? state.pausedTotalMs + (Date.now() - state.pausedAt)
+            : state.pausedTotalMs,
+        pausedAt: null,
+      };
+    }),
+
+  pauseCombat: () =>
+    set((state) =>
+      state.combatActive ? { combatActive: false, pausedAt: Date.now() } : state,
+    ),
 
   damageBoss: (amount, kind) =>
     set((state) => {
@@ -167,7 +213,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       affinity: state.affinity,
       healthRemaining: Math.round((state.playerHp / PLAYER_MAX_HP) * 100),
       fightDuration: state.fightStartedAt
-        ? Math.round((Date.now() - state.fightStartedAt) / 1000)
+        ? Math.max(
+            0,
+            Math.round((Date.now() - state.fightStartedAt - state.pausedTotalMs) / 1000),
+          )
         : 0,
     };
   },
@@ -180,6 +229,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       playerHp: PLAYER_MAX_HP,
       bossHp: BOSS_MAX_HP,
       fightStartedAt: null,
+      combatActive: false,
+      pausedTotalMs: 0,
+      pausedAt: null,
       telemetry: { ...EMPTY_TELEMETRY },
       forge: { ...EMPTY_FORGE },
     }),
