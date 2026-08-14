@@ -2,6 +2,8 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { AdditiveBlending, Color, InstancedMesh, Object3D } from "three";
 import { ARENA_RADIUS } from "./Arena";
+import { useGameStore } from "../state/useGameStore";
+import { themeFor } from "./theme";
 
 /**
  * Instanced embers drifting toward the forge.
@@ -14,6 +16,8 @@ const COUNT = 400;
 export function Embers({ active }: { active: boolean }) {
   const mesh = useRef<InstancedMesh>(null);
   const dummy = useMemo(() => new Object3D(), []);
+  const affinity = useGameStore((s) => s.affinity);
+  const theme = themeFor(affinity);
 
   const particles = useMemo(
     () =>
@@ -62,7 +66,7 @@ export function Embers({ active }: { active: boolean }) {
     <instancedMesh ref={mesh} args={[undefined, undefined, COUNT]} frustumCulled={false}>
       <sphereGeometry args={[1, 6, 6]} />
       <meshBasicMaterial
-        color={new Color("#ff8c42")}
+        color={new Color(theme.ember)}
         blending={AdditiveBlending}
         transparent
         opacity={active ? 0.9 : 0.35}

@@ -5,6 +5,7 @@ import { useGameStore } from "../state/useGameStore";
 import { COMBAT, isWithinArc } from "./combat";
 import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
+import { themeFor } from "./theme";
 
 /**
  * The Ashen Warden.
@@ -33,6 +34,8 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   const phase = useGameStore((s) => s.phase);
   const bossHp = useGameStore((s) => s.bossHp);
   const combatActive = useGameStore((s) => s.combatActive);
+  const affinity = useGameStore((s) => s.affinity);
+  const theme = themeFor(affinity);
 
   useImperativeHandle(ref, () => ({
     position: () => position.current,
@@ -128,7 +131,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
             ? 1
             : 0.15;
       material.emissiveIntensity = 0.4 + charge * 4;
-      material.emissive = new Color(hitFlash.current > 0 ? "#ffffff" : "#ff4d1a");
+      material.emissive = new Color(hitFlash.current > 0 ? "#ffffff" : theme.bossCore);
     }
     if (hitFlash.current > 0) hitFlash.current = Math.max(0, hitFlash.current - delta * 6);
 
@@ -146,7 +149,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         <sphereGeometry args={[0.34, 20, 20]} />
         <meshStandardMaterial
           color="#3a1a0d"
-          emissive="#ff4d1a"
+          emissive={theme.bossCore}
           emissiveIntensity={1.2}
           toneMapped={false}
         />
