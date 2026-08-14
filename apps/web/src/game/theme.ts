@@ -40,7 +40,7 @@ export const ARENA_THEMES: Record<Affinity, ArenaTheme> = {
     rune: "#ff6b1a",
   },
   ice: {
-    // Colder, brighter, and emptier — a frost arena should feel exposed rather
+    // Colder, brighter, and emptier, a frost arena should feel exposed rather
     // than smothered, so the fog sits lighter and the fill is blue.
     fog: "#05080c",
     ambient: "#22303a",

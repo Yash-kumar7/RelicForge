@@ -1,12 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
 import { STAGE_HEADLINE, forgeLabelFor } from "./forgeCopy";
+import { bossAt } from "../game/bosses";
 
 /**
  * The cinematic overlay.
  *
  * Every beat is driven by a named stage from the SSE stream, so what the player
- * sees is always the true state of a real generation — including the concept
+ * sees is always the true state of a real generation, including the concept
  * image, which is a reveal in its own right rather than a loading screen.
  */
 export function ForgeSequence({ onClaim }: { onClaim: () => void }) {
@@ -14,6 +15,10 @@ export function ForgeSequence({ onClaim }: { onClaim: () => void }) {
   const telemetry = useGameStore((s) => s.telemetry);
   const playerHp = useGameStore((s) => s.playerHp);
   const affinity = useGameStore((s) => s.affinity);
+  const bossLevel = useGameStore((s) => s.bossLevel);
+  // Named explicitly: the boss you killed is part of the relic's identity, and
+  // it is literally in the prompt that generated it.
+  const boss = bossAt(bossLevel);
 
   const showTelemetry = forge.stage !== "IDLE" && forge.stage !== "ANALYZING";
   const headline = STAGE_HEADLINE[forge.stage];
@@ -42,7 +47,7 @@ export function ForgeSequence({ onClaim }: { onClaim: () => void }) {
         </AnimatePresence>
       </div>
 
-      {/* Concept reveal — arrives ~10-20s in, long before the mesh. */}
+      {/* Concept reveal, arrives ~10-20s in, long before the mesh. */}
       <AnimatePresence>
         {forge.conceptUrl && forge.stage !== "COMPLETE" && (
           <motion.div
@@ -62,7 +67,7 @@ export function ForgeSequence({ onClaim }: { onClaim: () => void }) {
       </AnimatePresence>
 
       <div className="w-full max-w-3xl">
-        {/* Telemetry readout — the causal link, stated plainly. */}
+        {/* Telemetry readout, the causal link, stated plainly. */}
         <AnimatePresence>
           {showTelemetry && forge.dna && (
             <motion.dl
@@ -99,7 +104,7 @@ export function ForgeSequence({ onClaim }: { onClaim: () => void }) {
           )}
         </AnimatePresence>
 
-        {/* Forging progress — thematic stages, driven by real task percent. */}
+        {/* Forging progress, thematic stages, driven by real task percent. */}
         <AnimatePresence>
           {forge.stage === "FORGING_3D" && (
             <motion.div
@@ -139,7 +144,7 @@ export function ForgeSequence({ onClaim }: { onClaim: () => void }) {
                 Legendary {forge.dna?.weaponClass}
               </p>
               <p className="mt-2 text-sm text-stone-500">
-                Forged from your victory over the Ashen Warden
+                Forged from your victory over {boss.name}
               </p>
               {forge.totalMs !== null && (
                 <p className="mt-1 font-mono text-[10px] text-stone-700">

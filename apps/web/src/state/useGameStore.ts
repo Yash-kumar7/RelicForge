@@ -6,7 +6,7 @@ import { bossAt, type BossLevel } from "../game/bosses";
  * Game phase, combat telemetry, and the forge lifecycle.
  *
  * Per-frame values (position, velocity, cooldown timers) deliberately live in
- * refs inside the components, not here — pushing them through React state at
+ * refs inside the components, not here, pushing them through React state at
  * 60fps would re-render the whole tree every frame.
  */
 

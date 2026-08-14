@@ -8,7 +8,7 @@ export const ARENA_RADIUS = 14;
 
 /**
  * The arena exists to frame two things: the boss, and the forge behind it.
- * Everything is built from primitives — a downloaded environment would add
+ * Everything is built from primitives, a downloaded environment would add
  * megabytes and pull attention away from the one asset that matters.
  *
  * Its palette and layout both key off the player's affinity, so an ember run
@@ -79,7 +79,7 @@ export function Arena() {
         <meshStandardMaterial color={theme.ground} roughness={0.95} metalness={0.05} />
       </mesh>
 
-      {/* Rune ring — orients the player in a circular arena that otherwise has
+      {/* Rune ring, orients the player in a circular arena that otherwise has
           no landmarks, and carries the affinity colour at ground level. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
         <ringGeometry args={[ARENA_RADIUS - 4.2, ARENA_RADIUS - 4, 96]} />

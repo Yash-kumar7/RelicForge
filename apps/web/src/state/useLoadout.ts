@@ -47,7 +47,7 @@ function save(relics: OwnedRelic[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(relics));
   } catch {
-    /* private mode or quota — the collection is a nicety, never load-bearing */
+    /* private mode or quota, the collection is a nicety, never load-bearing */
   }
 }
 

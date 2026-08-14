@@ -6,7 +6,7 @@ import { hitstop, shake } from "./feedback";
  *
  * Applied after the player has written its own position for the frame, so the
  * shake is a visual offset and never corrupts the authoritative position used
- * for hit tests — otherwise a violent hit could shove you out of your own
+ * for hit tests, otherwise a violent hit could shove you out of your own
  * attack range.
  */
 export function CameraShake() {

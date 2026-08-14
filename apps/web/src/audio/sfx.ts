@@ -4,7 +4,7 @@
  * Every cue here is generated with oscillators and noise buffers rather than
  * loaded from files. That keeps the repo free of binary assets and licensing
  * questions, and audio matters disproportionately for how finished the forge
- * reveal feels — a silent reveal reads as a tech demo.
+ * reveal feels, a silent reveal reads as a tech demo.
  */
 
 let context: AudioContext | null = null;
@@ -122,7 +122,7 @@ export const sfx = {
     noise(1.8, 0.16, 700);
   },
 
-  /** Forge ignition — the arena has just gone quiet and dark. */
+  /** Forge ignition, the arena has just gone quiet and dark. */
   forgeIgnite: () => {
     tone({ frequency: 48, sweepTo: 130, duration: 2.4, type: "sine", gain: 0.3 });
     noise(2.2, 0.12, 500);

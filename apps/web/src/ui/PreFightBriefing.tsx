@@ -10,7 +10,7 @@ import { useGameStore } from "../state/useGameStore";
  * they fight is the input. Saying it once, plainly, before the fight is what
  * makes the reveal land later.
  *
- * It also solves a mechanical problem — pointer lock requires a click, and an
+ * It also solves a mechanical problem, pointer lock requires a click, and an
  * unexplained dead screen reads as a bug.
  */
 export function PreFightBriefing() {
@@ -66,8 +66,8 @@ export function PreFightBriefing() {
 
           <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-stone-400">
             There is no loot table. When the Warden falls, the forge reads{" "}
-            <span className="text-stone-200">how you won</span> — how hard you swung, how often you
-            dodged, how close to death you finished — and generates a weapon that has never existed
+            <span className="text-stone-200">how you won</span>, how hard you swung, how often you
+            dodged, how close to death you finished, and generates a weapon that has never existed
             before.
           </p>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-stone-500">

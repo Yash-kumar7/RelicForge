@@ -6,12 +6,12 @@ import { themeFor } from "../game/theme";
 import { bossAt } from "../game/bosses";
 
 /**
- * Loadout — hold TAB.
+ * Loadout, hold TAB.
  *
  * Two slots, and the second one is the point. Your starting blade is fully
  * specified: iron, 25/60 damage, mass-produced, one of thousands. The relic
  * slot shows `??????` because the weapon that fills it does not exist yet and
- * cannot be looked up — it will be generated from the fight you are currently
+ * cannot be looked up, it will be generated from the fight you are currently
  * having.
  *
  * Once earned it persists, so the slot is a record of runs rather than a
@@ -81,7 +81,7 @@ export function LoadoutPanel() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                {/* Slot 1 — what you brought. */}
+                {/* Slot 1, what you brought. */}
                 <div className="border border-ash-800 bg-ash-900/70 p-5">
                   <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-600">
                     equipped
@@ -108,7 +108,7 @@ export function LoadoutPanel() {
                   </dl>
                 </div>
 
-                {/* Slot 2 — what does not exist yet. */}
+                {/* Slot 2, what does not exist yet. */}
                 <div
                   className="border bg-ash-900/70 p-5"
                   style={{ borderColor: earned ? theme.forge : "#2a2622" }}
@@ -130,10 +130,10 @@ export function LoadoutPanel() {
                       </p>
                       <dl className="mt-5 space-y-1.5 font-mono text-[11px]">
                         {[
-                          ["class", earned.dna?.weaponClass ?? "—"],
-                          ["element", earned.dna?.element ?? "—"],
-                          ["temperament", earned.dna?.temperament ?? "—"],
-                          ["condition", earned.dna?.condition ?? "—"],
+                          ["class", earned.dna?.weaponClass ?? "-"],
+                          ["element", earned.dna?.element ?? "-"],
+                          ["temperament", earned.dna?.temperament ?? "-"],
+                          ["condition", earned.dna?.condition ?? "-"],
                           ["unique", "one of one"],
                         ].map(([k, v]) => (
                           <div key={k} className="flex justify-between border-b border-ash-800/60 pb-1">

@@ -144,7 +144,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
           <Player bossPosition={bossPosition} onHitBoss={onHitBoss} />
           <CameraShake />
           <PlayerHands />
-          {/* The blade you arrive with — plain, mass-produced, and exactly the
+          {/* The blade you arrive with, plain, mass-produced, and exactly the
               thing the generated relic is meant to replace. */}
           <StarterWeapon />
           <Embers active={phase !== "FIGHTING"} />

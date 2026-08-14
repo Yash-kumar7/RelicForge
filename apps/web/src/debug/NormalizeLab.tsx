@@ -71,7 +71,7 @@ function NormalizedRelic({
 
   return (
     <group>
-      {/* Socket marker — where a hand would be. The weapon should meet it at the grip. */}
+      {/* Socket marker, where a hand would be. The weapon should meet it at the grip. */}
       <mesh position={[0, 0, 0]}>
         <sphereGeometry args={[0.05, 16, 16]} />
         <meshBasicMaterial color="#ff6b1a" />
@@ -188,8 +188,8 @@ export default function NormalizeLab() {
       <header className="mb-6">
         <h1 className="font-display text-2xl tracking-[0.2em] text-ember-400">NORMALIZE LAB</h1>
         <p className="mt-1 max-w-3xl text-xs leading-relaxed text-stone-500">
-          Each weapon is canonicalized by <code className="text-stone-400">normalizeRelic()</code> —
-          area-weighted PCA for the axis, radius profile for the grip — then mounted at the orange
+          Each weapon is canonicalized by <code className="text-stone-400">normalizeRelic()</code> -
+          area-weighted PCA for the axis, radius profile for the grip, then mounted at the orange
           socket marker. <span className="text-stone-400">raw</span> is how crooked Meshy&apos;s
           output arrived before correction; <span className="text-stone-400">conf</span> is how far
           the tip/pommel heuristic can be trusted before it defers to the class prior.

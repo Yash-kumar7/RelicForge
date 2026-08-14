@@ -12,7 +12,7 @@
  */
 export interface BossLevel {
   level: number;
-  /** Passed to the backend as bossInfluence — this shapes the prompt. */
+  /** Passed to the backend as bossInfluence, this shapes the prompt. */
   name: string;
   title: string;
   blurb: string;
@@ -97,7 +97,7 @@ export function recordClear(level: number): void {
   try {
     localStorage.setItem(STORAGE_KEY, String(Math.max(level, highestCleared())));
   } catch {
-    /* private mode — progression is a nicety, never load-bearing */
+    /* private mode, progression is a nicety, never load-bearing */
   }
 }
 

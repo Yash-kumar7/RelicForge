@@ -5,7 +5,7 @@ import { useGameStore } from "../state/useGameStore";
  * Losing costs you the relic.
  *
  * If a defeat still produced a weapon, the reward would stop being a record of
- * how you fought — which is the only claim the project makes.
+ * how you fought, which is the only claim the project makes.
  */
 export function DefeatScreen() {
   const reset = useGameStore((s) => s.reset);

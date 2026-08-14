@@ -10,7 +10,7 @@ import { sfx } from "../audio/sfx";
  * First-person player.
  *
  * First-person is a scope decision as much as an aesthetic one: no character
- * model, no rig, no Mixamo, no animation state machine — and the generated
+ * model, no rig, no Mixamo, no animation state machine, and the generated
  * relic occupies a large share of frame, which is the shot the whole project
  * exists to produce.
  *

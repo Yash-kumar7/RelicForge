@@ -11,8 +11,8 @@ import { sfx } from "../audio/sfx";
  * The reveal.
  *
  * The relic materializes above the forge, canonicalized and slowly rotating,
- * before the player claims it. Showing it in world space first — rather than
- * cutting straight to a first-person hand — is what sells that this is a real
+ * before the player claims it. Showing it in world space first, rather than
+ * cutting straight to a first-person hand, is what sells that this is a real
  * object in the scene and not a UI illustration.
  */
 export function RelicPedestal({

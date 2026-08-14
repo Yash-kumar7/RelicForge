@@ -12,7 +12,7 @@ const RelicCompare = lazy(() => import("./debug/RelicCompare"));
 
 /**
  * Hash routing, deliberately. The game is one immersive surface and the dev
- * views are two more — a router dependency would earn nothing here.
+ * views are two more, a router dependency would earn nothing here.
  */
 function useHashRoute(): string {
   const [hash, setHash] = useState(() => window.location.hash.replace(/^#/, ""));

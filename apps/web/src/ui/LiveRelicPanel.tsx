@@ -11,7 +11,7 @@ import { PLAYER_MAX_HP, useGameStore } from "../state/useGameStore";
  * heavy attacks makes the mechanic self-evident without a tutorial.
  *
  * It runs the real buildRelicDNA against live telemetry, so what is shown here
- * is exactly what the forge will receive — not an approximation.
+ * is exactly what the forge will receive, not an approximation.
  */
 export function LiveRelicPanel() {
   const phase = useGameStore((s) => s.phase);

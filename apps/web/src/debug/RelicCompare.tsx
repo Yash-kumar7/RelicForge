@@ -10,7 +10,7 @@ import { meshSampleFrom } from "../lib/meshSample";
  * boss, two different objects.
  *
  * Silhouette mode is the honest test. If the relics only differ by colour, they
- * collapse into the same black shape and the claim is dead — so the toggle is
+ * collapse into the same black shape and the claim is dead, so the toggle is
  * a check, not a gimmick.
  */
 

@@ -170,6 +170,26 @@ The cache key hashes DNA **and the entire generation config** — prompt version
 
 ---
 
+## What a run looks like
+
+Pick an affinity — it themes the entire arena, so an ember run and a frost run
+do not read as the same footage twice. Then pick your quarry from the boss
+ladder. There is deliberately **no difficulty slider**: both would scale the
+same numbers, but only the ladder changes `bossInfluence`, which flows into the
+concept prompt. Level 2 does not just hit harder, it forges a weapon grown from
+salt and drowned bone instead of ash and molten rock.
+
+You arrive holding a plain iron arming sword — mass-produced, one of eleven
+million, and exactly the thing the relic exists to replace. Hold **TAB** for the
+loadout and the second slot reads `??????`, because that weapon does not exist
+yet and cannot be looked up. It will be generated from the fight you are
+currently having.
+
+Bosses are Meshy-generated too. They are static meshes moved by code — approach,
+telegraph and strike are whole-body transforms — so a generated model drops into
+the same behaviour a primitive one had, with no rig and no animation clips. If a
+level has no model yet, a primitive fallback keeps the fight intact.
+
 ## How you play
 
 Most players assume loot comes from a table, so nothing about a boss fight signals that *how* you fight is the input. RelicForge says it once before the fight, then proves it during:
@@ -178,6 +198,12 @@ Most players assume loot comes from a table, so nothing about a boss fight signa
 - A **live relic panel** in the corner runs the real `buildRelicDNA` against your telemetry as you fight. Commit to heavy attacks and `BALANCED` becomes `BRUTAL` in front of you. Drop below 20% health and `battle-worn` becomes `shattered`.
 
 That panel is the tutorial. Watching the projection change is more convincing than any amount of explanation, and it means the reveal at the end confirms something the player already worked out.
+
+Impact arrives on four channels at once, because any one alone reads as weak: a
+floating damage number, a boss that staggers and is knocked back, camera shake,
+and hitstop that freezes the shake decay for a few frames so a heavy hit lands
+with weight. Armoured gauntlets hold the blade in view — first person is a scope
+decision, but a floating camera with no arms is not embodiment.
 
 ## Setup
 
@@ -224,6 +250,8 @@ packages/relic-core   Pure, no I/O. Imported by both.
 - **Concept selection is a composition heuristic**, not a quality judgment — it rejects off-centre and small-in-frame subjects, nothing subtler.
 - **The client bundle is ~1.5 MB (430 KB gzipped)**, dominated by three.js. The dev surfaces are code-split; the engine itself is on the critical path.
 - **Losing forfeits the relic.** A weapon forged from a defeat would stop being a record of how you won.
+- **Bosses do not animate.** They are static generated meshes moved as whole bodies. Meshy has rigging and animation endpoints; wiring them up is the obvious next step and is not done here.
+- **The player has hands, not a body.** First person means no character model, which is a deliberate scope choice rather than an oversight.
 
 ## Where this goes
 

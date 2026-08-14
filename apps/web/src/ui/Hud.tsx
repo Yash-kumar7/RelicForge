@@ -17,6 +17,7 @@ export function Hud() {
   const bossMaxHp = useGameStore((s) => s.bossMaxHp);
   const bossLevel = useGameStore((s) => s.bossLevel);
   const affinity = useGameStore((s) => s.affinity);
+  const forge = useGameStore((s) => s.forge);
   const theme = themeFor(affinity);
 
   if (phase !== "FIGHTING" && phase !== "EQUIPPED") return null;
@@ -57,7 +58,7 @@ export function Hud() {
       )}
 
       {/* Player */}
-      <div className="absolute bottom-8 left-8 w-56">
+      <div className="absolute bottom-28 left-8 w-56">
         <div className="mb-1 flex items-baseline justify-between">
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-600">
             Vitality
@@ -86,6 +87,36 @@ export function Hud() {
           <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
             relic → {conditionBand}
           </p>
+        )}
+      </div>
+
+      {/* What you are actually holding. Before the forge it is the plain iron
+          blade; afterwards it is the relic you just earned, named. Without
+          this the weapon in your hands is never identified anywhere on screen
+          outside the loadout panel. */}
+      <div className="absolute bottom-8 left-8 mt-4 w-56 border-t border-ash-800 pt-2">
+        <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-stone-700">wielding</p>
+        {phase === "EQUIPPED" && forge.name ? (
+          <>
+            <p
+              className="mt-1 font-display text-sm tracking-[0.18em]"
+              style={{ color: theme.forge }}
+            >
+              {forge.name.toUpperCase()}
+            </p>
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+              legendary {forge.dna?.weaponClass} · one of one
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 font-display text-sm tracking-[0.15em] text-stone-400">
+              Iron Arming Sword
+            </p>
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
+              common · tab for loadout
+            </p>
+          </>
         )}
       </div>
 

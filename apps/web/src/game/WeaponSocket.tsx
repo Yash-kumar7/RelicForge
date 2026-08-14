@@ -35,7 +35,7 @@ export function WeaponSocket({ modelUrl, weaponClass, onNormalized }: WeaponSock
   const model = useMemo(() => scene.clone(true), [scene]);
 
   // Canonicalize once. The same function runs in Node against synthetic
-  // geometry in the test suite — one implementation, two runtimes.
+  // geometry in the test suite, one implementation, two runtimes.
   const canonical = useMemo(() => normalizeRelic(meshSampleFrom(model), weaponClass), [
     model,
     weaponClass,

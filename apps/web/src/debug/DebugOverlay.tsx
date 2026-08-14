@@ -5,7 +5,7 @@ import { useGameStore } from "../state/useGameStore";
  * Backtick-toggled diagnostics.
  *
  * Hidden by default because the player-facing experience should never look like
- * an API playground — but the numbers here are what the write-up is built from,
+ * an API playground, but the numbers here are what the write-up is built from,
  * and having them in-game beats reading server logs during a recording.
  */
 
@@ -25,8 +25,8 @@ interface DebugRelic {
   error: string | null;
 }
 
-const ms = (v: number | null) => (v === null ? "—" : `${(v / 1000).toFixed(1)}s`);
-const mb = (v: number | null) => (v === null ? "—" : `${(v / 1048576).toFixed(2)}MB`);
+const ms = (v: number | null) => (v === null ? "-" : `${(v / 1000).toFixed(1)}s`);
+const mb = (v: number | null) => (v === null ? "-" : `${(v / 1048576).toFixed(2)}MB`);
 
 export function DebugOverlay() {
   const [open, setOpen] = useState(false);
@@ -77,7 +77,7 @@ export function DebugOverlay() {
       <div className="mb-4 flex items-baseline justify-between">
         <span className="uppercase tracking-[0.3em] text-ember-400">diagnostics</span>
         <span className="text-stone-600">
-          balance {balance ?? "—"} · ` to close
+          balance {balance ?? "-"} · ` to close
         </span>
       </div>
 
@@ -87,13 +87,13 @@ export function DebugOverlay() {
         <div className="grid grid-cols-2 gap-x-8 gap-y-1 md:grid-cols-4">
           {[
             ["stage", forge.stage],
-            ["relic", forge.name ?? "—"],
+            ["relic", forge.name ?? "-"],
             ["mesh %", String(forge.meshPercent)],
             ["cached", String(forge.cached)],
-            ["class", forge.dna?.weaponClass ?? "—"],
-            ["element", forge.dna?.element ?? "—"],
-            ["temperament", forge.dna?.temperament ?? "—"],
-            ["condition", forge.dna?.condition ?? "—"],
+            ["class", forge.dna?.weaponClass ?? "-"],
+            ["element", forge.dna?.element ?? "-"],
+            ["temperament", forge.dna?.temperament ?? "-"],
+            ["condition", forge.dna?.condition ?? "-"],
           ].map(([k, v]) => (
             <div key={k} className="flex justify-between border-b border-ash-900 py-0.5">
               <span className="text-stone-700">{k}</span>
@@ -103,7 +103,7 @@ export function DebugOverlay() {
         </div>
       </section>
 
-      {/* Generation history — the numbers the write-up quotes. */}
+      {/* Generation history, the numbers the write-up quotes. */}
       <section>
         <h3 className="mb-2 uppercase tracking-[0.2em] text-stone-500">relics</h3>
         <div className="overflow-x-auto">
@@ -137,7 +137,7 @@ export function DebugOverlay() {
                   <td className="py-1 pr-4">{r.mode}</td>
                   <td className="py-1 pr-4">{ms(r.conceptMs)}</td>
                   <td className="py-1 pr-4">{ms(r.meshMs)}</td>
-                  <td className="py-1 pr-4">{r.optimizeMs === null ? "—" : `${r.optimizeMs}ms`}</td>
+                  <td className="py-1 pr-4">{r.optimizeMs === null ? "-" : `${r.optimizeMs}ms`}</td>
                   <td className="py-1 pr-4 text-stone-300">{ms(r.totalMs)}</td>
                   <td className="py-1 pr-4">{mb(r.rawGlbBytes)}</td>
                   <td className="py-1 pr-4 text-stone-300">{mb(r.glbBytes)}</td>

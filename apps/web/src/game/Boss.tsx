@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Color, Group, Mesh, MeshStandardMaterial, Vector3 } from "three";
+import { Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { COMBAT, isWithinArc } from "./combat";
 import { playerHandle } from "./Player";
@@ -13,8 +13,8 @@ import { BossModel } from "./BossModel";
 /**
  * The Ashen Warden.
  *
- * Still primitives — spending Meshy generations on the boss would blur the one
- * moment that matters — but arranged to read as a hulking armoured figure
+ * Still primitives, spending Meshy generations on the boss would blur the one
+ * moment that matters, but arranged to read as a hulking armoured figure
  * rather than a capsule: heavy torso, pauldrons, horns, an exposed core, and a
  * ring of broken plates orbiting on their own axis.
  *
@@ -33,6 +33,7 @@ export interface BossHandle {
 export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   const group = useRef<Group>(null);
   const body = useRef<Group>(null);
+  const dangerRing = useRef<Mesh>(null);
   const plates = useRef<Group>(null);
   const coreMesh = useRef<Mesh>(null);
   const position = useRef(new Vector3(0, 0, -4));
@@ -109,7 +110,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
     }
 
     if (state.current === "DYING") {
-      // Collapse rather than a death animation — no rig, no clips.
+      // Collapse rather than a death animation, no rig, no clips.
       const t = Math.min(1, (now - deathAt.current) / 1600);
       g.position.y = -t * 2.4;
       g.rotation.z = t * 0.6;
@@ -200,11 +201,43 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
           : 0;
 
     if (body.current) {
-      // Coils on the wind-up, rocks back when staggered. Both read at a glance
-      // from across the arena, which is the whole job.
-      body.current.rotation.x = -charge * 0.22 + stagger.current * 0.3;
-      body.current.position.y = -charge * 0.18;
-      body.current.scale.setScalar(1 + charge * 0.06);
+      /**
+       * The attack has to be legible from across the arena, and it has to work
+       * on a generated mesh that has no rig - so the whole body performs it.
+       *
+       * Wind-up: rears back and up, growing, like something loading a swing.
+       * Strike: slams forward past vertical, hard and fast.
+       * Stagger: rocks back independently of either.
+       */
+      const striking = state.current === "STRIKE";
+      const strikeT = striking
+        ? 1 - Math.max(0, (stateUntil.current - now) / COMBAT.boss.activeMs)
+        : 0;
+
+      body.current.rotation.x =
+        (striking ? strikeT * 0.55 : -charge * 0.42) + stagger.current * 0.3;
+      body.current.position.y = striking ? -strikeT * 0.5 : charge * 0.35;
+      body.current.scale.setScalar(1 + charge * 0.12 - strikeT * 0.05);
+      body.current.rotation.z = striking ? Math.sin(strikeT * Math.PI) * 0.22 : charge * -0.12;
+    }
+
+    /**
+     * Ground telegraph. The single clearest signal that something is about to
+     * happen: a ring that grows and brightens under the boss during the
+     * wind-up, then snaps to full size on the strike. Without it a player
+     * simply watches their health drop with no idea what hit them.
+     */
+    if (dangerRing.current) {
+      const striking = state.current === "STRIKE";
+      const visible = state.current === "TELEGRAPH" || striking;
+      dangerRing.current.visible = visible;
+      if (visible) {
+        const scale = striking ? 1 : 0.35 + charge * 0.65;
+        dangerRing.current.scale.setScalar(scale);
+        const material = dangerRing.current.material as MeshBasicMaterial;
+        material.opacity = striking ? 0.85 : 0.15 + charge * 0.5;
+        material.color = new Color(striking ? "#ffffff" : theme.bossCore);
+      }
     }
 
     if (plates.current) {
@@ -224,7 +257,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
       <group ref={body}>
         <BossModel slug={bossSlug} onLoaded={onModelLoaded} />
 
-        {/* Primitive fallback — hidden the moment a generated mesh loads. */}
+        {/* Primitive fallback, hidden the moment a generated mesh loads. */}
         <group visible={!hasModel}>
         <mesh position={[0, 1.9, 0]} castShadow>
           <boxGeometry args={[1.5, 1.9, 1.1]} />
@@ -287,6 +320,12 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         </mesh>
         <pointLight position={[0, 2.0, 0.9]} color={theme.bossCore} intensity={6} distance={9} />
       </group>
+
+      {/* Attack telegraph, flat on the floor and scaled to the boss's reach. */}
+      <mesh ref={dangerRing} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} visible={false}>
+        <ringGeometry args={[COMBAT.boss.reach - 0.5, COMBAT.boss.reach, 48]} />
+        <meshBasicMaterial color="#ff4d1a" transparent opacity={0.4} toneMapped={false} side={2} />
+      </mesh>
 
       <group ref={plates} position={[0, 1.8, 0]}>
         {brokenPlates.map((p) => (

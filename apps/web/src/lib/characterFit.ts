@@ -4,7 +4,7 @@ import { Box3, Vector3, type Object3D } from "three";
  * Fits a generated character mesh into the arena.
  *
  * Deliberately not normalizeRelic. A weapon needs its principal axis found and
- * its grip inferred; a character needs something simpler and stricter — stand
+ * its grip inferred; a character needs something simpler and stricter, stand
  * on the floor, face the player, and be exactly as tall as the design says.
  * Running PCA on a humanoid would work (height dominates) but would also be
  * free to flip it, and a boss standing on its head is a worse failure than a

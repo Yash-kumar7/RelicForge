@@ -2,7 +2,7 @@
  * Combat tuning.
  *
  * Deliberately shallow. The fight exists to produce meaningful telemetry, not
- * to be a good action game — every minute spent on combat depth is a minute not
+ * to be a good action game, every minute spent on combat depth is a minute not
  * spent on the forge, which is the actual product.
  */
 export const COMBAT = {

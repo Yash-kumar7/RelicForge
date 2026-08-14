@@ -3,7 +3,7 @@
  *
  * Landing a hit produced a sound and a number changing in the HUD, which is not
  * enough to feel like you are killing something. Impact needs to arrive on
- * several channels at once — camera, world, and UI — so this is a tiny
+ * several channels at once, camera, world, and UI, so this is a tiny
  * subscribable store rather than props threaded through the scene graph.
  *
  * Kept out of Zustand deliberately: these fire per hit and are consumed inside
@@ -29,7 +29,7 @@ const popListeners = new Set<(pops: DamagePop[]) => void>();
 /** Camera shake, decayed in useFrame. */
 export const shake = { magnitude: 0 };
 
-/** Brief time dilation on impact — the classic "hitstop" weight cue. */
+/** Brief time dilation on impact, the classic "hitstop" weight cue. */
 export const hitstop = { until: 0 };
 
 export function registerHit(amount: number, kind: "light" | "heavy"): void {

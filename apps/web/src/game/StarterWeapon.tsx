@@ -10,7 +10,7 @@ import { themeFor } from "./theme";
 /**
  * The blade you start with.
  *
- * Fighting with empty hands made swings unreadable — there was nothing on
+ * Fighting with empty hands made swings unreadable, there was nothing on
  * screen to connect the click to the damage. It also costs the ending its
  * contrast: a plain, mass-produced iron sword is exactly the thing the
  * generated relic is supposed to replace, so the player should be looking at

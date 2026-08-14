@@ -5,7 +5,7 @@ import { useGameStore } from "../state/useGameStore";
  * Pointer lock is the fight.
  *
  * Escape releases the cursor, which means the player can no longer look or
- * aim — so the boss must stop too. Without this, walking away mid-fight comes
+ * aim, so the boss must stop too. Without this, walking away mid-fight comes
  * back to a corpse, and the relic that gets forged is a record of a fight the
  * player was not present for.
  */
@@ -31,7 +31,7 @@ export function PauseOverlay() {
     armCombat();
   }, [armCombat]);
 
-  // Only a fight already under way can be paused — before the first arm the
+  // Only a fight already under way can be paused, before the first arm the
   // briefing owns the screen instead.
   const paused = phase === "FIGHTING" && !combatActive && fightStartedAt !== null;
   if (!paused) return null;

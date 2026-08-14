@@ -52,7 +52,7 @@ export function TitleScreen() {
 
   if (phase === "TITLE") {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-ash-950">
+      <div className="flex h-full flex-col items-center justify-center overflow-y-auto bg-ash-950 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -67,13 +67,55 @@ export function TitleScreen() {
           </p>
         </motion.div>
 
+        {/*
+          The premise has to be stated on the front page. Players arrive with a
+          lifetime of loot tables behind them and will assume the weapon was
+          picked from a list, which is the one thing this game does not do.
+        */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 1 }}
+          className="mt-14 max-w-2xl px-8 text-center"
+        >
+          <p className="text-sm leading-relaxed text-stone-400">
+            Most games hand you loot from a list. Kill the boss, roll the table, receive the same
+            sword eleven million other players received.
+          </p>
+          <p className="mt-4 text-sm leading-relaxed text-stone-400">
+            Here the weapon does not exist until you earn it. When the boss falls, the forge reads
+            how you fought and generates a new 3D weapon in real time, then puts it in your hands.
+          </p>
+
+          <div className="mt-8 grid gap-3 text-left sm:grid-cols-3">
+            {[
+              ["1 · Fight", "Swing hard, dodge, survive. Everything you do is recorded."],
+              ["2 · Forge", "Your fight becomes a design, then a real 3D model. Takes about two minutes."],
+              ["3 · Wield", "Claim it and carry it. Nobody else will ever have that weapon."],
+            ].map(([title, body]) => (
+              <div key={title} className="border border-ash-800 px-4 py-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ember-400">
+                  {title}
+                </p>
+                <p className="mt-2 text-[11px] leading-relaxed text-stone-500">{body}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-6 text-[11px] leading-relaxed text-stone-600">
+            Fight recklessly and it comes out brutal and cracked. Fight carefully and it comes out
+            elegant and flawless. Two players can beat the same boss and walk away holding
+            completely different weapons.
+          </p>
+        </motion.div>
+
         <motion.button
           type="button"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9, duration: 1 }}
           onClick={() => setPhase("CHOOSE_AFFINITY")}
-          className="mt-16 border border-ember-500/50 px-12 py-3 text-xs uppercase tracking-[0.4em] text-ember-300 transition hover:bg-ember-500/10"
+          className="mt-10 border border-ember-500/50 px-12 py-3 text-xs uppercase tracking-[0.4em] text-ember-300 transition hover:bg-ember-500/10"
         >
           Enter the Arena
         </motion.button>
@@ -122,7 +164,7 @@ export function TitleScreen() {
         <section className="mt-10">
           <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Choose your quarry</p>
           <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-stone-600">
-            Each boss forges a different kind of weapon — what you kill becomes part of what you
+            Each boss forges a different kind of weapon, what you kill becomes part of what you
             carry.
           </p>
 

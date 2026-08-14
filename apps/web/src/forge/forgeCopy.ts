@@ -3,7 +3,7 @@ import type { ForgeStage } from "../state/useGameStore";
 /**
  * Thematic stage copy.
  *
- * meshy-7 with ultra takes 90–115 seconds measured, and the sequence has to
+ * meshy-7 with ultra takes 90-115 seconds measured, and the sequence has to
  * hold that without feeling broken. "Loading 47%" makes latency feel like a
  * defect; naming the stages makes it feel like the forge is working.
  */

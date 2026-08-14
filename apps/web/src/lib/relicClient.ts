@@ -60,7 +60,7 @@ export async function requestRelic(
  * Subscribes to a relic's lifecycle. Returns an unsubscribe function.
  *
  * The server replays current state on connect, so a client that opens the
- * stream late — or reconnects mid-forge — is never stuck waiting for an event
+ * stream late, or reconnects mid-forge, is never stuck waiting for an event
  * that already fired.
  */
 export function streamRelic(
@@ -102,6 +102,6 @@ export async function saveTransform(relicId: string, transform: RelicTransform):
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ transform }),
   }).catch(() => {
-    /* diagnostics only — never block the reveal on this */
+    /* diagnostics only, never block the reveal on this */
   });
 }

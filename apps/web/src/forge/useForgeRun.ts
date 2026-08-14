@@ -7,7 +7,7 @@ import type { RelicTransform } from "@relic/core";
  * Drives one forge run: snapshot telemetry, ask the server for a relic, then
  * translate the event stream into forge stages.
  *
- * The stage machine is what the cinematic renders from — no booleans, so an
+ * The stage machine is what the cinematic renders from, no booleans, so an
  * impossible on-screen state is impossible by construction.
  */
 export function useForgeRun() {
@@ -34,7 +34,7 @@ export function useForgeRun() {
           stage: "DNA_READY",
         });
 
-        // A cache hit arrives complete. Still play the sequence — the beats are
+        // A cache hit arrives complete. Still play the sequence, the beats are
         // the product, and skipping them because the asset was ready would make
         // the fast path feel like a different, lesser experience.
         if (relic.cached && relic.modelUrl) {

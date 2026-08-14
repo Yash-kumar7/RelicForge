@@ -6,7 +6,7 @@ import { fitCharacter } from "../lib/characterFit";
 /**
  * A Meshy-generated boss, if one has been produced for this level.
  *
- * Static mesh moved by code — approach, telegraph and strike are whole-body
+ * Static mesh moved by code, approach, telegraph and strike are whole-body
  * transforms applied by the parent, exactly as they were for the primitive
  * boss, so a generated model drops in without needing a rig or clips.
  *
