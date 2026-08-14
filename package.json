@@ -13,17 +13,18 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "pnpm -r exec tsc --noEmit",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "spike": "pnpm --filter @relic/api spike"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.10.1",
     "concurrently": "^10.0.4",
+    "eslint": "^10.8.1",
     "prettier": "^3.9.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.67.0",
-    "eslint": "^10.8.1",
     "vitest": "^4.1.10"
   }
 }

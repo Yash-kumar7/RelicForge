@@ -8,18 +8,21 @@ import { Arena } from "./Arena";
 import { Boss, type BossHandle } from "./Boss";
 import { Player } from "./Player";
 import { WeaponSocket } from "./WeaponSocket";
+import { RelicPedestal } from "./RelicPedestal";
+import { Embers } from "./Embers";
 import { useGameStore } from "../state/useGameStore";
 import { useForgeRun } from "../forge/useForgeRun";
 import { ForgeSequence } from "../forge/ForgeSequence";
 import { Hud } from "../ui/Hud";
-import { Embers } from "./Embers";
+import { DefeatScreen } from "../ui/DefeatScreen";
+import { sfx, unlockAudio } from "../audio/sfx";
 
 /**
  * Scene root.
  *
- * Victory automatically starts the forge: the whole thesis is that the fight
- * *is* the input, so there is no menu step between winning and being given
- * something that came out of how you won.
+ * Victory starts the forge automatically: the whole thesis is that the fight
+ * *is* the input, so putting a menu between winning and receiving would break
+ * the causal link the player is supposed to feel.
  */
 export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   const boss = useRef<BossHandle>(null);
@@ -30,26 +33,44 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   const { start, persistTransform } = useForgeRun();
   const started = useRef(false);
 
+  useEffect(() => unlockAudio(), []);
+
+  /* Victory → a beat of silence → the forge wakes. */
   useEffect(() => {
-    if (phase === "VICTORY" && !started.current) {
-      started.current = true;
-      // A beat of silence before the forge wakes up.
-      const timer = setTimeout(() => void start(mode), 1400);
-      return () => clearTimeout(timer);
-    }
-    return undefined;
+    if (phase !== "VICTORY" || started.current) return undefined;
+    started.current = true;
+    sfx.bossDeath();
+    const ignite = setTimeout(() => sfx.forgeIgnite(), 900);
+    const begin = setTimeout(() => void start(mode), 1400);
+    return () => {
+      clearTimeout(ignite);
+      clearTimeout(begin);
+    };
   }, [phase, start, mode]);
+
+  useEffect(() => {
+    if (phase === "DEFEAT") sfx.defeat();
+  }, [phase]);
+
+  useEffect(() => {
+    if (forge.stage === "CONCEPT_READY") sfx.conceptReveal();
+  }, [forge.stage]);
+
+  /* Hammer strikes while the mesh is being forged, so the wait has a pulse. */
+  useEffect(() => {
+    if (forge.stage !== "FORGING_3D") return undefined;
+    const timer = setInterval(() => sfx.hammer(), 1500);
+    return () => clearInterval(timer);
+  }, [forge.stage]);
 
   // Stable identity so Player's effect deps do not churn every render.
   const fallbackPosition = useRef(new Vector3());
-  const bossPosition = useCallback(
-    () => boss.current?.position() ?? fallbackPosition.current,
-    [],
-  );
+  const bossPosition = useCallback(() => boss.current?.position() ?? fallbackPosition.current, []);
 
   const onHitBoss = useCallback(
     (kind: "light" | "heavy", damage: number) => {
       boss.current?.hit();
+      sfx.hitBoss();
       damageBoss(damage, kind);
     },
     [damageBoss],
@@ -60,7 +81,14 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
     [persistTransform],
   );
 
-  const equipped = phase === "EQUIPPED" && forge.modelUrl && forge.dna;
+  const claim = useCallback(() => {
+    sfx.equip();
+    setPhase("EQUIPPED");
+  }, [setPhase]);
+
+  const relicReady = Boolean(forge.modelUrl && forge.dna);
+  const showPedestal = relicReady && forge.stage === "COMPLETE" && phase !== "EQUIPPED";
+  const showEquipped = relicReady && phase === "EQUIPPED";
 
   return (
     <div className="relative h-full w-full">
@@ -75,19 +103,24 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
           <Boss ref={boss} />
           <Player bossPosition={bossPosition} onHitBoss={onHitBoss} />
           <Embers active={phase !== "FIGHTING"} />
-          {equipped && (
+
+          {showPedestal && (
+            <RelicPedestal modelUrl={forge.modelUrl!} weaponClass={forge.dna!.weaponClass} />
+          )}
+          {showEquipped && (
             <WeaponSocket
               modelUrl={forge.modelUrl!}
               weaponClass={forge.dna!.weaponClass}
               onNormalized={onNormalized}
             />
           )}
+
           <Environment preset="night" />
         </Suspense>
 
         <EffectComposer>
-          {/* Restrained: the relic has to stay readable, and molten cracks are
-              the only thing that should genuinely glow. */}
+          {/* Restrained on purpose: molten cracks should glow, the blade should
+              stay readable. Over-bloomed metal loses the silhouette. */}
           <Bloom intensity={0.7} luminanceThreshold={0.75} luminanceSmoothing={0.3} mipmapBlur />
           <Vignette eskil={false} offset={0.18} darkness={0.85} />
         </EffectComposer>
@@ -95,9 +128,8 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
 
       <Hud />
 
-      {(phase === "FORGING" || phase === "VICTORY") && (
-        <ForgeSequence onClaim={() => setPhase("EQUIPPED")} />
-      )}
+      {(phase === "FORGING" || phase === "VICTORY") && <ForgeSequence onClaim={claim} />}
+      {phase === "DEFEAT" && <DefeatScreen />}
 
       {phase === "EQUIPPED" && (
         <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 text-center">

@@ -21,6 +21,8 @@ Two players beat the same boss and walk away holding physically different weapon
 
 **Same boss. Different story. Different relic.**
 
+Both of those relics are seeded into the cache, so replaying either fight resolves in ~25ms and spends nothing. Fight differently and it generates for real.
+
 ---
 
 ## The interesting problem
@@ -181,11 +183,15 @@ pnpm dev                  # web :5173 · api :8787
 | `pnpm dev` | web + api together, `/api` and `/assets` proxied |
 | `pnpm test` | relic-core suite (62 tests) |
 | `pnpm typecheck` | strict, all workspaces |
+| `pnpm lint` | ESLint flat config, all workspaces |
 | `pnpm spike -- --wave 0` | generate the Gate 0 corpus (~130 credits) |
+| `pnpm --filter @relic/api exec tsx scripts/seed-hero-relics.ts` | promote Gate 1 output into the live cache |
 
 Add `?mode=dev` to the game URL to use the cheap generation config (one concept, no ultra) while iterating.
 
-**Routes:** `/` the game · `#/lab` the normalization harness · `/api/debug/relics` prompts, task ids, timings, cache hits.
+**Routes:** `/` the game · `#/lab` the normalization harness · `#/compare` the two hero relics side by side, with a silhouette-only toggle · `/api/debug/relics` prompts, task ids, timings, cache hits.
+
+Sound is synthesized at runtime with the Web Audio API — oscillators and filtered noise rather than sample files — so the repo carries no binary audio assets and no licensing questions.
 
 ---
 
@@ -207,6 +213,8 @@ packages/relic-core   Pure, no I/O. Imported by both.
 - **Articulated weapons are out of scope.** A chained flail has multiple rigid bodies and no single principal axis; it needs different runtime semantics, not a better heuristic.
 - **The file cache is a JSON index.** Correct for one process; SQLite when the schema stops moving.
 - **Concept selection is a composition heuristic**, not a quality judgment — it rejects off-centre and small-in-frame subjects, nothing subtler.
+- **The client bundle is ~1.5 MB (430 KB gzipped)**, dominated by three.js. The dev surfaces are code-split; the engine itself is on the critical path.
+- **Losing forfeits the relic.** A weapon forged from a defeat would stop being a record of how you won.
 
 ## Where this goes
 

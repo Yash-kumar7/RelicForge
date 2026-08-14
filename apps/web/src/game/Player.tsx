@@ -4,6 +4,7 @@ import { Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { ARENA_RADIUS } from "./Arena";
 import { COMBAT, attackSpec, isWithinArc, type AttackKind } from "./combat";
+import { sfx } from "../audio/sfx";
 
 /**
  * First-person player.
@@ -49,13 +50,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
   const healCharges = useRef(COMBAT.player.healCharges);
 
   const phase = useGameStore((s) => s.phase);
-  const damagePlayerRef = useRef(useGameStore.getState().damagePlayer);
   const recordDodge = useGameStore((s) => s.recordDodge);
-  const recordHeal = useGameStore((s) => s.recordHeal);
-
-  useEffect(() => {
-    void damagePlayerRef;
-  }, []);
 
   /* ------------------------------------------------------------- input */
   useEffect(() => {
@@ -83,11 +78,12 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
         // fast sidestep and the telemetry stops meaning "played evasively".
         playerHandle.invulnerableUntil = now + COMBAT.player.dodgeDurationMs;
         recordDodge();
+        sfx.dodge();
       }
 
       if (e.code === "KeyQ" && healCharges.current > 0) {
         healCharges.current -= 1;
-        recordHeal();
+        useGameStore.getState().heal(COMBAT.player.healAmount);
       }
     };
 
@@ -112,11 +108,11 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
       if (useGameStore.getState().phase !== "FIGHTING") return;
       if (playerHandle.attacking) return;
 
-      playerHandle.attacking = {
-        kind: e.button === 2 ? "heavy" : "light",
-        startedAt: performance.now(),
-      };
+      const kind: AttackKind = e.button === 2 ? "heavy" : "light";
+      playerHandle.attacking = { kind, startedAt: performance.now() };
       attackLanded.current = false;
+      if (kind === "heavy") sfx.swingHeavy();
+      else sfx.swingLight();
     };
 
     const onContextMenu = (e: Event) => e.preventDefault();
@@ -134,7 +130,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
       canvas.removeEventListener("mousedown", onMouseDown);
       canvas.removeEventListener("contextmenu", onContextMenu);
     };
-  }, [gl, recordDodge, recordHeal]);
+  }, [gl, recordDodge]);
 
   /* ------------------------------------------------------------- update */
   useFrame((_, delta) => {

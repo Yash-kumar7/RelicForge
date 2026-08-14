@@ -14,6 +14,7 @@ export type GamePhase =
   | "CHOOSE_AFFINITY"
   | "FIGHTING"
   | "VICTORY"
+  | "DEFEAT"
   | "FORGING"
   | "REVEAL"
   | "EQUIPPED";
@@ -62,6 +63,7 @@ interface GameState {
   startFight: () => void;
   damageBoss: (amount: number, kind: "light" | "heavy" | "ability") => void;
   damagePlayer: (amount: number) => void;
+  heal: (amount: number) => void;
   recordDodge: () => void;
   recordHeal: () => void;
   snapshotTelemetry: () => CombatTelemetry;
@@ -133,9 +135,21 @@ export const useGameStore = create<GameState>((set, get) => ({
     }),
 
   damagePlayer: (amount) =>
+    set((state) => {
+      const playerHp = Math.max(0, state.playerHp - amount);
+      return {
+        playerHp,
+        telemetry: { ...state.telemetry, damageTaken: state.telemetry.damageTaken + amount },
+        // No relic is forged from a loss. The weapon is meant to be the record
+        // of a victory, so losing has to actually cost you the relic.
+        phase: playerHp === 0 && state.phase === "FIGHTING" ? ("DEFEAT" as GamePhase) : state.phase,
+      };
+    }),
+
+  heal: (amount) =>
     set((state) => ({
-      playerHp: Math.max(0, state.playerHp - amount),
-      telemetry: { ...state.telemetry, damageTaken: state.telemetry.damageTaken + amount },
+      playerHp: Math.min(PLAYER_MAX_HP, state.playerHp + amount),
+      telemetry: { ...state.telemetry, healingUsed: state.telemetry.healingUsed + 1 },
     })),
 
   recordDodge: () =>

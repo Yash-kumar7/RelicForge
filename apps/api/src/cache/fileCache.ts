@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { env } from "../env.js";
@@ -57,21 +57,39 @@ type Index = z.infer<typeof IndexSchema>;
 const EMPTY: Index = { version: 1, relics: {}, byCacheKey: {} };
 
 let cache: Index | null = null;
+let loadedMtimeMs = 0;
 let writeChain: Promise<void> = Promise.resolve();
 
 function indexPath(): string {
   return path.join(env.cacheDir, "index.json");
 }
 
+/**
+ * Re-reads the index whenever the file on disk is newer than what we hold.
+ *
+ * The seeding script and the dev server are separate processes writing the same
+ * index. Caching it in memory forever means a seeded relic is invisible to a
+ * running server, and the server's next write silently discards it.
+ */
 async function load(): Promise<Index> {
-  if (cache) return cache;
+  let mtimeMs = 0;
+  try {
+    mtimeMs = (await stat(indexPath())).mtimeMs;
+  } catch {
+    // No index yet: first run.
+    if (cache) return cache;
+  }
+
+  if (cache && mtimeMs <= loadedMtimeMs) return cache;
+
   try {
     const parsed = IndexSchema.safeParse(JSON.parse(await readFile(indexPath(), "utf8")));
     // A corrupt or outdated index must not take the server down — the assets
     // are still on disk and regenerating costs credits, not correctness.
     cache = parsed.success ? parsed.data : { ...EMPTY };
+    loadedMtimeMs = mtimeMs;
   } catch {
-    cache = { ...EMPTY };
+    cache = cache ?? { ...EMPTY };
   }
   return cache;
 }
@@ -83,6 +101,9 @@ async function persist(): Promise<void> {
   writeChain = writeChain.then(async () => {
     await mkdir(env.cacheDir, { recursive: true });
     await writeFile(indexPath(), JSON.stringify(snapshot, null, 2));
+    // Record our own write so the next read does not treat it as foreign and
+    // reload needlessly.
+    loadedMtimeMs = (await stat(indexPath())).mtimeMs;
   });
   return writeChain;
 }

@@ -4,6 +4,7 @@ import { Color, Group, Mesh, MeshStandardMaterial, Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { COMBAT, isWithinArc } from "./combat";
 import { playerHandle } from "./Player";
+import { sfx } from "../audio/sfx";
 
 /**
  * The Ashen Warden.
@@ -93,6 +94,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
           // i-frames from a dodge are checked here, at the moment of impact.
           if (hit && now >= playerHandle.invulnerableUntil) {
             useGameStore.getState().damagePlayer(COMBAT.boss.damage);
+            sfx.playerHurt();
           }
         }
         break;
