@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { relicTraits } from "@relic/core";
 import { championFor } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
-import { attackSpec, type AttackSpec } from "../game/combat";
+import { attackSpec } from "../game/combat";
 
 /**
  * The two attacks, described rather than tabulated.
@@ -29,10 +29,15 @@ const ATTACKS = [
   },
 ];
 
-/** Total swing time in seconds, which is the unit a player counts attacks in. */
-function swingSeconds(spec: AttackSpec): string {
-  return ((spec.windupMs + spec.activeMs + spec.recoveryMs) / 1000).toFixed(2);
-}
+/*
+ * Swing time is deliberately not shown.
+ *
+ * "1.22s per swing" is a figure with no reference point: nobody knows whether
+ * that is fast without something to compare it against, and the comparison that
+ * matters is against the boss's wind-up, which is not on this screen either.
+ * The blurbs carry the same information in a form that needs no arithmetic,
+ * which is what the timings were there to convey in the first place.
+ */
 import { IRON, useLoadout } from "../state/useLoadout";
 
 /**
@@ -159,7 +164,7 @@ export function ArmamentPanel() {
                         </span>
                       </p>
                       <p className="mt-0.5 font-mono text-[10px] tabular-nums text-ember-300/80">
-                        {spec.damage} damage · {swingSeconds(spec)}s per swing
+                        {spec.damage} damage
                       </p>
                       <p className="mt-1 text-[10px] leading-relaxed text-stone-600">
                         {attack.blurb}
