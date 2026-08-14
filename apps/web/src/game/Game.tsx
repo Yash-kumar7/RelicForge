@@ -154,10 +154,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
    * Selecting a weapon that then failed to appear in your hands would make the
    * loadout decorative. The starter blade only shows when nothing is equipped.
    */
-  const carried = useLoadout((s) => {
-    const relic = s.owned.find((r) => r.relicId === s.equippedId);
-    return relic ?? null;
-  });
+  const carried = useLoadout((s) => s.equipped());
   const showCarried = phase === "FIGHTING" && carried !== null;
 
   return (

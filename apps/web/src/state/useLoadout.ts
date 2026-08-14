@@ -51,19 +51,30 @@ function save(relics: OwnedRelic[]): void {
   }
 }
 
+/**
+ * What is in hand.
+ *
+ * Three states, not two: null means the player has not chosen yet, which is
+ * distinct from having chosen the iron sword. Nothing appears in the champion's
+ * hands until a choice is actually made, so the setup screen reads as a
+ * sequence rather than as a set of defaults.
+ */
+export const IRON = "iron" as const;
+export type Armament = typeof IRON | string | null;
+
 interface LoadoutState {
   owned: OwnedRelic[];
-  /** relicId of the weapon carried into the next fight, if any. */
-  equippedId: string | null;
+  armament: Armament;
   claim: (relic: OwnedRelic) => void;
-  equip: (relicId: string | null) => void;
+  select: (armament: Armament) => void;
   clear: () => void;
+  /** The chosen relic, or null when the iron sword or nothing is selected. */
   equipped: () => OwnedRelic | null;
 }
 
 export const useLoadout = create<LoadoutState>((set, get) => ({
   owned: load(),
-  equippedId: null,
+  armament: null,
 
   claim: (relic) =>
     set((state) => {
@@ -71,18 +82,20 @@ export const useLoadout = create<LoadoutState>((set, get) => ({
       // should not duplicate the entry.
       const owned = [relic, ...state.owned.filter((r) => r.relicId !== relic.relicId)].slice(0, 24);
       save(owned);
-      return { owned, equippedId: relic.relicId };
+      // Claiming is itself a choice, so the new relic goes straight into hand.
+      return { owned, armament: relic.relicId };
     }),
 
-  equip: (equippedId) => set({ equippedId }),
+  select: (armament) => set({ armament }),
 
   clear: () => {
     save([]);
-    set({ owned: [], equippedId: null });
+    set({ owned: [], armament: null });
   },
 
   equipped: () => {
-    const { owned, equippedId } = get();
-    return owned.find((r) => r.relicId === equippedId) ?? owned[0] ?? null;
+    const { owned, armament } = get();
+    if (!armament || armament === IRON) return null;
+    return owned.find((r) => r.relicId === armament) ?? null;
   },
 }));

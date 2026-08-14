@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import type { Affinity } from "@relic/core";
 import { themeFor } from "../game/theme";
 import { CharacterViewer, type HeldWeaponSpec } from "./CharacterViewer";
-import { useLoadout } from "../state/useLoadout";
+import { IRON, useLoadout } from "../state/useLoadout";
 
 /**
  * Your champion, holding the weapon you selected.
@@ -18,16 +18,22 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
   const slug = affinity === "fire" ? "ember" : affinity === "ice" ? "frost" : "storm";
 
   const owned = useLoadout((s) => s.owned);
-  const equippedId = useLoadout((s) => s.equippedId);
+  const armament = useLoadout((s) => s.armament);
 
   // equippedId null means the iron sword, which is built from primitives in the
   // arena and has no GLB to hold here.
-  // Something is always in hand: the iron blade when no relic is equipped.
-  const weapon = useMemo<HeldWeaponSpec>(() => {
-    const relic = owned.find((r) => r.relicId === equippedId);
+  /**
+   * Empty-handed until the player picks. The screen reads as a sequence,
+   * affinity then armament, and the weapon appearing is the confirmation that
+   * the second choice landed.
+   */
+  const weapon = useMemo<HeldWeaponSpec | undefined>(() => {
+    if (armament === null) return undefined;
+    if (armament === IRON) return { kind: "iron" };
+    const relic = owned.find((r) => r.relicId === armament);
     if (!relic) return { kind: "iron" };
     return { kind: "relic", url: relic.modelUrl, weaponClass: relic.dna.weaponClass };
-  }, [owned, equippedId]);
+  }, [owned, armament]);
 
   return (
     <CharacterViewer
@@ -36,9 +42,11 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
       accent={theme.forge}
       weapon={weapon}
       caption={
-        weapon.kind === "relic"
-          ? "your champion, holding your relic · drag to inspect"
-          : "your champion, holding the iron blade · drag to inspect"
+        weapon === undefined
+          ? "your champion · choose an armament below · drag to inspect"
+          : weapon.kind === "relic"
+            ? "your champion, holding your relic · drag to inspect"
+            : "your champion, holding the iron blade · drag to inspect"
       }
       className="h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full border border-ash-800 bg-ash-900/40"
     />

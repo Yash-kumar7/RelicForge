@@ -4,7 +4,7 @@ import { Environment, useGLTF } from "@react-three/drei";
 import { Group, Quaternion, Vector3 } from "three";
 import { normalizeRelic, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
-import { useLoadout } from "../state/useLoadout";
+import { IRON, useLoadout } from "../state/useLoadout";
 
 /**
  * What you are carrying into the fight.
@@ -58,15 +58,16 @@ function RelicModel({ url, weaponClass }: { url: string; weaponClass: WeaponClas
 
 export function ArmamentPanel() {
   const owned = useLoadout((s) => s.owned);
-  const equippedId = useLoadout((s) => s.equippedId);
-  const equip = useLoadout((s) => s.equip);
+  const armament = useLoadout((s) => s.armament);
+  const select = useLoadout((s) => s.select);
 
-  // No auto-select: equippedId null means the iron sword is in hand, which is
-  // a real choice rather than an absence of one.
+  // Nothing is preselected, so both cards start unchosen and the champion
+  // starts empty-handed.
   const selected = useMemo(
-    () => owned.find((r) => r.relicId === equippedId) ?? null,
-    [owned, equippedId],
+    () => (armament && armament !== IRON ? owned.find((r) => r.relicId === armament) ?? null : null),
+    [owned, armament],
   );
+  const ironChosen = armament === IRON;
 
   const [modelOk, setModelOk] = useState(true);
   useEffect(() => {
@@ -88,16 +89,16 @@ export function ArmamentPanel() {
         {/* The blade you always have. Selecting it unequips the relic. */}
         <button
           type="button"
-          onClick={() => equip(null)}
+          onClick={() => select(IRON)}
           className={[
             "border px-4 py-3 text-left transition",
-            selected === null
+            ironChosen
               ? "border-stone-500 bg-stone-500/5"
               : "border-ash-700 hover:border-stone-600",
           ].join(" ")}
         >
           <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
-            {selected === null ? "in hand" : "common"}
+            {ironChosen ? "in hand" : "common"}
           </p>
           <p className="mt-1 font-display text-base tracking-[0.12em] text-stone-300">
             Iron Arming Sword
@@ -111,7 +112,7 @@ export function ArmamentPanel() {
         <button
           type="button"
           disabled={owned.length === 0}
-          onClick={() => owned[0] && equip(owned[0].relicId)}
+          onClick={() => owned[0] && select(owned[0].relicId)}
           className={[
             "px-4 py-3 text-left transition",
             selected
@@ -166,7 +167,7 @@ export function ArmamentPanel() {
             <button
               key={relic.relicId}
               type="button"
-              onClick={() => equip(relic.relicId)}
+              onClick={() => select(relic.relicId)}
               className={[
                 "border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] transition",
                 selected?.relicId === relic.relicId

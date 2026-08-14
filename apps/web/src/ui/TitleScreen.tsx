@@ -57,6 +57,7 @@ export function TitleScreen() {
   const chooseBossLevel = useGameStore((s) => s.chooseBossLevel);
   const startFight = useGameStore((s) => s.startFight);
   const owned = useLoadout((s) => s.owned);
+  const armament = useLoadout((s) => s.armament);
   const xp = useProgress((s) => s.xp);
   const fightsWon = useProgress((s) => s.fightsWon);
   const rank = rankFor(xp);
@@ -292,15 +293,19 @@ export function TitleScreen() {
             <button
               type="button"
               onClick={startFight}
-              disabled={bossLevel === null}
+              disabled={bossLevel === null || armament === null}
               className={[
                 "mt-4 w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
-                bossLevel === null
+                bossLevel === null || armament === null
                   ? "cursor-not-allowed border-ash-800 text-stone-700"
                   : "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
               ].join(" ")}
             >
-              {bossLevel === null ? "Choose a quarry" : "Descend"}
+              {armament === null
+                ? "Choose an armament"
+                : bossLevel === null
+                  ? "Choose a quarry"
+                  : "Descend"}
             </button>
           </div>
         </div>

@@ -33,7 +33,7 @@ export function PlayerAvatar() {
   const theme = themeFor(affinity);
   const slug = affinity === "fire" ? "ember" : affinity === "ice" ? "frost" : "storm";
 
-  const carried = useLoadout((s) => s.owned.find((r) => r.relicId === s.equippedId) ?? null);
+  const carried = useLoadout((s) => s.equipped());
   const forgeRelic = useGameStore((s) => s.forge);
 
   // After claiming, the freshly forged relic is what the avatar holds.

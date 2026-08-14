@@ -21,7 +21,7 @@ export function Hud() {
   const forge = useGameStore((s) => s.forge);
   // A relic carried in from the loadout is in hand from the first frame, before
   // any forge has run this session.
-  const carried = useLoadout((s) => s.owned.find((r) => r.relicId === s.equippedId) ?? null);
+  const carried = useLoadout((s) => s.equipped());
   const inHand =
     phase === "EQUIPPED" && forge.name
       ? { name: forge.name, weaponClass: forge.dna?.weaponClass ?? null }
