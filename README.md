@@ -21,7 +21,10 @@ Two players beat the same boss and walk away holding physically different weapon
 
 **Same boss. Different story. Different relic.**
 
-Both of those relics are seeded into the cache, so replaying either fight resolves in ~25ms and spends nothing. Fight differently and it generates for real.
+Relics are pre-generated for **every boss and every playstyle**, so replaying any
+of them resolves in ~25ms and spends nothing. Fight some other way and it
+generates for real, which is the honest path and stays the honest path: a demo
+just should not be one API hiccup away from an awkward silence.
 
 ---
 
@@ -132,6 +135,9 @@ Three 4K PBR maps re-exported as PNG land at 12–22 MB. Generated GLBs pass thr
                     └──────────────────────────────┘
 ```
 
+**Meshy endpoints used:** text-to-image, image-to-3d (meshy-7 + ultra), remesh,
+rigging, and balance. Five, across generation, topology, animation and metering.
+
 **Two API details worth stealing:**
 
 - **`input_task_id`** — image-to-3d accepts the id of a completed text-to-image task directly. The concept image never needs public hosting, which deletes an entire storage dependency from the pipeline.
@@ -188,10 +194,23 @@ in `apps/api/scripts/`, and they ship as assets. Only the weapon is generated
 while you play. The distinction matters: the runtime claim belongs to the relic
 alone, and everything else is Meshy used the ordinary way, as a content tool.
 
-They are static meshes moved by code — approach, telegraph and strike are
-whole-body transforms — so a generated model drops into the same behaviour a
-primitive one had, with no rig and no animation clips. If a level has no model
-yet, a primitive fallback keeps the fight intact.
+They are also **rigged**, which is where the 5-credit rigging endpoint earns its
+place: it ships walking and running clips free, and that is the difference
+between a boss sliding across the floor and one that walks at you. Meshy
+recommends t-pose input and these were generated in a-pose, so one character was
+rigged first as a 5-credit test rather than regenerating the whole cast in t-pose
+for roughly 350. It worked on the first attempt.
+
+Only the walking clip is loaded; running is the same skeleton faster, so
+`timeScale` covers it instead of downloading a second six-megabyte file. Rigged
+output gets a **texture-only** optimizer, because the standard weld/dedup/prune
+pass is exactly the surgery that breaks skin weights and animation channels.
+That took 24 rigged files from 150 MB to 37 MB without touching a vertex.
+
+Three levels of degradation, because a fight must never depend on an asset being
+present: the rigged walk if it exists, the static mesh if only that does, and a
+primitive fallback underneath. Approach, telegraph and strike stay whole-body
+transforms in all three, so behaviour never changes with the asset.
 
 ## How you play
 
