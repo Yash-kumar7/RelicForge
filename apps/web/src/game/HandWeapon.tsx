@@ -36,9 +36,9 @@ import { bossState, bossSwing } from "./bossState";
  * travel visibly further than its holder.
  */
 function applySwing(group: Group, swing: number, scale = 1): void {
-  group.rotation.x = -0.32 - swing * 1.45 * scale;
-  group.rotation.y = -0.18 + swing * 0.35 * scale;
-  group.rotation.z = -0.55 - swing * 0.8 * scale;
+  group.rotation.x = -swing * 1.45 * scale;
+  group.rotation.y = swing * 0.35 * scale;
+  group.rotation.z = -swing * 0.8 * scale;
 }
 
 export function PlayerHandWeapon({

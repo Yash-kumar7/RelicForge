@@ -66,6 +66,22 @@ const IDLE_TIME_SCALE = 0.18;
 const HAND_CLEARANCE = 0.035;
 
 /**
+ * Rest pose of a carried weapon, relative to the hand.
+ *
+ * Applied on the socket rather than by the caller because only the socket knows
+ * which side of the body the hand is on, and the lean has to be mirrored with
+ * it. On these rigs the right hand sits at negative x, so a fixed negative roll
+ * tips the blade toward positive x, which is straight across the torso: the
+ * weapon leaned into the character instead of away from it, and pushing the
+ * socket further out only moved the point it passed through.
+ *
+ * The swing is layered on top of this by the caller, so it reads as a swing
+ * from a carried pose rather than replacing the pose.
+ */
+const REST_PITCH = -0.3;
+const REST_ROLL = 0.5;
+
+/**
  * Draws a marker where the weapon is being attached, via ?debug=socket.
  *
  * These rigs are third-party auto-rigs over generated meshes, so "the weapon
@@ -132,9 +148,14 @@ function HandFollower({
      * into it. The forward component keeps the shaft in front of the fingers,
      * which is where a hand closed around a grip would put it.
      */
+    const outward = Math.sign(position.x) || 1;
     const clearance = height * HAND_CLEARANCE;
-    group.position.x += (Math.sign(position.x) || 1) * clearance;
+    group.position.x += outward * clearance;
     group.position.z += clearance * 0.8;
+
+    // Mirrored with the hand, so the blade leans away from the body on either
+    // side. This is the part a fixed rotation cannot get right.
+    group.rotation.set(REST_PITCH, 0, outward * REST_ROLL);
   });
 
   return (
