@@ -93,20 +93,6 @@ export function PreFightBriefing() {
             brutal weapon cannot make the choice the game is asking them to make.
           */}
           <div className="mx-auto mt-8 grid max-w-lg gap-3 sm:grid-cols-2">
-            <div className="border border-ember-500/40 px-4 py-3 text-left">
-              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-ember-400">
-                right click · heavy
-              </p>
-              <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
-                {COMBAT.heavyAttack.damage} dmg
-              </p>
-              <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
-                Slow to start and it staggers the Warden. Lean on it and the forge
-                reads you as <span className="text-ember-300">brutal</span>: an oversized,
-                heavy weapon.
-              </p>
-            </div>
-
             <div className="border border-frost-500/40 px-4 py-3 text-left">
               <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-frost-400">
                 left click · light
@@ -118,6 +104,20 @@ export function PreFightBriefing() {
                 Fast and safe to throw. Favour it while dodging and the forge reads
                 you as <span className="text-frost-300">elegant</span>: a narrow, precise
                 weapon.
+              </p>
+            </div>
+
+            <div className="border border-ember-500/40 px-4 py-3 text-left">
+              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-ember-400">
+                right click · heavy
+              </p>
+              <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
+                {COMBAT.heavyAttack.damage} dmg
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
+                Slow to start and it staggers the Warden. Lean on it and the forge
+                reads you as <span className="text-ember-300">brutal</span>: an oversized,
+                heavy weapon.
               </p>
             </div>
           </div>
