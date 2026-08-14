@@ -170,6 +170,15 @@ The cache key hashes DNA **and the entire generation config** — prompt version
 
 ---
 
+## How you play
+
+Most players assume loot comes from a table, so nothing about a boss fight signals that *how* you fight is the input. RelicForge says it once before the fight, then proves it during:
+
+- A **briefing** states the premise and lists the controls (WASD, mouse, LMB light, RMB heavy, Space dodge, Q heal). It also gives pointer lock something to attach to, so the first click is explained rather than mysterious.
+- A **live relic panel** in the corner runs the real `buildRelicDNA` against your telemetry as you fight. Commit to heavy attacks and `BALANCED` becomes `BRUTAL` in front of you. Drop below 20% health and `battle-worn` becomes `shattered`.
+
+That panel is the tutorial. Watching the projection change is more convincing than any amount of explanation, and it means the reveal at the end confirms something the player already worked out.
+
 ## Setup
 
 ```bash

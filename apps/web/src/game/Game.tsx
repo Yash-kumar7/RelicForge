@@ -15,6 +15,8 @@ import { useForgeRun } from "../forge/useForgeRun";
 import { ForgeSequence } from "../forge/ForgeSequence";
 import { Hud } from "../ui/Hud";
 import { DefeatScreen } from "../ui/DefeatScreen";
+import { PreFightBriefing } from "../ui/PreFightBriefing";
+import { LiveRelicPanel } from "../ui/LiveRelicPanel";
 import { sfx, unlockAudio } from "../audio/sfx";
 
 /**
@@ -127,6 +129,8 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
       </Canvas>
 
       <Hud />
+      <LiveRelicPanel />
+      <PreFightBriefing />
 
       {(phase === "FORGING" || phase === "VICTORY") && <ForgeSequence onClaim={claim} />}
       {phase === "DEFEAT" && <DefeatScreen />}
