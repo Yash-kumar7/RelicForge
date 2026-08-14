@@ -7,8 +7,7 @@ import { COMBAT, attackSpec, isWithinArc, type AttackKind } from "./combat";
 import { equipped } from "./equipped";
 import { activeChampion } from "./champions";
 import { sfx } from "../audio/sfx";
-import { registerDodge, registerPlayerHurt, shake } from "./feedback";
-import { ABILITY, ABILITY_KEY, abilityFor, abilityState } from "./abilities";
+import { registerDodge } from "./feedback";
 
 /**
  * First-person player.
@@ -60,7 +59,7 @@ export function resetPlayerHandle(): void {
 
 interface PlayerProps {
   bossPosition: () => Vector3;
-  onHitBoss: (kind: AttackKind | "ability", damage: number) => void;
+  onHitBoss: (kind: AttackKind, damage: number) => void;
 }
 
 export function Player({ bossPosition, onHitBoss }: PlayerProps) {
@@ -88,18 +87,6 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
   /** Set by the input effect so the frame loop can fire a buffered attack. */
   const startAttackRef = useRef<((kind: AttackKind) => void) | null>(null);
   const healCharges = useRef<number>(COMBAT.player.healCharges);
-  /**
-   * The two callbacks, held in refs.
-   *
-   * The keydown listener is registered once and must not be torn down and
-   * rebuilt every time a parent re-renders, or a key held across the swap is
-   * lost. Reading the current callbacks through refs keeps the listener stable
-   * while never calling a stale one.
-   */
-  const bossPositionRef = useRef(bossPosition);
-  const onHitBossRef = useRef(onHitBoss);
-  bossPositionRef.current = bossPosition;
-  onHitBossRef.current = onHitBoss;
 
   const phase = useGameStore((s) => s.phase);
   const combatActive = useGameStore((s) => s.combatActive);
@@ -144,51 +131,6 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
       }
 
       if (e.code === "KeyV") useGameStore.getState().toggleView();
-
-      /*
-       * The champion's signature move.
-       *
-       * Each one spends what its champion has too much of, which is what makes
-       * the choice on the setup screen mean something after the fight starts:
-       * Ember pays health for damage, Frost pays time instead of dying, Storm
-       * turns movement into a weapon.
-       */
-      if (e.code === ABILITY_KEY && now >= abilityState.readyAt) {
-        const ability = abilityFor(state.affinity);
-        const boss = bossPositionRef.current?.();
-        if (ability.kind === "immolate") {
-          const cost = Math.max(1, Math.round(state.playerMaxHp * ABILITY.immolate.healthCost));
-          useGameStore.getState().damagePlayer(cost);
-          registerPlayerHurt(cost);
-          // Lands in every direction, so the trade is damage for health rather
-          // than damage for positioning.
-          if (boss && boss.distanceTo(playerHandle.position) <= ABILITY.immolate.radius) {
-            onHitBossRef.current?.("ability", ABILITY.immolate.damage);
-          }
-          shake.magnitude = Math.max(shake.magnitude, 0.5);
-        } else if (ability.kind === "bulwark") {
-          playerHandle.invulnerableUntil = now + ABILITY.bulwark.invulnerableMs;
-          useGameStore.getState().heal(ABILITY.bulwark.heal);
-        } else {
-          // Surge reuses the dodge channel rather than inventing a second kind
-          // of movement, so it cannot fight the dodge for control of velocity.
-          const dir = playerHandle.forward.clone().setY(0).normalize();
-          dodge.current.dir.copy(dir);
-          dodge.current.until = now + ABILITY.surge.durationMs;
-          playerHandle.invulnerableUntil = now + ABILITY.surge.durationMs;
-          // The reset is the point: Storm is the champion that is always able
-          // to move again.
-          dodge.current.readyAt = now;
-          if (boss && boss.distanceTo(playerHandle.position) <= ABILITY.surge.catchRadius + ABILITY.surge.distance) {
-            onHitBossRef.current?.("ability", ABILITY.surge.damage);
-          }
-          registerDodge();
-        }
-
-        abilityState.readyAt = now + ability.cooldownMs;
-        abilityState.lastUsedAt = now;
-        sfx.dodge();
-      }
 
       if (e.code === "KeyQ" && healCharges.current > 0) {
         healCharges.current -= 1;

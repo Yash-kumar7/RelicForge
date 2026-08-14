@@ -97,6 +97,14 @@ describe("champions", () => {
     }
   });
 
+  it("gives each champion its own health, the only figure on the card", () => {
+    // With damage on the weapon panel and the dodge timer gone, health is the
+    // one number shown. Two champions sharing it would read as two identical
+    // choices.
+    const health = AFFINITIES.map((a) => championStats(championFor(a)).health);
+    expect(new Set(health).size).toBe(AFFINITIES.length);
+  });
+
   it("lets a player learn their health before the fight rather than during it", () => {
     // Health used to exist only as a percentage of a maximum the player never
     // saw, so it was impossible to know Frost carries more than Ember until

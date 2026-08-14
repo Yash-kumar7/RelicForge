@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { relicTraits } from "@relic/core";
+import { relicTraits, type RelicTraits } from "@relic/core";
 import { championFor } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { attackSpec } from "../game/combat";
@@ -50,6 +50,46 @@ import { IRON, useLoadout } from "../state/useLoadout";
  * shopping.
  */
 
+/**
+ * The two attacks, rendered inside a weapon's own card.
+ *
+ * Deliberately not a panel of its own below the two cards. Sitting outside them
+ * it read as a third thing on the screen and lost its connection to the weapon
+ * it was describing, which is the entire point of showing it: these are the
+ * numbers for the blade in that box, and they change when the other one is
+ * picked.
+ */
+function AttackBreakdown({ traits }: { traits: RelicTraits }) {
+  const light = attackSpec("light", traits);
+  const heavy = attackSpec("heavy", traits);
+
+  return (
+    <span className="mt-3 block space-y-3 border-t border-ash-800 pt-3">
+      {ATTACKS.map((attack) => {
+        const spec = attack.kind === "heavy" ? heavy : light;
+        return (
+          <span key={attack.kind} className="block">
+            <span className="flex items-baseline justify-between gap-2">
+              <span className="font-display text-sm tracking-[0.1em] text-stone-300">
+                {attack.name}
+              </span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-stone-600">
+                {attack.button}
+              </span>
+            </span>
+            <span className="mt-0.5 block font-mono text-[10px] tabular-nums text-ember-300/80">
+              {spec.damage} damage
+            </span>
+            <span className="mt-1 block text-[10px] leading-relaxed text-stone-600">
+              {attack.blurb}
+            </span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 export function ArmamentPanel() {
   const owned = useLoadout((s) => s.owned);
   const armament = useLoadout((s) => s.armament);
@@ -72,6 +112,8 @@ export function ArmamentPanel() {
    */
   const affinity = useGameStore((s) => s.affinity);
   const traits = useMemo(() => {
+    // The iron sword is genuinely neutral, so it goes through the same path
+    // rather than being special-cased into a second set of numbers.
     const base = relicTraits(selected?.dna);
     const champion = championFor(affinity).traits;
     return {
@@ -80,8 +122,17 @@ export function ArmamentPanel() {
       heavyDamage: base.heavyDamage * champion.damage,
     };
   }, [selected, affinity]);
-  const light = attackSpec("light", traits);
-  const heavy = attackSpec("heavy", traits);
+
+  // The iron blade is neutral, so it differs only by the champion holding it.
+  const ironTraits = useMemo(() => {
+    const base = relicTraits(null);
+    const champion = championFor(affinity).traits;
+    return {
+      ...base,
+      lightDamage: base.lightDamage * champion.damage,
+      heavyDamage: base.heavyDamage * champion.damage,
+    };
+  }, [affinity]);
 
 
   return (
@@ -111,8 +162,9 @@ export function ArmamentPanel() {
             Iron Arming Sword
           </p>
           <p className="mt-1 text-[11px] leading-relaxed text-stone-600">
-            25 light · 60 heavy · one of eleven million
+            Forge-standard. One of eleven million.
           </p>
+          {ironChosen && <AttackBreakdown traits={ironTraits} />}
         </button>
 
         {/* Earned, or an honest empty state. */}
@@ -140,39 +192,7 @@ export function ArmamentPanel() {
               <p className="mt-1 text-[11px] leading-relaxed text-stone-600">
                 {selected.dna.element} · {selected.dna.temperament} · {selected.dna.condition}
               </p>
-
-              {/*
-                The two attacks, presented the way the champion card presents
-                its special move: named, keyed, and explained.
-
-                A bare stat table gave the numbers without ever saying why a
-                player would choose one over the other, which is the actual
-                question. It is also where the answer belongs, because the
-                choice between them is what decides the weapon the forge makes.
-              */}
-              <div className="mt-4 space-y-3 border-t border-ash-800 pt-3">
-                {ATTACKS.map((attack) => {
-                  const spec = attack.kind === "heavy" ? heavy : light;
-                  return (
-                    <div key={attack.kind}>
-                      <p className="flex items-baseline justify-between gap-2">
-                        <span className="font-display text-sm tracking-[0.1em] text-stone-300">
-                          {attack.name}
-                        </span>
-                        <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-stone-600">
-                          {attack.button}
-                        </span>
-                      </p>
-                      <p className="mt-0.5 font-mono text-[10px] tabular-nums text-ember-300/80">
-                        {spec.damage} damage
-                      </p>
-                      <p className="mt-1 text-[10px] leading-relaxed text-stone-600">
-                        {attack.blurb}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
+              <AttackBreakdown traits={traits} />
             </>
           ) : (
             <>

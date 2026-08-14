@@ -71,7 +71,7 @@ export const CHAMPIONS: Record<Affinity, Champion> = {
     slug: "storm",
     name: "Storm",
     blurb: "Dodges again long before the others can. Fragile if you stand still.",
-    traits: { damage: 0.9, maxHp: 0.85, dodgeCooldown: 0.72 },
+    traits: { damage: 0.9, maxHp: 0.9, dodgeCooldown: 0.78 },
   },
 };
 
@@ -146,13 +146,13 @@ export function describeChampion(champion: Champion): { label: string; value: st
    * problem was that they should not have been there.
    *
    * Dodge cooldown is gone too. It is a timer, not a skill, and a row of
-   * seconds sitting where a player looks for abilities invites them to read it
-   * as one. It is still tuned and still the reason Storm feels different to
-   * play; the card carries the signature move instead, which is the thing a
-   * player would actually name when asked what a champion does.
+   * seconds sitting where a player looks for abilities invites reading it as
+   * one. It is still tuned and still the reason Storm plays differently; the
+   * blurb carries it in words instead.
    *
-   * What is left is one number and one move. What you hit for lives on the
-   * weapon panel, once, already including this champion's strength.
+   * Health is therefore the only figure on the card, which is why the three
+   * values are kept distinct. Two champions showing the same number would read
+   * as two identical choices, and a test enforces it.
    */
   return [{ label: "health", value: `${stats.health}` }];
   /*

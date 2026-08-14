@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import type { Affinity } from "@relic/core";
-import { abilityFor } from "../game/abilities";
 import { championFor, describeChampion } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
@@ -273,33 +272,6 @@ export function TitleScreen() {
                     ))}
                   </dl>
 
-                  {/*
-                    The move, named on the card.
-                    With the dodge timer gone, health alone leaves two of the
-                    three champions looking identical. The signature move is
-                    also the honest answer to "why would I pick this one": it is
-                    what a player would name if asked what a champion does.
-                  */}
-                  <div className="mt-3 border-t border-ash-800 pt-2">
-                    {/*
-                      "e · Immolate" writes the key the way a config file does.
-                      A player has to already know that the letter before the
-                      separator is a control. Saying it in words costs one line
-                      and needs no convention.
-                    */}
-                    <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-stone-700">
-                      special move
-                    </p>
-                    <p className="mt-1 font-display text-sm tracking-[0.1em] text-stone-300">
-                      {abilityFor(a.id).name}
-                      <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.15em] text-stone-600">
-                        press E
-                      </span>
-                    </p>
-                    <p className="mt-1 text-[10px] leading-relaxed text-stone-600">
-                      {abilityFor(a.id).blurb}
-                    </p>
-                  </div>
                 </button>
               ))}
             </div>
