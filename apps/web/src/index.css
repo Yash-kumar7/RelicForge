@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/* Tailwind 4 is CSS-first: the theme lives here, not in a JS config file. */
+@theme {
+  --color-ash-950: #0a0908;
+  --color-ash-900: #12100e;
+  --color-ash-800: #1c1917;
+  --color-ash-700: #2a2622;
+
+  --color-ember-500: #ff6b1a;
+  --color-ember-400: #ff8c42;
+  --color-ember-300: #ffb066;
+
+  --color-frost-500: #4aa8d8;
+  --color-frost-400: #7cc7e8;
+  --color-frost-300: #a8ddf0;
+
+  --font-display: "Cinzel", Georgia, serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--color-ash-950);
+  color: #e7e5e4;
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  touch-action: none;
+}

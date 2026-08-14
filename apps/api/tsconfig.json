@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "paths": {
+      "@relic/core": ["../../packages/relic-core/src/index.ts"],
+      "@relic/core/*": ["../../packages/relic-core/src/*"]
+    }
+  },
+  "include": ["src", "scripts"]
+}

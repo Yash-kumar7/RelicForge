@@ -1,0 +1,36 @@
+# secrets — .mcp.json holds a live MESHY_API_KEY
+.mcp.json
+.env
+.env.local
+*.local
+
+# deps
+node_modules/
+.pnpm-store/
+
+# build
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# generated assets & cache (regenerable via Meshy)
+apps/api/storage/
+apps/api/cache/
+*.db
+*.db-journal
+*.sqlite
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# test/coverage
+coverage/
