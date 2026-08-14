@@ -2,12 +2,13 @@ import { motion } from "framer-motion";
 import type { Affinity } from "@relic/core";
 import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
-import { BOSSES, highestCleared, isUnlocked } from "../game/bosses";
+import { BOSSES, highestCleared, isCleared } from "../game/bosses";
 import { TitleShowcase } from "./TitleShowcase";
 import { ChampionPreview } from "./ChampionPreview";
 import { TitleBackdrop } from "./TitleBackdrop";
 import { BossPortrait } from "./BossPortrait";
 import { BossPreview } from "./BossPreview";
+import { ArmamentPanel } from "./ArmamentPanel";
 import { rankFor } from "../state/useProgress";
 import { useProgress } from "../state/useProgress";
 
@@ -209,6 +210,10 @@ export function TitleScreen() {
             </div>
           </section>
 
+          <div className="mt-8">
+            <ArmamentPanel />
+          </div>
+
           <section className="mt-8">
             <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">
               Choose your quarry
@@ -220,21 +225,18 @@ export function TitleScreen() {
 
             <div className="mt-4 flex flex-col gap-2">
               {BOSSES.map((boss) => {
-                const unlocked = isUnlocked(boss.level);
+                const cleared = isCleared(boss.level);
                 const selected = bossLevel === boss.level;
                 return (
                   <button
                     key={boss.level}
                     type="button"
-                    disabled={!unlocked}
                     onClick={() => chooseBossLevel(boss.level)}
                     className={[
                       "border text-left transition",
-                      !unlocked
-                        ? "cursor-not-allowed border-ash-800 text-stone-800"
-                        : selected
-                          ? "border-ember-500/70 bg-ember-500/5 text-stone-200"
-                          : "border-ash-700 text-stone-500 hover:border-stone-500",
+                      selected
+                        ? "border-ember-500/70 bg-ember-500/5 text-stone-200"
+                        : "border-ash-700 text-stone-500 hover:border-stone-500",
                     ].join(" ")}
                   >
                     {/*
@@ -243,7 +245,7 @@ export function TitleScreen() {
                       enough to decide by, and deciding is the whole purpose of
                       this screen.
                     */}
-                    {selected && unlocked && (
+                    {selected && (
                       <BossPreview
                         title={boss.title}
                         accent={boss.accent}
@@ -255,7 +257,7 @@ export function TitleScreen() {
                       {!selected && (
                         <BossPortrait
                           title={boss.title}
-                          locked={!unlocked}
+                          locked={false}
                           className="h-20 w-16 shrink-0 border border-ash-800"
                         />
                       )}
@@ -264,15 +266,15 @@ export function TitleScreen() {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block font-display text-base tracking-[0.1em]">
-                          {unlocked ? boss.title : "??????"}
+                          {boss.title}
                         </span>
                         <span className="mt-0.5 block text-[11px] leading-relaxed text-stone-600">
-                          {unlocked ? boss.blurb : `Clear level ${boss.level - 1} to face it.`}
+                          {boss.blurb}
                         </span>
                       </span>
-                      {!unlocked && (
-                        <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.2em]">
-                          locked
+                      {cleared && (
+                        <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-600">
+                          cleared
                         </span>
                       )}
                     </span>

@@ -122,7 +122,22 @@ export function recordClear(level: number): void {
   }
 }
 
-/** Level 1 is always open; each clear unlocks exactly the next one. */
-export function isUnlocked(level: number): boolean {
-  return level === 1 || highestCleared() >= level - 1;
+/**
+ * Every boss is selectable from the start.
+ *
+ * Progression gating made four of the five rungs identical blurred smudges you
+ * could not select, which is actively hostile in a piece someone is evaluating:
+ * the content exists, and a reviewer should be able to reach the Hollow
+ * Sovereign without grinding the ladder first.
+ *
+ * `highestCleared` is still recorded, and still drives rank and the cleared
+ * count, so progress remains visible without being a wall.
+ */
+export function isUnlocked(_level: number): boolean {
+  return true;
+}
+
+/** Whether the player has actually beaten this rung, for display only. */
+export function isCleared(level: number): boolean {
+  return highestCleared() >= level;
 }
