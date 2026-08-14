@@ -23,6 +23,8 @@ interface RelicSummary {
   status: string;
 }
 
+/** The boss is named on each panel, since with a relic per boss it matters. */
+
 function RelicModel({
   modelUrl,
   weaponClass,
@@ -73,7 +75,7 @@ function RelicPanel({ relic, silhouette }: { relic: RelicSummary; silhouette: bo
           {relic.name.toUpperCase()}
         </h2>
         <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
-          legendary {relic.dna.weaponClass}
+          legendary {relic.dna.weaponClass} · from {relic.dna.bossInfluence}
         </p>
       </div>
 
@@ -127,7 +129,8 @@ function RelicPanel({ relic, silhouette }: { relic: RelicSummary; silhouette: bo
 }
 
 export default function RelicCompare() {
-  const [relics, setRelics] = useState<RelicSummary[]>([]);
+  const [all, setAll] = useState<RelicSummary[]>([]);
+  const [picked, setPicked] = useState<[string | null, string | null]>([null, null]);
   const [silhouette, setSilhouette] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -137,10 +140,25 @@ export default function RelicCompare() {
       .then((data: { relics: RelicSummary[] }) => {
         const complete = data.relics.filter((r) => r.status === "COMPLETE" && r.modelUrl);
         if (complete.length < 2) setError("Need at least two completed relics to compare.");
-        setRelics(complete.slice(0, 2));
+        setAll(complete);
+        // Defaults to the first two so the page is useful immediately, but with
+        // a relic for every boss and playstyle the pairing has to be choosable:
+        // this is the view the comparison shot is produced from.
+        setPicked([complete[0]?.relicId ?? null, complete[1]?.relicId ?? null]);
       })
       .catch((e: unknown) => setError(String(e)));
   }, []);
+
+  const relics = picked
+    .map((id) => all.find((r) => r.relicId === id))
+    .filter((r): r is RelicSummary => Boolean(r));
+
+  const setSlot = (slot: 0 | 1, relicId: string) =>
+    setPicked((current) => {
+      const next: [string | null, string | null] = [...current];
+      next[slot] = relicId;
+      return next;
+    });
 
   return (
     <div className="h-full overflow-y-auto bg-ash-950 p-8">
@@ -168,11 +186,39 @@ export default function RelicCompare() {
         </p>
       )}
 
+      {/* Pick the pairing. Two relics from the same boss isolates playstyle;
+          two of the same playstyle across bosses isolates the boss. */}
+      {all.length > 2 && (
+        <div className="mb-4 grid gap-3 lg:grid-cols-2">
+          {([0, 1] as const).map((slot) => (
+            <select
+              key={slot}
+              value={picked[slot] ?? ""}
+              onChange={(e) => setSlot(slot, e.target.value)}
+              className="w-full border border-ash-700 bg-ash-900 px-3 py-2 font-mono text-[11px] text-stone-300"
+            >
+              {all.map((relic) => (
+                <option key={relic.relicId} value={relic.relicId}>
+                  {relic.name} — {relic.dna.element}/{relic.dna.temperament}/
+                  {relic.dna.condition} — {relic.dna.bossInfluence}
+                </option>
+              ))}
+            </select>
+          ))}
+        </div>
+      )}
+
       <div className="flex flex-col gap-5 lg:flex-row">
-        {relics.map((relic) => (
-          <RelicPanel key={relic.relicId} relic={relic} silhouette={silhouette} />
+        {relics.map((relic, i) => (
+          <RelicPanel key={`${relic.relicId}-${i}`} relic={relic} silhouette={silhouette} />
         ))}
       </div>
+
+      {relics.length === 2 && relics[0]!.dna.bossInfluence === relics[1]!.dna.bossInfluence && (
+        <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
+          same boss · only the fight differed
+        </p>
+      )}
     </div>
   );
 }
