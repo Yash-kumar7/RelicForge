@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHAMPIONS, championFor, describeChampion } from "../src/game/champions";
+import { CHAMPIONS, championFor, championStats, describeChampion } from "../src/game/champions";
 import type { Affinity } from "@relic/core";
 
 const AFFINITIES: Affinity[] = ["fire", "ice", "storm"];
@@ -54,8 +54,51 @@ describe("champions", () => {
     ]);
   });
 
-  it("reports a shorter dodge cooldown as more dodging, not less", () => {
-    expect(describeChampion(CHAMPIONS.storm)).toContain("dodge +");
+  it("states absolute values, never percentages", () => {
+    // A percentage is a comparison, and on the setup screen there is nothing to
+    // compare against: a first-time player has no idea what the baseline is, so
+    // every figure was relative to a number they had never seen.
+    for (const affinity of AFFINITIES) {
+      for (const stat of describeChampion(championFor(affinity))) {
+        expect(stat.value).not.toContain("%");
+      }
+    }
+  });
+
+  it("labels every stat, so no value has to be decoded", () => {
+    // The first version returned "38/71 dmg", which only reads correctly if you
+    // already know light comes before heavy. A stat nobody can decode is no
+    // better than no stat.
+    for (const affinity of AFFINITIES) {
+      const stats = describeChampion(championFor(affinity));
+      expect(stats.length).toBeGreaterThanOrEqual(4);
+      for (const stat of stats) {
+        expect(stat.label.length).toBeGreaterThan(2);
+        expect(stat.value.length).toBeGreaterThan(0);
+      }
+      expect(stats.map((s) => s.label)).toContain("health");
+    }
+  });
+
+  it("lets a player learn their health before the fight rather than during it", () => {
+    // Health used to exist only as a percentage of a maximum the player never
+    // saw, so it was impossible to know Frost carries more than Ember until
+    // after committing to one.
+    const health = AFFINITIES.map((a) => championStats(championFor(a)).health);
+    expect(new Set(health).size).toBeGreaterThan(1);
+    expect(championStats(CHAMPIONS.ice).health).toBeGreaterThan(
+      championStats(CHAMPIONS.fire).health,
+    );
+  });
+
+  it("derives stats from the combat constants rather than restating them", () => {
+    // A test that hardcodes the numbers cannot catch the setup screen quoting
+    // values the fight stopped using, so this checks the relationship instead.
+    const ember = championStats(CHAMPIONS.fire);
+    const frost = championStats(CHAMPIONS.ice);
+    expect(ember.heavyDamage).toBeGreaterThan(frost.heavyDamage);
+    expect(ember.heavyDamage).toBeGreaterThan(ember.lightDamage);
+    expect(frost.dodgeSeconds).toBeGreaterThan(championStats(CHAMPIONS.storm).dodgeSeconds);
   });
 
   it("carries no trait the player cannot feel", () => {

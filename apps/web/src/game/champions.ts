@@ -1,4 +1,5 @@
 import type { Affinity } from "@relic/core";
+import { COMBAT } from "./combat";
 
 /**
  * What each champion actually is, beyond a different model.
@@ -91,16 +92,54 @@ export function setActiveChampion(affinity: Affinity): void {
   activeChampion.traits = championFor(affinity).traits;
 }
 
-/** Compact stat line for the affinity screen, so the trade is legible at a glance. */
-export function describeChampion(champion: Champion): string {
+/**
+ * What a champion actually is, in the units the fight uses.
+ *
+ * Percentages were the wrong thing to show here. Plus eighteen percent damage
+ * is a comparison, and on the setup screen there is nothing to compare against
+ * yet: a player choosing for the first time has no idea what the baseline is,
+ * so every figure was relative to a number they had never seen. Worse, health
+ * was only ever shown as a percentage, which meant it was impossible to learn
+ * before the fight that Frost carries 125 and Ember carries 85.
+ *
+ * These come from COMBAT and the champion's own traits rather than being typed
+ * out, so a tuning change cannot leave the setup screen quoting numbers the
+ * fight stopped using.
+ */
+export interface ChampionStats {
+  health: number;
+  lightDamage: number;
+  heavyDamage: number;
+  /** Seconds between dodges, which is how a player counts them. */
+  dodgeSeconds: number;
+}
+
+export function championStats(champion: Champion): ChampionStats {
   const { traits } = champion;
-  const pct = (value: number) => `${value > 1 ? "+" : ""}${Math.round((value - 1) * 100)}%`;
-  const notes: string[] = [];
+  return {
+    health: Math.round(COMBAT.player.maxHp * traits.maxHp),
+    lightDamage: Math.round(COMBAT.lightAttack.damage * traits.damage),
+    heavyDamage: Math.round(COMBAT.heavyAttack.damage * traits.damage),
+    dodgeSeconds:
+      Math.round((COMBAT.player.dodgeCooldownMs * traits.dodgeCooldown) / 100) / 10,
+  };
+}
 
-  if (traits.damage !== 1) notes.push(`dmg ${pct(traits.damage)}`);
-  if (traits.maxHp !== 1) notes.push(`hp ${pct(traits.maxHp)}`);
-  // Inverted, because a shorter cooldown should read as more dodging, not less.
-  if (traits.dodgeCooldown !== 1) notes.push(`dodge ${pct(1 / traits.dodgeCooldown)}`);
-
-  return notes.join(" · ");
+/**
+ * Labelled stat rows for the affinity screen.
+ *
+ * Returned as label and value pairs rather than a joined string because the
+ * string version read "38/71 dmg", which requires the player to already know
+ * that light comes before heavy. A stat nobody can decode is no better than no
+ * stat, and the point of showing absolute numbers was to let a first-time
+ * player choose without guessing.
+ */
+export function describeChampion(champion: Champion): { label: string; value: string }[] {
+  const stats = championStats(champion);
+  return [
+    { label: "health", value: `${stats.health}` },
+    { label: "light hit", value: `${stats.lightDamage}` },
+    { label: "heavy hit", value: `${stats.heavyDamage}` },
+    { label: "dodge every", value: `${stats.dodgeSeconds}s` },
+  ];
 }

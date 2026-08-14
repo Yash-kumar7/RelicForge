@@ -81,8 +81,15 @@ export function Hud() {
   const fighting = phase === "FIGHTING";
   // Against the champion's own maximum, not the base constant: a Frost run has
   // 125 health, and dividing by 100 would show a full bar reading 125%.
+  /*
+   * The bars still work in proportion, because that is what a bar is for. The
+   * text beside them reports real values: a percentage tells you how far along
+   * you are, a number tells you how many more hits you can take, and only one
+   * of those is a decision you can act on.
+   */
+  // Still used for the bar width and for the condition band, which is a
+  // threshold on a proportion rather than on a raw value.
   const playerPct = Math.round((playerHp / playerMaxHp) * 100);
-  const bossPct = Math.ceil((bossHp / Math.max(1, bossMaxHp)) * 100);
   const bossName = bossTitleFor(bossLevel ?? 1, affinity);
 
   // The thresholds the relic actually keys off, surfaced so the player can see
@@ -100,7 +107,9 @@ export function Hud() {
               <span className="font-display text-xs uppercase tracking-[0.4em] text-stone-400">
                 {bossName}
               </span>
-              <span className="font-mono text-xs tabular-nums text-stone-300">{bossPct}%</span>
+              <span className="font-mono text-xs tabular-nums text-stone-300">
+                {Math.ceil(bossHp)} / {bossMaxHp}
+              </span>
             </div>
             <div className="h-[3px] w-full bg-ash-800">
               <div
@@ -128,7 +137,7 @@ export function Hud() {
                 : "font-mono text-xs tabular-nums text-stone-300"
             }
           >
-            {playerPct}%
+            {Math.ceil(playerHp)} / {playerMaxHp}
           </span>
         </div>
         <div className="h-[3px] w-full bg-ash-800">

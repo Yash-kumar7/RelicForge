@@ -185,7 +185,15 @@ export function TitleScreen() {
     <div className="h-full overflow-y-auto bg-ash-950 px-6 py-8">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2">
         {/* Left: the champion, as large as the viewport allows. */}
-        <div className="lg:sticky lg:top-4 lg:self-start">
+        {/*
+          Deliberately not sticky.
+          Pinning this column kept the champion on screen while scrolling, but a
+          stuck element sits at its own offset from the viewport rather than in
+          flow, so the heading drifted below "Choose your affinity" the moment
+          the page moved at all. Two headings that are meant to share a line
+          cannot have one of them positioned against the viewport.
+        */}
+        <div className="lg:self-start">
           <div className={`${SECTION_HEADING} mb-2 justify-between`}>
             <p>Your champion</p>
             <p className="font-mono text-[10px] leading-4 tracking-[0.25em] text-stone-700">
@@ -237,9 +245,17 @@ export function TitleScreen() {
                   <p className="mt-2 text-[10px] leading-relaxed text-stone-500">
                     {championFor(a.id).blurb}
                   </p>
-                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.15em] text-stone-700">
-                    {describeChampion(championFor(a.id))}
-                  </p>
+
+                  {/* Labelled, because "38/71 dmg" assumes the reader already
+                      knows which number is which. */}
+                  <dl className="mt-3 space-y-0.5 font-mono text-[9px] uppercase tracking-[0.12em]">
+                    {describeChampion(championFor(a.id)).map((stat) => (
+                      <div key={stat.label} className="flex justify-between gap-2">
+                        <dt className="text-stone-700">{stat.label}</dt>
+                        <dd className="tabular-nums text-stone-400">{stat.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 </button>
               ))}
             </div>

@@ -1,6 +1,11 @@
 import { useMemo } from "react";
-import { describeTraits, relicTraits } from "@relic/core";
-import { attackSpec } from "../game/combat";
+import { relicTraits } from "@relic/core";
+import { attackSpec, type AttackSpec } from "../game/combat";
+
+/** Total swing time in seconds, which is the unit a player counts attacks in. */
+function swingSeconds(spec: AttackSpec): string {
+  return ((spec.windupMs + spec.activeMs + spec.recoveryMs) / 1000).toFixed(2);
+}
 import { IRON, useLoadout } from "../state/useLoadout";
 
 /**
@@ -31,7 +36,7 @@ export function ArmamentPanel() {
   const traits = useMemo(() => relicTraits(selected?.dna), [selected]);
   const light = attackSpec("light", traits);
   const heavy = attackSpec("heavy", traits);
-  const notes = describeTraits(traits);
+
 
   return (
     <section>
@@ -93,21 +98,30 @@ export function ArmamentPanel() {
                 here is also what makes keeping an older relic a real decision
                 rather than always taking the newest one.
               */}
+              {/*
+                Real values, not percentages. A relic that says heavy damage
+                plus thirty percent is describing itself against a baseline the
+                player has never been shown; 78 damage over 0.98 seconds is
+                something they can decide with.
+              */}
               <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.12em]">
                 <div className="flex justify-between">
                   <dt className="text-stone-700">light</dt>
-                  <dd className="text-stone-400">{light.damage}</dd>
+                  <dd className="text-stone-400">
+                    {light.damage} · {swingSeconds(light)}s
+                  </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-stone-700">heavy</dt>
-                  <dd className="text-stone-400">{heavy.damage}</dd>
+                  <dd className="text-stone-400">
+                    {heavy.damage} · {swingSeconds(heavy)}s
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-stone-700">reach</dt>
+                  <dd className="text-stone-400">{heavy.reach.toFixed(1)}</dd>
                 </div>
               </dl>
-              {notes.length > 0 && (
-                <p className="mt-2 text-[10px] leading-relaxed text-ember-400/80">
-                  {notes.join(" · ")}
-                </p>
-              )}
             </>
           ) : (
             <>
