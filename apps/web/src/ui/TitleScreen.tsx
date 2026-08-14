@@ -25,6 +25,16 @@ import { useProgress } from "../state/useProgress";
  * thing this project is actually about.
  */
 
+/**
+ * Every section heading on the setup screen, defined once.
+ *
+ * The champion heading sat a few pixels below the affinity heading because it
+ * shares its row with the rank line, and a taller sibling dragged the shared
+ * baseline down. Two columns that are meant to start on the same line must not
+ * derive their height from whatever happens to be inside them.
+ */
+const SECTION_HEADING = "flex h-4 items-baseline text-[11px] uppercase leading-4 tracking-[0.4em] text-stone-600";
+
 const AFFINITIES: { id: Affinity; glyph: string; name: string; blurb: string; accent: string }[] = [
   {
     id: "fire",
@@ -176,9 +186,9 @@ export function TitleScreen() {
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2">
         {/* Left: the champion, as large as the viewport allows. */}
         <div className="lg:sticky lg:top-4 lg:self-start">
-          <div className="mb-2 flex items-baseline justify-between">
-            <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Your champion</p>
-            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
+          <div className={`${SECTION_HEADING} mb-2 justify-between`}>
+            <p>Your champion</p>
+            <p className="font-mono text-[10px] leading-4 tracking-[0.25em] text-stone-700">
               {rank.name} · {xp} xp
             </p>
           </div>
@@ -188,9 +198,7 @@ export function TitleScreen() {
         {/* Right: affinity, then quarry, then descend. */}
         <div className="flex flex-col">
           <section>
-            <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">
-              Choose your affinity
-            </p>
+            <p className={`${SECTION_HEADING} mb-2`}>Choose your affinity</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {AFFINITIES.map((a) => (
                 <button
@@ -204,9 +212,19 @@ export function TitleScreen() {
                       : "border-ash-700 text-stone-500 hover:border-stone-500",
                   ].join(" ")}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl leading-none">{a.glyph}</span>
-                    <span className="font-display text-base tracking-[0.15em]">{a.name}</span>
+                  <div className="flex h-7 items-center gap-2">
+                    {/*
+                      Fixed box. The three glyphs are emoji with different
+                      intrinsic heights, and the fire one is the tallest, so a
+                      row sized by its content made the Ember card start lower
+                      than the other two.
+                    */}
+                    <span className="flex h-7 w-6 items-center justify-center text-xl leading-none">
+                      {a.glyph}
+                    </span>
+                    <span className="font-display text-base leading-none tracking-[0.15em]">
+                      {a.name}
+                    </span>
                   </div>
                   <p className="mt-1 text-[10px] leading-relaxed text-stone-600">{a.blurb}</p>
 
@@ -232,9 +250,7 @@ export function TitleScreen() {
           </div>
 
           <section className="mt-8">
-            <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">
-              Choose your quarry
-            </p>
+            <p className={`${SECTION_HEADING} mb-2`}>Choose your quarry</p>
             <p className="mt-2 text-[11px] leading-relaxed text-stone-600">
               Each boss forges a different kind of weapon. What you kill becomes part of what you
               carry.
