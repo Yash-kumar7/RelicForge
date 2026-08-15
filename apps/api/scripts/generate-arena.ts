@@ -13,7 +13,7 @@
  *
  *   --concepts   9 credits each. Writes storage/arena/<slug>/concept.png.
  *   --meshes     35 credits each. Chains off the concept task, so no re-upload.
- *   --promote    Free. Copies into apps/web/public/assets/arena/<slug>.glb.
+ *   --promote    Free. Reports what is live; Fastify serves storage directly.
  *
  * Options: --only <slug,slug>  --candidates <n>  --pick <n>
  *
@@ -82,8 +82,6 @@ const PIECES: ArenaPiece[] = [
 const POLYCOUNT = 12_000;
 
 const arenaRoot = () => path.join(env.storageDir, "arena");
-const publicRoot = () =>
-  path.resolve(env.storageDir, "..", "..", "web", "public", "assets", "arena");
 
 interface ArenaMeta {
   slug: string;
@@ -262,17 +260,23 @@ async function meshes(): Promise<void> {
   console.log(`\nSpent ${balance - (await getBalance())} credits.`);
 }
 
-/** Publishes the finished meshes where the web app can load them. */
+/**
+ * Nothing to publish.
+ *
+ * Fastify already serves the storage directory at /assets, so the mesh is live
+ * at /assets/arena/<slug>/model.glb the moment --meshes writes it. An earlier
+ * version copied into web/public/assets, which looks equivalent and is not: vite
+ * proxies /assets to the API, so a file in public under that prefix is shadowed
+ * and never served.
+ */
 async function promote(): Promise<void> {
-  await mkdir(publicRoot(), { recursive: true });
   for (const piece of targets()) {
-    const from = path.join(arenaRoot(), piece.slug, "model.glb");
-    try {
-      await copyFile(from, path.join(publicRoot(), `${piece.slug}.glb`));
-      console.log(`  ok  ${piece.slug} -> assets/arena/${piece.slug}.glb`);
-    } catch {
-      console.log(`skip  ${piece.slug} - no mesh yet`);
-    }
+    const meta = await readMeta(piece.slug);
+    console.log(
+      meta?.meshTaskId
+        ? `  ok  ${piece.slug} - live at /assets/arena/${piece.slug}/model.glb`
+        : `skip  ${piece.slug} - no mesh yet`,
+    );
   }
 }
 

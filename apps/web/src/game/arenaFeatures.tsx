@@ -1,101 +1,141 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import type { Mesh } from "three";
+import { CanvasTexture, type Mesh } from "three";
 import { ARENA_RADIUS } from "./arenaGeometry";
 import type { ArenaTheme } from "./theme";
 
 /**
  * What makes each rung a different place, rather than the same place repainted.
  *
- * The arena already changed its ten colours and its pillar layout per boss, and
- * that is a reskin: the same room, five palettes. A player walking into the
- * fourth fight should be able to tell it is the fourth fight with the colour
- * stripped out, which means the geometry has to differ, not the material.
+ * Two earlier attempts failed the same way. Ten colours and a pillar count is a
+ * reskin, and the pillars turned out to be scenery nothing ever touched. Rings
+ * and fissures drawn on the floor read as road markings, because flat unlit
+ * geometry lying on a dark surface has nothing lighting it and nothing casting
+ * onto it, so thinning it out never stops it looking like paint.
  *
- * Everything here is primitives for the same reason the arena is. A downloaded
- * environment would add megabytes and pull attention off the one asset that is
- * supposed to hold the frame, so each rung gets one strong structural idea built
- * from boxes and cylinders instead of a set dressed with props.
+ * What is left is the two things that read in a dark 3D scene: light, and
+ * geometry the fight happens on top of. Every rung gets pools of its own light
+ * on the floor, and one structural idea beyond that.
  *
- * Deterministic throughout. The wobble is derived from the index, never from
- * Math.random, so a re-recorded run of a level matches the previous take frame
- * for frame, which is the only way a demo can be shot twice.
+ * Deterministic throughout, so a re-recorded run matches the previous take.
  */
-
-/** Index-derived pseudo-jitter, the same trick the pillar ring uses. */
-function wobble(i: number, mod = 11): number {
-  return ((i * 37) % mod) / mod;
-}
 
 /**
- * Ashen Warden: a pit that has cracked open under the heat.
+ * A soft round falloff, drawn once and shared.
  *
- * The fissures run outward from under the boss, so the light on the floor comes
- * from the thing standing on it. They are the only warm thing at ground level
- * during the fight, since the forge stays dormant until it dies.
+ * This is the whole difference between light and paint. A circle mesh has an
+ * edge, and the edge is what makes it read as painted on; a radial gradient has
+ * no edge at all, so it reads as the floor being lit. Cheap enough to build in a
+ * canvas at load and reuse for every pool in the game.
  */
-function EmberFissures({ theme }: { theme: ArenaTheme }) {
-  const cracks = useMemo(
-    () =>
-      /*
-       * Short, thin and dim, which is the whole difference between a crack and a
-       * painted stripe.
-       *
-       * The first pass ran nine bars of length 6 to 13 out from the middle at
-       * half opacity, which crossed the entire floor, met at the centre, and read
-       * as a logo someone had stencilled on the arena. A fissure is a hairline
-       * with light at the bottom of it: it has to be narrow enough that the floor
-       * is mostly floor.
-       */
-      Array.from({ length: 7 }, (_, i) => {
-        const angle = (i / 7) * Math.PI * 2 + wobble(i) * 0.9;
-        const length = 1.8 + wobble(i, 7) * 2.6;
-        const from = 3.4 + wobble(i, 5) * 4.5;
-        return {
-          key: i,
-          position: [
-            Math.cos(angle) * (from + length / 2),
-            0.02,
-            Math.sin(angle) * (from + length / 2),
-          ] as [number, number, number],
-          rotation: [-Math.PI / 2, 0, -angle] as [number, number, number],
-          length,
-          width: 0.045 + wobble(i, 3) * 0.05,
-        };
-      }),
-    [],
-  );
+let cachedGlow: CanvasTexture | null = null;
+
+function glowTexture(): CanvasTexture {
+  if (cachedGlow) return cachedGlow;
+
+  const size = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  gradient.addColorStop(0, "rgba(255,255,255,1)");
+  // Falls off fast and then trails, which is how light on a floor behaves.
+  gradient.addColorStop(0.35, "rgba(255,255,255,0.42)");
+  gradient.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  cachedGlow = new CanvasTexture(canvas);
+  return cachedGlow;
+}
+
+interface Pool {
+  /** Distance from the middle of the arena, in metres. */
+  radius: number;
+  /** Bearing, in turns, so a layout reads as a fraction of a circle. */
+  turn: number;
+  /** How wide the pool of light is. */
+  size: number;
+  strength: number;
+  /** Whether it also casts real light. Only a few can afford to. */
+  lit?: boolean;
+}
+
+/** Light on the floor, and for a couple of them, light in the room. */
+function Pools({ pools, colour }: { pools: Pool[]; colour: string }) {
+  const texture = useMemo(() => glowTexture(), []);
 
   return (
     <group>
-      {cracks.map((crack) => (
-        <mesh key={crack.key} position={crack.position} rotation={crack.rotation}>
-          <planeGeometry args={[crack.length, crack.width]} />
-          <meshBasicMaterial color={theme.forge} transparent opacity={0.34} toneMapped={false} />
-        </mesh>
-      ))}
+      {pools.map((pool, i) => {
+        const angle = pool.turn * Math.PI * 2;
+        return (
+          <group
+            key={i}
+            position={[Math.cos(angle) * pool.radius, 0, Math.sin(angle) * pool.radius]}
+          >
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+              <planeGeometry args={[pool.size, pool.size]} />
+              <meshBasicMaterial
+                map={texture}
+                color={colour}
+                transparent
+                opacity={pool.strength}
+                depthWrite={false}
+                toneMapped={false}
+              />
+            </mesh>
+            {/*
+              A real light over a few of them, so a pool also picks out the boss's
+              legs and the player's as they walk through it. Point lights are the
+              expensive thing in this scene, so most pools are the cheap half of
+              the effect and only some carry the other half.
+            */}
+            {pool.lit && (
+              <pointLight
+                position={[0, 1.2, 0]}
+                color={colour}
+                intensity={5}
+                distance={9}
+                decay={2}
+              />
+            )}
+          </group>
+        );
+      })}
     </group>
   );
 }
 
 /**
- * Drowned Choir: the room is under water, and you are fighting in it.
+ * Ashen Warden: coals burning up through the floor.
  *
- * A single translucent plane just above the floor does more to say where you are
- * than any amount of blue, because it sits between the eye and the ground and
- * everything below it reads as submerged. It rises and falls slowly so the
- * surface is alive without asking for attention.
+ * Uneven and close in, so the fight is lit from underneath and from one side
+ * more than the other. The only rung where the light at ground level is warmer
+ * than the light from above.
+ */
+const WARDEN_POOLS: Pool[] = [
+  { radius: 5.2, turn: 0.06, size: 7, strength: 0.5, lit: true },
+  { radius: 8.4, turn: 0.31, size: 9, strength: 0.36 },
+  { radius: 6.1, turn: 0.58, size: 6, strength: 0.44, lit: true },
+  { radius: 9.6, turn: 0.79, size: 8, strength: 0.3 },
+  { radius: 3.4, turn: 0.93, size: 5, strength: 0.34 },
+];
+
+/**
+ * Drowned Choir: the room is under water.
  *
- * This is the whole feature. Broken columns standing in the water were the
- * obvious next thing and they were the wrong thing: scenery a player cannot
- * touch, in a game that already has a ring of it.
+ * A translucent plane just above the floor does more than any amount of blue,
+ * because it sits between the eye and the ground and everything below it reads
+ * as submerged. It rises and falls a few centimetres so the surface is alive
+ * without asking for attention.
  */
 function FloodedFloor({ theme }: { theme: ArenaTheme }) {
   const surface = useRef<Mesh>(null);
 
   useFrame(({ clock }) => {
     if (!surface.current) return;
-    // Centimetres, not a swell. Enough that the surface is alive.
     surface.current.position.y = 0.34 + Math.sin(clock.getElapsedTime() * 0.6) * 0.04;
   });
 
@@ -106,53 +146,53 @@ function FloodedFloor({ theme }: { theme: ArenaTheme }) {
         <meshStandardMaterial
           color={theme.forge}
           transparent
-          opacity={0.22}
-          roughness={0.12}
-          metalness={0.6}
+          opacity={0.2}
+          roughness={0.1}
+          metalness={0.65}
         />
       </mesh>
+      {/* Lit from under the surface, which is what makes it read as water rather
+          than as a sheet of glass. */}
+      <Pools
+        pools={[
+          { radius: 0, turn: 0, size: 16, strength: 0.22, lit: true },
+          { radius: 9.2, turn: 0.42, size: 10, strength: 0.16 },
+          { radius: 8.1, turn: 0.88, size: 10, strength: 0.16 },
+        ]}
+        colour={theme.forge}
+      />
     </group>
   );
 }
 
 /**
- * Gilded Husk: a hall that was laid out by someone, and is still exactly as laid
- * out.
+ * Gilded Husk: a hall someone laid out, still exactly as laid out.
  *
- * The one rung whose room is deliberate. Radial lines struck from the centre, a
- * raised dais under the fight, and the marks all meet where they should, which
- * reads as ceremony beside the Warden's cracked floor and the Choir's flood.
+ * The fight happens on a two-step dais, lit evenly from four sides. The evenness
+ * is the point: every other arena on the ladder is lit unevenly, so symmetry
+ * reads as ceremony here.
  */
 function GildedHall({ theme }: { theme: ArenaTheme }) {
   return (
     <group>
-      {/* Struck from the centre, 24 of them, evenly. */}
-      {Array.from({ length: 24 }, (_, i) => {
-        const angle = (i / 24) * Math.PI * 2;
-        const inner = 3.6;
-        const outer = ARENA_RADIUS - 1.4;
-        const mid = (inner + outer) / 2;
-        return (
-          <mesh
-            key={i}
-            position={[Math.cos(angle) * mid, 0.02, Math.sin(angle) * mid]}
-            rotation={[-Math.PI / 2, 0, -angle]}
-          >
-            <planeGeometry args={[outer - inner, 0.04]} />
-            <meshBasicMaterial color={theme.rune} transparent opacity={0.14} toneMapped={false} />
-          </mesh>
-        );
-      })}
+      <mesh position={[0, 0.09, 0]} receiveShadow>
+        <cylinderGeometry args={[4.6, 4.9, 0.18, 48]} />
+        <meshStandardMaterial color={theme.pillar} roughness={0.45} metalness={0.55} />
+      </mesh>
+      <mesh position={[0, 0.24, 0]} receiveShadow>
+        <cylinderGeometry args={[3.7, 3.9, 0.14, 48]} />
+        <meshStandardMaterial color={theme.ground} roughness={0.4} metalness={0.6} />
+      </mesh>
 
-      {/* The dais. Two steps, so the fight happens on a stage. */}
-      <mesh position={[0, 0.09, 0]}>
-        <cylinderGeometry args={[4.4, 4.5, 0.18, 48]} />
-        <meshStandardMaterial color={theme.pillar} roughness={0.6} metalness={0.4} />
-      </mesh>
-      <mesh position={[0, 0.24, 0]}>
-        <cylinderGeometry args={[3.5, 3.6, 0.14, 48]} />
-        <meshStandardMaterial color={theme.ground} roughness={0.5} metalness={0.5} />
-      </mesh>
+      <Pools
+        pools={[
+          { radius: 7.5, turn: 0, size: 8, strength: 0.26, lit: true },
+          { radius: 7.5, turn: 0.25, size: 8, strength: 0.26 },
+          { radius: 7.5, turn: 0.5, size: 8, strength: 0.26, lit: true },
+          { radius: 7.5, turn: 0.75, size: 8, strength: 0.26 },
+        ]}
+        colour={theme.rune}
+      />
     </group>
   );
 }
@@ -160,26 +200,26 @@ function GildedHall({ theme }: { theme: ArenaTheme }) {
 /**
  * Rootbound King: the room lost.
  *
- * Roots cross the floor at the height of a shin, which changes how the space
- * reads even though they do not block movement, and a canopy takes the ceiling
- * away so the arena feels closed over rather than open to a sky. Between them
- * this is the rung where the architecture has already been beaten.
+ * Roots cross the floor at the height of a shin and a canopy takes the ceiling
+ * away, so the arena is closed over rather than open. Light comes through two
+ * gaps only, which is what a canopy does, and it is the darkest rung for it.
  */
 function Overgrowth({ theme }: { theme: ArenaTheme }) {
   return (
     <group>
       {Array.from({ length: 8 }, (_, i) => {
-        const angle = (i / 8) * Math.PI * 2 + wobble(i, 7) * 0.7;
-        const length = 12 + wobble(i, 5) * 10;
-        const thickness = 0.3 + wobble(i, 9) * 0.45;
-        const radius = 3 + wobble(i, 11) * 5;
+        const wobble = ((i * 37) % 11) / 11;
+        const angle = (i / 8) * Math.PI * 2 + wobble * 0.7;
+        const length = 12 + wobble * 10;
+        const thickness = 0.3 + wobble * 0.45;
+        const radius = 3 + wobble * 5;
         return (
           <mesh
             key={i}
             position={[Math.cos(angle) * radius, thickness * 0.7, Math.sin(angle) * radius]}
             /* Laid along the floor, turned to its own bearing, and rolled a
                little so no two read as the same extruded tube. */
-            rotation={[Math.PI / 2, wobble(i, 13) * 0.5, -angle + wobble(i, 3) * 0.3]}
+            rotation={[Math.PI / 2, wobble * 0.5, -angle + wobble * 0.3]}
           >
             <cylinderGeometry args={[thickness, thickness * 1.4, length, 8]} />
             <meshStandardMaterial color={theme.pillar} roughness={1} />
@@ -187,11 +227,19 @@ function Overgrowth({ theme }: { theme: ArenaTheme }) {
         );
       })}
 
-      {/* Canopy. Dark, close, and it takes the top off the room. */}
       <mesh position={[0, 8.6, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <circleGeometry args={[ARENA_RADIUS + 1, 48]} />
         <meshStandardMaterial color={theme.wall} roughness={1} />
       </mesh>
+
+      {/* Two shafts through the canopy, and nothing else. */}
+      <Pools
+        pools={[
+          { radius: 4.2, turn: 0.15, size: 9, strength: 0.4, lit: true },
+          { radius: 8.8, turn: 0.66, size: 7, strength: 0.28, lit: true },
+        ]}
+        colour={theme.keyLight}
+      />
     </group>
   );
 }
@@ -199,21 +247,20 @@ function Overgrowth({ theme }: { theme: ArenaTheme }) {
 /**
  * Hollow Sovereign: nothing around the floor at all.
  *
- * The wall is removed for this rung, which is the largest single change any of
- * them makes: the boundary that has been there for four fights is gone, and the
- * disc reads as floating, and nothing is put back in its place: standing stones
- * out in the dark were the obvious next move and they would only be more scenery
- * to walk past.
+ * The wall is removed for this rung, the largest single change any of them
+ * makes: the boundary that has been there for four fights is gone and the disc
+ * reads as floating. One pool under the fight and almost nothing beyond it, so
+ * the dark past the edge has no depth to it.
  */
 function VoidField({ theme }: { theme: ArenaTheme }) {
   return (
-    <group>
-      {/* A rim on the disc, so the edge of the world is a place and not a cut. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
-        <ringGeometry args={[ARENA_RADIUS - 0.18, ARENA_RADIUS, 96]} />
-        <meshBasicMaterial color={theme.rune} transparent opacity={0.22} toneMapped={false} />
-      </mesh>
-    </group>
+    <Pools
+      pools={[
+        { radius: 0, turn: 0, size: 13, strength: 0.34, lit: true },
+        { radius: 10.5, turn: 0.5, size: 7, strength: 0.14 },
+      ]}
+      colour={theme.rune}
+    />
   );
 }
 
@@ -233,6 +280,6 @@ export function ArenaFeatures({ level, theme }: { level: number; theme: ArenaThe
     case 5:
       return <VoidField theme={theme} />;
     default:
-      return <EmberFissures theme={theme} />;
+      return <Pools pools={WARDEN_POOLS} colour={theme.forge} />;
   }
 }

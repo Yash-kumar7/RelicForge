@@ -16,7 +16,14 @@ import { Box3, Vector3, type Group } from "three";
  * model.
  */
 
-const MODEL_URL = "/assets/arena/forge.glb";
+/*
+ * Served by Fastify out of the storage directory, like every other generated
+ * asset. Copying it into web/public looked equivalent and is not: vite proxies
+ * /assets straight through to the API, so anything in public under that prefix
+ * is shadowed and 404s, and this would have silently fallen back to the boxes
+ * forever.
+ */
+const MODEL_URL = "/assets/arena/forge/model.glb";
 
 /** How tall the forge should stand, in metres. Scaled to this, never trusted. */
 const HEIGHT = 3.4;
