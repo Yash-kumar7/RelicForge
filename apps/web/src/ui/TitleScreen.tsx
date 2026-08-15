@@ -60,7 +60,7 @@ const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
  * is which champion is toughest and by how much, not what fraction of some
  * absolute ceiling each one reaches.
  */
-const COMPARISONS: Record<Affinity, { label: string; fill: number }[]> = (() => {
+const COMPARISONS: Record<Affinity, { label: string; value: string; fill: number }[]> = (() => {
   const all: Affinity[] = ["fire", "ice", "storm"];
   const stats = all.map((id) => championStats(championFor(id)));
   const peak = {
@@ -75,13 +75,17 @@ const COMPARISONS: Record<Affinity, { label: string; fill: number }[]> = (() => 
       return [
         id,
         [
-          { label: "tough", fill: s.health / peak.health },
-          { label: "hit", fill: s.heavyDamage / peak.hit },
-          { label: "evade", fill: s.dodgesPerTenSeconds / peak.dodge },
+          { label: "tough", value: `${s.health}`, fill: s.health / peak.health },
+          { label: "hit", value: `${s.heavyDamage}`, fill: s.heavyDamage / peak.hit },
+          {
+            label: "evade",
+            value: `${s.dodgesPerTenSeconds}/10s`,
+            fill: s.dodgesPerTenSeconds / peak.dodge,
+          },
         ],
       ];
     }),
-  ) as Record<Affinity, { label: string; fill: number }[]>;
+  ) as Record<Affinity, { label: string; value: string; fill: number }[]>;
 })();
 
 const ELEMENT_GLOW: Record<Affinity, string> = {
@@ -127,12 +131,14 @@ export function TitleScreen() {
   const [step, setStep] = useState(0);
 
   /*
-   * ?bleed switches the champion between a framed portrait and a full-height
-   * figure cropped by the viewport, so the two can be compared on the same
-   * screen rather than described.
+   * The champion fills its half of the screen.
+   *
+   * This was behind ?bleed while the framed portrait and the full-height figure
+   * were compared side by side. The figure won: framed, it shared a rectangle
+   * with the column of choices and needed a border to say where one ended, and
+   * the border is what made the page read as a form beside a picture.
    */
-  const bleed =
-    typeof window !== "undefined" && new URLSearchParams(window.location.search).has("bleed");
+  const bleed = true;
   const owned = useLoadout((s) => s.owned);
   const selectArmament = useLoadout((s) => s.select);
 
@@ -290,45 +296,6 @@ export function TitleScreen() {
           cannot have one of them positioned against the viewport.
         */}
         <div className={bleed ? "relative lg:self-stretch" : "lg:self-start"}>
-          {/*
-            Hidden when the champion fills the screen.
-
-            Framed, this labels the plate beside it. Bleeding, there is no plate,
-            so it was a line of small type floating over a knight with nothing to
-            attach to, and "your champion" is not news when a champion is taking
-            up half the window. The rank moves in beside the steps, where the rest
-            of the page's chrome already lives.
-          */}
-          <div
-            className={`${SECTION_HEADING} mb-2 justify-between ${bleed ? "hidden" : ""}`}
-          >
-            {/*
-              Named for the step it belongs to. On the enemy step the champion
-              is no longer the thing being decided, it is who you are sending,
-              and saying so keeps the left column from looking like a leftover.
-            */}
-            <p>{section === 2 ? "Your enemy" : "Your champion"}</p>
-            <p className="font-mono text-[10px] leading-4 tracking-[0.25em] text-stone-700">
-              {/*
-                Labelled, because unlabelled it reads as the champion's name.
-                It sits beside "Your champion" in the same small mono type, so
-                "Ashbearer" looked like an answer to that heading rather than a
-                rank the player has climbed to.
-              */}
-              rank {rank.name} · {xp} xp
-            </p>
-          </div>
-          {/*
-            The enemy takes the stage on the enemy step.
-
-            Stage select shows the stage. Keeping the champion here left the
-            thing being chosen as a row in a list while the thing already chosen
-            held the large view, and the boss is what the player is deciding
-            about.
-
-            Falls back to the champion until one is picked, because an empty
-            frame says less than the character who is about to walk into it.
-          */}
           {/*
             The chosen element lights the room.
 
@@ -560,11 +527,21 @@ export function TitleScreen() {
                     were not shown at all, so the only visible difference between
                     the three was the one the rows happened to list.
                   */}
-                  <span className="mt-4 flex max-w-xs gap-4">
+                  <span className="mt-4 flex max-w-sm gap-5">
                     {COMPARISONS[a.id].map((stat) => (
                       <span key={stat.label} className="flex-1">
-                        <span className="block font-mono text-[9px] uppercase tracking-[0.2em] text-brass-700">
-                          {stat.label}
+                        {/*
+                          The bar answers which champion is toughest; the figure
+                          answers by how much. A bar alone hides whether 130 is a
+                          little more than 80 or twice it.
+                        */}
+                        <span className="flex items-baseline justify-between gap-2">
+                          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-brass-700">
+                            {stat.label}
+                          </span>
+                          <span className="font-mono text-[10px] tabular-nums text-bone-400">
+                            {stat.value}
+                          </span>
                         </span>
                         <span className="mt-1 block h-[3px] w-full bg-ash-800">
                           <span
