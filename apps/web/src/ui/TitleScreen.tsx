@@ -85,16 +85,15 @@ const COMPARISONS: Record<Affinity, { label: string; value: string; fill: number
            */
           { label: "health", value: `${s.health}`, fill: s.health / peak.health },
           /*
-           * Strength, not damage.
+           * Damage, plainly.
            *
-           * Damage belongs to the weapon, which this screen says a line above,
-           * and a bar called damage on a champion contradicts it. What a
-           * champion contributes is how hard they swing whatever they are
-           * holding: Ember hits harder than Frost with the same sword. The
-           * figure is what that comes to bare-handed, which is what the caption
-           * below the list now says.
+           * This was briefly called strength, to avoid contradicting a line
+           * saying damage comes from the weapon. Inventing a noun to protect a
+           * simplification is the wrong way round: both the champion and the
+           * weapon decide what a hit does, so the label is damage and the
+           * caption says the figure is bare-handed.
            */
-          { label: "strength", value: `${s.heavyDamage}`, fill: s.heavyDamage / peak.hit },
+          { label: "damage", value: `${s.heavyDamage}`, fill: s.heavyDamage / peak.hit },
           {
             label: "dodges",
             value: `${s.dodgesPerTenSeconds} / 10s`,
