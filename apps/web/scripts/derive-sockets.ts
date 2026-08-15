@@ -26,12 +26,23 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
  *
  * Read off the concept images by eye, because nothing in the mesh distinguishes
  * a closed fist from an open hand. The image model does not reliably honour
- * "the right hand": seven of the eight put the fist on the character's right and
- * Ember put it on the left, which is exactly the sort of thing that has to be
- * recorded rather than assumed.
+ * "the right hand": on the first pass seven of eight put the fist on the
+ * character's right and Ember put it on the left.
+ *
+ * Ember was re-rolled rather than accommodated, because a champion holding its
+ * sword in the opposite hand to everyone else reads as a mistake even though the
+ * code handles it. Three candidates at nine credits each, two of which landed on
+ * the correct side, then one mesh. Generating several cheap images and looking
+ * before spending the expensive one is the only reliable way to control a detail
+ * the prompt cannot.
+ *
+ * The table stays because the model can drift again on any future run.
  */
 const FIST_HAND: Record<string, "LeftHand" | "RightHand"> = {
-  ember: "LeftHand",
+  // Ember originally closed its left hand, which is why this table exists. Its
+  // concept was re-rolled until the fist landed on the same side as the other
+  // seven, so all eight now agree.
+  ember: "RightHand",
   frost: "RightHand",
   storm: "RightHand",
   "ashen-warden": "RightHand",

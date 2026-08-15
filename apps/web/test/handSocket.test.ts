@@ -51,14 +51,22 @@ describe("generated hand sockets", () => {
     }
   });
 
-  it("records which hand closed, because it is not always the right one", () => {
-    // The image model does not reliably honour "the right hand". Ember came back
-    // holding with its left, and assuming otherwise puts its weapon in an open
-    // hand.
-    expect(HAND_SOCKETS.ember?.bone).toBe("LeftHand");
+  it("records which hand closed rather than assuming the right one", () => {
+    // The image model does not reliably honour "the right hand". On the first
+    // pass Ember came back holding with its left, and assuming otherwise puts
+    // its weapon in an open hand. It was re-rolled until it matched, but the
+    // field stays because the model can drift again on any future run.
     for (const [, socket] of entries) {
       expect(["LeftHand", "RightHand"]).toContain(socket.bone);
     }
+  });
+
+  it("has every character holding with the same hand", () => {
+    // Not a correctness requirement, a consistency one: the code handles either
+    // side, but one champion gripping with the opposite hand to everyone else
+    // reads as a bug to anyone looking at the screen.
+    const hands = new Set(entries.map(([, socket]) => socket.bone));
+    expect(hands.size).toBe(1);
   });
 
   it("agrees on side between the bone it names and the offset it gives", () => {

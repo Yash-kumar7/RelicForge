@@ -146,10 +146,78 @@ async function readMeta(slug: string): Promise<RegenMeta | null> {
 async function concepts(): Promise<void> {
   const cfg = HERO_GENERATION_CONFIG;
   const balance = await getBalance();
-  console.log(`\nConcepts for ${CHARACTERS.length} characters, closed weapon hand`);
-  console.log(`  ~${CHARACTERS.length * 9} credits (balance ${balance})\n`);
 
-  for (const character of CHARACTERS) {
+  const onlyArg = process.argv.indexOf("--only");
+  const only =
+    onlyArg === -1 ? null : new Set((process.argv[onlyArg + 1] ?? "").split(",").filter(Boolean));
+
+  /*
+   * --candidates N generates several concepts for one character.
+   *
+   * The prompt asks for the right hand every time, and the image model does not
+   * reliably honour it: seven of eight obeyed and Ember closed its left. Nothing
+   * in a mesh or a rig distinguishes a fist from an open hand, so a wrong side
+   * cannot be corrected afterwards, only re-rolled. Rolling once and hoping is
+   * the expensive version of this; three cheap images and picking the one that
+   * came out right is the cheap version, because the 35 credit mesh is only
+   * spent after a human has looked.
+   */
+  const candidatesArg = process.argv.indexOf("--candidates");
+  const candidates = candidatesArg === -1 ? 1 : Number(process.argv[candidatesArg + 1]) || 1;
+
+  const targets = only ? CHARACTERS.filter((c) => only.has(c.slug)) : CHARACTERS;
+  console.log(`\nConcepts for ${targets.length} characters x ${candidates}, closed weapon hand`);
+  console.log(`  ~${targets.length * candidates * 9} credits (balance ${balance})\n`);
+
+  if (candidates > 1) {
+    for (const character of targets) {
+      const dir = path.join(regenRoot(), character.slug, "candidates");
+      await mkdir(dir, { recursive: true });
+      const prompt = `${character.subject}. ${CHARACTER_COMPOSITION}`;
+
+      for (let i = 1; i <= candidates; i++) {
+        try {
+          const taskId = await createConceptImage(prompt, { imageModel: cfg.imageModel });
+          const concept = await waitForTask("text-to-image", taskId);
+          const url = concept.image_urls[0];
+          if (!url) throw new Error("no concept image");
+          await writeFile(path.join(dir, `${i}.png`), await fetchBuffer(url));
+          await writeFile(path.join(dir, `${i}.json`), JSON.stringify({ taskId }, null, 2));
+          console.log(`  ok  ${character.slug} candidate ${i}`);
+        } catch (err) {
+          console.error(`  !!  ${character.slug} candidate ${i}: ${(err as Error).message}`);
+        }
+      }
+    }
+    console.log(`\nPick one, then rerun --concepts --only <slug> --pick <n>.`);
+    console.log(`Spent ${balance - (await getBalance())} credits.`);
+    return;
+  }
+
+  /*
+   * --pick N adopts a candidate as the character's concept, so the mesh stage
+   * uses it. Free: the task already exists and is chained by id.
+   */
+  const pickArg = process.argv.indexOf("--pick");
+  if (pickArg !== -1) {
+    const pick = Number(process.argv[pickArg + 1]);
+    for (const character of targets) {
+      const dir = path.join(regenRoot(), character.slug);
+      const { taskId } = JSON.parse(
+        await readFile(path.join(dir, "candidates", `${pick}.json`), "utf8"),
+      ) as { taskId: string };
+      await copyFile(path.join(dir, "candidates", `${pick}.png`), path.join(dir, "concept.png"));
+      const meta = await readMeta(character.slug);
+      await writeFile(
+        path.join(dir, "meta.json"),
+        JSON.stringify({ ...meta, conceptTaskId: taskId, meshTaskId: undefined }, null, 2),
+      );
+      console.log(`  ok  ${character.slug} adopted candidate ${pick}`);
+    }
+    return;
+  }
+
+  for (const character of targets) {
     const dir = path.join(regenRoot(), character.slug);
     await mkdir(dir, { recursive: true });
 
@@ -271,7 +339,20 @@ async function promote(): Promise<void> {
 
     try {
       await mkdir(liveDir, { recursive: true });
-      await copyFile(to, path.join(liveDir, "model-open.glb")).catch(() => undefined);
+      /*
+       * Only the first promote captures the open-hand mesh.
+       *
+       * Promoting twice would copy the already-promoted fist over the top of it,
+       * and the relaxed pose would be gone with no way back short of
+       * regenerating it. Ember was promoted, re-rolled and promoted again, which
+       * is exactly the sequence that would have destroyed it.
+       */
+      const open = path.join(liveDir, "model-open.glb");
+      const haveOpen = await readFile(open).then(
+        () => true,
+        () => false,
+      );
+      if (!haveOpen) await copyFile(to, open).catch(() => undefined);
       await copyFile(from, to);
       await copyFile(
         path.join(regenRoot(), character.slug, "concept.png"),
