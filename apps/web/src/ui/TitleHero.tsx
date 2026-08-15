@@ -104,7 +104,11 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
           seen.add(r.dna.bossInfluence);
           return true;
         });
-        setRelics(perBoss.length > 1 ? perBoss : usable.slice(0, 5));
+        /* Up the ladder, so it opens on the first fight rather than mid-list. */
+        const ordered = perBoss.sort(
+          (a, b) => (bossFor(a.dna.bossInfluence)?.level ?? 99) - (bossFor(b.dna.bossInfluence)?.level ?? 99),
+        );
+        setRelics(ordered.length > 1 ? ordered : usable.slice(0, 5));
       })
       .catch(() => {
         /* The title screen must still stand with the API down. */
@@ -119,7 +123,28 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
 
   const current = relics[index];
   const boss = current ? bossFor(current.dna.bossInfluence) : null;
-  const art = current ? `/assets/bosses/${slugFor(current.dna.bossInfluence)}/concept.png` : null;
+
+  /*
+   * The open-handed portrait, edited from the boss's own concept.
+   *
+   * The characters were regenerated holding a closed fist so a weapon would read
+   * as gripped, which is right in the game and wrong here: on the title screen
+   * they hold nothing, so a clenched empty hand looks like a mistake. These are
+   * image-to-image edits of the same concepts, so it is the same character with
+   * an open hand rather than a different one.
+   */
+  const art = current
+    ? `/assets/bosses/${slugFor(current.dna.bossInfluence)}/concept-open.png`
+    : null;
+
+  /** The champion whose affinity produced this relic's element. */
+  const championSlug = current
+    ? current.dna.element === "ice"
+      ? "frost"
+      : current.dna.element === "lightning"
+        ? "storm"
+        : "ember"
+    : null;
 
   return (
     <section className="relative flex h-[100svh] w-full flex-col items-center justify-between overflow-hidden">
@@ -130,6 +155,33 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
         rather than as a picture on the page, and it drifts, because a still
         image behind a moving object announces itself as a backdrop.
       */}
+      {/*
+        The face-off.
+
+        A single figure behind a floating weapon is a product shot. Two figures
+        turned toward each other is a fight, which is what the game is, and it
+        says the whole premise without a word: this one, against that one,
+        produced the thing between them.
+
+        The champion is mirrored so they face inward. Both are held far back in
+        the dark, because the relic between them is the subject.
+      */}
+      <AnimatePresence>
+        {championSlug && (
+          <motion.img
+            key={`champion-${championSlug}`}
+            src={`/assets/champions/${championSlug}/concept-open.png`}
+            alt=""
+            aria-hidden
+            initial={{ opacity: 0, x: -40 }}
+            animate={{ opacity: 0.34, x: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.8, ease: "easeOut" }}
+            className="pointer-events-none absolute bottom-0 left-0 h-[86svh] w-auto -scale-x-100 object-contain"
+          />
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {art && (
           <motion.img
@@ -137,11 +189,11 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
             src={art}
             alt=""
             aria-hidden
-            initial={{ opacity: 0, scale: 1.18 }}
-            animate={{ opacity: 0.3, scale: 1.06 }}
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 0.34, x: 0 }}
             exit={{ opacity: 0 }}
-            transition={{ opacity: { duration: 2 }, scale: { duration: 18, ease: "linear" } }}
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_28%]"
+            transition={{ duration: 1.8, ease: "easeOut" }}
+            className="pointer-events-none absolute bottom-0 right-0 h-[92svh] w-auto object-contain"
           />
         )}
       </AnimatePresence>
@@ -175,7 +227,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
-            className="absolute bottom-[7svh] left-8 z-10 hidden border-l border-brass-700 pl-4 text-left lg:block"
+            className="absolute bottom-[7svh] right-8 z-10 hidden border-r border-brass-700 pr-4 text-right lg:block"
           >
             <span className="block font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
               boss {String(boss.level).padStart(2, "0")}
@@ -185,6 +237,27 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
             </span>
             <span className="mt-1 block max-w-[16rem] font-mono text-[10px] leading-relaxed text-bone-400">
               {boss.blurb}
+            </span>
+          </motion.figcaption>
+        )}
+      </AnimatePresence>
+
+      {/* The champion's side of the face-off. */}
+      <AnimatePresence>
+        {championSlug && (
+          <motion.figcaption
+            key={`name-${championSlug}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute bottom-[7svh] left-8 z-10 hidden border-l border-brass-700 pl-4 text-left lg:block"
+          >
+            <span className="block font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
+              your champion
+            </span>
+            <span className="mt-1 block font-display text-base capitalize tracking-[0.16em] text-bone-200">
+              {championSlug}
             </span>
           </motion.figcaption>
         )}

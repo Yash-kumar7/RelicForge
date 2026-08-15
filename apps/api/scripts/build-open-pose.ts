@@ -42,16 +42,38 @@ const OPEN_HAND = [
 
 const DEFAULT_SLUGS = ["ember", "frost", "storm"];
 
+/** Which live directory a slug's edited concept belongs beside. */
+const KIND: Record<string, "champions" | "bosses"> = {
+  ember: "champions",
+  frost: "champions",
+  storm: "champions",
+  "ashen-warden": "bosses",
+  "drowned-choir": "bosses",
+  "gilded-husk": "bosses",
+  "rootbound-king": "bosses",
+  "hollow-sovereign": "bosses",
+};
+
 async function main(): Promise<void> {
   const slugs = process.argv.slice(2).length ? process.argv.slice(2) : DEFAULT_SLUGS;
   const cfg = HERO_GENERATION_CONFIG;
   const balance = await getBalance();
 
-  console.log(`\nOpen-hand pose for ${slugs.length} champions, by editing their concepts`);
-  console.log(`  ~${slugs.length * 44} credits (balance ${balance})\n`);
+  const imageOnlyEstimate = process.argv.includes("--image-only");
+  console.log(`\nOpen-hand pose for ${slugs.length} characters, by editing their concepts`);
+  console.log(`  ~${slugs.length * (imageOnlyEstimate ? 9 : 44)} credits (balance ${balance})\n`);
+
+  /*
+   * --image-only stops after the edit.
+   *
+   * The bosses need an open-handed portrait for the title screen and nothing
+   * more: it is a backdrop, so there is no mesh to build and no rig to redo.
+   * That is 9 credits each rather than 44.
+   */
+  const imageOnly = process.argv.includes("--image-only");
 
   for (const slug of slugs) {
-    const dir = path.join(env.storageDir, "champions", slug);
+    const dir = path.join(env.storageDir, KIND[slug] ?? "champions", slug);
     const regen = path.join(env.storageDir, "regen", slug, "concept.png");
 
     try {
@@ -67,6 +89,10 @@ async function main(): Promise<void> {
       if (!url) throw new Error("no edited image");
       await mkdir(dir, { recursive: true });
       await writeFile(path.join(dir, "concept-open.png"), await fetchBuffer(url));
+      if (imageOnly) {
+        console.log(`  ok  ${slug} - concept-open.png\n`);
+        continue;
+      }
 
       console.log(`mesh  ${slug}`);
       const meshTaskId = await createMeshFromConceptTask(editTaskId, {
