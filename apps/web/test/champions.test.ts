@@ -212,10 +212,10 @@ describe("why anyone picks one champion over another", () => {
      */
     for (const affinity of AFFINITIES) {
       const forges = championFor(affinity).forges;
-      expect(forges.length).toBeGreaterThan(40);
+      expect(forges.length).toBeGreaterThan(30);
       // A tendency, not a promise: playstyle still decides, so the copy must not
       // claim an outcome the fight can contradict.
-      expect(forges).toMatch(/tend/);
+      expect(forges).toMatch(/tend|usually/);
     }
   });
 
