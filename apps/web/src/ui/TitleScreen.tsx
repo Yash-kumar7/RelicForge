@@ -323,7 +323,17 @@ export function TitleScreen() {
         </div>
 
         {/* Right: element, then weapon, then who you fight, then descend. */}
-        <div className="flex max-w-2xl flex-col justify-center">
+        {/*
+          Scrolls on its own, because the page cannot.
+
+          Bleed mode hides the page's overflow so the champion can fill the
+          screen without dragging a scrollbar behind it. That works until this
+          column is taller than the viewport, at which point whatever sits at the
+          bottom is simply gone, and what sits at the bottom is the button that
+          continues. Giving the column its own scroll keeps the figure fixed and
+          the decision reachable.
+        */}
+        <div className="flex max-h-full max-w-2xl flex-col justify-center overflow-y-auto py-4 pr-2">
           {/*
             One decision at a time.
 
