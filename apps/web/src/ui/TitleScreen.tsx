@@ -227,7 +227,7 @@ export function TitleScreen() {
           the column that still needs it.
         */
         bleed
-          ? "h-full overflow-hidden bg-ash-950 pl-0 pr-6"
+          ? "h-full overflow-hidden bg-ash-950 py-14 pl-0 pr-6"
           : "h-full overflow-y-auto bg-ash-950 px-6 pb-10 pt-14"
       }
     >
@@ -353,7 +353,7 @@ export function TitleScreen() {
         </div>
 
         {/* Right: element, then weapon, then who you fight, then descend. */}
-        <div className={`flex max-w-2xl flex-col justify-center ${bleed ? "py-14" : ""}`}>
+        <div className="flex max-w-2xl flex-col justify-center">
           {/*
             One decision at a time.
 

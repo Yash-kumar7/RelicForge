@@ -122,7 +122,10 @@ export function ChampionPreview({
       framing={bleed ? 0.22 : 0.45}
       className={
         bleed
-          ? "h-[100svh] w-full"
+          ? /* Short of the full height on purpose. At 100svh the figure met the
+               top and bottom edges at once, which reads as a picture too big for
+               its window rather than a character standing in a room. */
+            "h-[calc(100svh-7rem)] w-full"
           : "h-[calc(100svh-7rem)] max-h-[54rem] min-h-[30rem] w-full border border-brass-800 bg-white/[0.015]"
       }
     />
