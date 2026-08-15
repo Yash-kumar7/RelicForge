@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Affinity } from "@relic/core";
-import { championFor, championStats, describeChampion } from "../game/champions";
+import { championFor, championStats } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { IRON, useLoadout } from "../state/useLoadout";
 import { BOSSES, bossAt, describeBoss, isCleared } from "../game/bosses";
@@ -9,6 +9,7 @@ import { TitleBackdrop } from "./TitleBackdrop";
 import { BossPortrait } from "./BossPortrait";
 import { BossPreview } from "./BossPreview";
 import { ArmamentPanel } from "./ArmamentPanel";
+import { ChampionSelect } from "./ChampionSelect";
 import { PendingForgePanel } from "./PendingForgePanel";
 import { SpecimenPlate } from "./SpecimenPlate";
 import { TitleHero } from "./TitleHero";
@@ -243,7 +244,7 @@ export function TitleScreen() {
               /* Same frame the champion gets. The two views sit in the same
                  place on consecutive steps, so a smaller one reads as the enemy
                  mattering less than the character choosing to fight it. */
-              className="h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full border border-ash-800 bg-ash-900/40"
+              className="h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full"
             />
           ) : (
             <ChampionPreview affinity={affinity} armed={section > 0} />
@@ -301,125 +302,9 @@ export function TitleScreen() {
           </ol>
 
           {section === 0 && (
-          <section>
-            {/*
-              Affinity is the field name and the fiction, but on a first-run
-              screen it explains nothing. The choice is an element, so it says
-              element, and the cards carry the flavour instead.
-            */}
-            <p className={`${SECTION_HEADING} mb-2`}>Choose your element</p>
-            {/*
-              Stated once rather than repeated in all three cards.
-              Without it the champion's damage and the armament panel's damage
-              are two different numbers for the same swing, and nothing on
-              screen explains which one the fight will actually use.
-            */}
-            <p className="mt-2 text-[10px] leading-relaxed text-stone-600">
-              Your element decides who you are and what your weapon is made of.
-              Damage comes from the weapon, shown below.
-            </p>
-            {/*
-              Full-width rows rather than three columns.
-
-              Three narrow cards were a compromise with a page that had to hold
-              every decision at once. A step that asks one question has the width
-              to spare, and a row reads left to right, identity then trade then
-              numbers, instead of forcing three columns of wrapped text to be
-              compared vertically.
-            */}
-            <div className="mt-5 flex flex-col gap-5">
-              {AFFINITIES.map((a) => (
-                <button
-                  key={a.id}
-                  type="button"
-                  /*
-                    Selecting does not advance.
-
-                    It did, on the reasoning that picking is the only thing this
-                    step asks for. That was wrong: it made the first click final,
-                    so a player could not try Frost after Ember, or read the
-                    third card at all. The champion beside these cards changes
-                    with the selection, which is the entire reason to sit on this
-                    step and compare.
-                  */
-                  onClick={() => chooseAffinity(a.id)}
-                  className={[
-                    "flex items-center gap-5 overflow-hidden border px-5 py-4 text-left transition",
-                    affinity === a.id
-                      ? a.accent
-                      : "border-ash-700 text-stone-500 hover:border-stone-500",
-                  ].join(" ")}
-                >
-                  {/*
-                    The champion, not an emoji.
-
-                    The row identified each choice with a weather glyph, which
-                    is the element rather than the person and reads as clip art
-                    beside an inscriptional face. These are the same cut-out
-                    portraits the title screen uses, so the character you are
-                    picking is the thing you are looking at, and the one on the
-                    left is a larger version of the same figure.
-                  */}
-                  <span
-                    className={[
-                      "relative h-24 w-20 shrink-0 overflow-hidden transition",
-                      affinity === a.id ? "opacity-100" : "opacity-45 grayscale",
-                    ].join(" ")}
-                  >
-                    <img
-                      src={`/assets/champions/${a.id === "fire" ? "ember" : a.id === "ice" ? "frost" : "storm"}/concept-cut.png`}
-                      alt=""
-                      aria-hidden
-                      /* Framed from the chest up: at this size a full figure is
-                         a smudge, and a helm is recognisable. */
-                      className="absolute left-1/2 top-0 h-[19rem] w-auto max-w-none -translate-x-1/2 object-contain"
-                    />
-                  </span>
-
-                  <span className="min-w-0 flex-1">
-                  <div className="flex h-7 items-center gap-2">
-                    {/* A bar in the element's colour, doing the job the glyph
-                        was doing without pretending to be an illustration. */}
-                    <span className={`h-4 w-[3px] shrink-0 ${a.bar}`} />
-                    <span className="font-display text-base leading-none tracking-[0.15em]">
-                      {a.name}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[10px] leading-relaxed text-stone-600">{a.blurb}</p>
-
-                  {/*
-                    The trade, stated before the choice is made.
-                    The three champions used to look different and play
-                    identically, which made the first decision in the game a
-                    cosmetic one wearing the clothes of a real one.
-                  */}
-                  <p className="mt-2 text-[11px] leading-relaxed text-stone-500">
-                    {championFor(a.id).blurb}
-                  </p>
-                  </span>
-
-                  {/*
-                    Stats to the side, so the three sets line up in a column and
-                    can be read against each other without moving your eye across
-                    a paragraph to reach the next number.
-                  */}
-                  <dl className="w-32 shrink-0 space-y-1 font-mono text-[9px] uppercase tracking-[0.12em]">
-                    {describeChampion(championFor(a.id)).map((stat) => (
-                      <div key={stat.label} className="flex justify-between gap-2">
-                        <dt className="text-stone-700">{stat.label}</dt>
-                        <dd className="tabular-nums text-stone-300">{stat.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </button>
-              ))}
-            </div>
-          </section>
+            <ChampionSelect affinities={AFFINITIES} affinity={affinity} onChoose={chooseAffinity} />
           )}
 
-          {/* No top margin. These were spaced to sit under the section above
-              them on a single scrolling page; each one is now the only thing on
-              its step and was starting lower than the element list it replaces. */}
           {section === 1 && (
           <div>
             <ArmamentPanel />
