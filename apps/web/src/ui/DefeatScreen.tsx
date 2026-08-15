@@ -22,6 +22,13 @@ export function DefeatScreen() {
   const bossMaxHp = useGameStore((s) => s.bossMaxHp);
   const bossName = useGameStore((s) => s.boss)().title;
 
+  // Clamped, because a killing blow can overshoot into negative health and a
+  // fight nobody landed a hit in would otherwise divide by whatever it liked.
+  const cleared = Math.max(
+    0,
+    Math.min(100, Math.round(((bossMaxHp - bossHp) / Math.max(1, bossMaxHp)) * 100)),
+  );
+
   return (
     /* Nothing to reveal here, so the arena is hidden outright rather than left
        as a distracting backdrop to a failure. */
@@ -40,19 +47,29 @@ export function DefeatScreen() {
           No victory, no relic
         </p>
 
-        <dl className="mx-auto mt-10 grid max-w-sm grid-cols-3 gap-6 font-mono text-[11px] uppercase tracking-widest">
+        {/*
+          How close you got, as the bar that was on screen when you died.
+
+          This was a stat reading "its health left, 1250 / 1250", which is the
+          same fact as "damage dealt" next to it said backwards, and it made a
+          player do the subtraction to learn the only thing they want to know
+          after losing: whether they were close. The bar answers that without
+          being read at all, which a pair of numbers cannot.
+        */}
+        <div className="mx-auto mt-10 w-[22rem] max-w-full">
+          <div className="flex items-baseline justify-between font-mono text-[11px] uppercase tracking-widest">
+            <span className="text-stone-700">how close you got</span>
+            <span className="tabular-nums text-stone-400">{cleared}%</span>
+          </div>
+          <div className="mt-2 h-[3px] w-full bg-ash-800">
+            <div className="h-[3px] bg-stone-500" style={{ width: `${cleared}%` }} />
+          </div>
+        </div>
+
+        <dl className="mx-auto mt-8 grid max-w-sm grid-cols-2 gap-6 font-mono text-[11px] uppercase tracking-widest">
           <div>
             <dt className="text-stone-700">damage dealt</dt>
             <dd className="mt-1 text-stone-400">{Math.round(telemetry.damageDealt)}</dd>
-          </div>
-          <div>
-            {/* "Warden left 40%" leaves the player working out what is left of
-                what. The health it had when you died is the same number the bar
-                above the fight was showing, so it is said the same way. */}
-            <dt className="text-stone-700">its health left</dt>
-            <dd className="mt-1 text-stone-400">
-              {Math.max(0, Math.round(bossHp))} / {Math.round(bossMaxHp)}
-            </dd>
           </div>
           <div>
             <dt className="text-stone-700">dodges</dt>
