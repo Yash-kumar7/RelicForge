@@ -1,8 +1,10 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
-import { Box3, Vector3, type Group } from "three";
+import { type Group } from "three";
 import { fitCharacter } from "../lib/characterFit";
+import { AnimatedCharacter } from "../game/AnimatedCharacter";
+import { handSocketFor } from "../game/handSockets";
 import { HeldWeapon } from "./HeldWeapon";
 import type { OrientationHint, WeaponClass } from "@relic/core";
 
@@ -53,6 +55,7 @@ function fitDistance(height: number, margin = 0.45): number {
 
 function Model({
   url,
+  riggedUrl,
   height,
   weapon,
   accent,
@@ -64,17 +67,54 @@ function Model({
   slug: string;
   weapon?: HeldWeaponSpec | undefined;
   accent: string;
+  /** The rigged version of this character, used whenever a weapon is held. */
+  riggedUrl: string;
 }) {
+  /*
+   * A held weapon renders the rigged mesh, an empty-handed one the static mesh.
+   *
+   * The static model has no skeleton, so its socket had to be estimated, and
+   * every estimate was wrong for the same underlying reason: Meshy's rigging
+   * normalises the character into an A-pose with the arms lowered, so the hand
+   * bone sits at 0.57 of height while model.glb keeps the concept's raised,
+   * bent-elbow fist at roughly 0.70. A ratio read from the rig therefore
+   * describes a pose the static mesh is not in, and the weapon hung a quarter of
+   * a unit below the fist that was supposed to hold it.
+   *
+   * Asking the rig at runtime removes the estimate entirely: the bone is where
+   * the fist is, by definition. It costs nothing extra, because the arena
+   * already loads these files.
+   *
+   * The relaxed mesh stays static, and needs nothing, because a character with
+   * empty hands has no socket to get wrong.
+   */
+  const holding = weapon !== undefined;
+
+  if (holding) {
+    return (
+      <group position={[0, -height / 2, 0]}>
+        <AnimatedCharacter
+          url={riggedUrl}
+          height={height}
+          // Standing still. AnimatedCharacter crawls its walk clip when idle,
+          // which reads as breathing rather than as a statue.
+          speed={0}
+          handBone={handSocketFor(slug).bone}
+        >
+          <HeldWeapon weapon={weapon} accent={accent} />
+        </AnimatedCharacter>
+      </group>
+    );
+  }
+
+  return <RelaxedModel url={url} height={height} />;
+}
+
+/** The empty-handed pose. No skeleton needed, because nothing is being held. */
+function RelaxedModel({ url, height }: { url: string; height: number }) {
   const { scene } = useGLTF(url);
   const model = useMemo(() => scene.clone(true), [scene]);
   const fit = useMemo(() => fitCharacter(model as Group, height), [model, height]);
-
-  // Fitted width, so the hand socket scales with the character instead of
-  // assuming every generated champion has the same build.
-  const { width, depth } = useMemo(() => {
-    const size = new Box3().setFromObject(model).getSize(new Vector3());
-    return { width: size.x * fit.scale, depth: size.z * fit.scale };
-  }, [model, fit.scale]);
 
   return (
     // fitCharacter stands the model with its feet on y = 0, which is what the
@@ -85,12 +125,6 @@ function Model({
         {/* Concepts are framed front-on, so the mesh already faces the camera. */}
         <primitive object={model} />
       </group>
-
-      {weapon && (
-        <Suspense fallback={null}>
-          <HeldWeapon weapon={weapon} accent={accent} socket={{ height, width, depth, slug }} />
-        </Suspense>
-      )}
     </group>
   );
 }
@@ -104,12 +138,15 @@ export function CharacterViewer({
   autoRotate = true,
   weapon,
   slug,
+  riggedUrl,
 }: {
   url: string;
   height: number;
   accent: string;
-  /** Selects this character's measured hand socket. See game/handSockets.ts. */
+  /** Selects which hand this character grips with. See game/handSockets.ts. */
   slug: string;
+  /** The rigged mesh, rendered whenever a weapon is held. */
+  riggedUrl: string;
   className?: string;
   caption?: string;
   autoRotate?: boolean;
@@ -138,7 +175,14 @@ export function CharacterViewer({
           <directionalLight position={[3, 5, 4]} intensity={2.1} />
           <directionalLight position={[-3, 2, -2]} intensity={0.9} color={accent} />
           <Suspense fallback={null}>
-            <Model url={url} height={height} weapon={weapon} accent={accent} slug={slug} />
+            <Model
+              url={url}
+              riggedUrl={riggedUrl}
+              height={height}
+              weapon={weapon}
+              accent={accent}
+              slug={slug}
+            />
             <Environment preset="night" />
           </Suspense>
           {/*

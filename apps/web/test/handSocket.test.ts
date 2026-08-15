@@ -1,17 +1,24 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { DEFAULT_HAND_SOCKET, HAND_SOCKETS, handSocketFor } from "../src/game/handSockets";
 
 /**
- * Guards the generated socket table.
+ * What is left of the socket table, and why most of it is gone.
  *
- * Every socket bug in this project came from estimating where a hand is. The
- * setup screen guessed 0.46 of character height, which is mid-thigh, and hung
- * relics at the leg; it guessed a fixed sign, and put the weapon in the left
- * hand. handSockets.ts replaces those guesses with values read out of each rig
- * by scripts/derive-sockets.ts, and these assertions describe what a plausible
- * socket looks like so a bad regeneration fails here rather than on screen.
+ * The setup screen used to estimate where a hand was, from the static mesh's
+ * bounding box. That estimate was wrong four times: mid-thigh, wrong side, too
+ * far forward, and finally a quarter of a unit below the fist. The last one was
+ * not a tuning error. Meshy's rigging normalises the character into an A-pose
+ * with the arms lowered, so the hand bone sits at about 0.57 of height while the
+ * static mesh keeps the concept's raised, bent-elbow fist near 0.70. Any ratio
+ * taken from the rig describes a pose the static mesh is not in.
+ *
+ * So the screen now renders the rigged mesh whenever a weapon is held and reads
+ * the bone directly. All that survives here is which hand grips, which no
+ * geometry can answer because nothing distinguishes a closed fist from an open
+ * one.
  */
-describe("generated hand sockets", () => {
+describe("hand sockets", () => {
   const entries = Object.entries(HAND_SOCKETS);
 
   it("covers every champion and every boss", () => {
@@ -25,63 +32,35 @@ describe("generated hand sockets", () => {
       "rootbound-king",
       "hollow-sovereign",
     ]) {
-      expect(HAND_SOCKETS[slug], `${slug} has no derived socket`).toBeDefined();
+      expect(HAND_SOCKETS[slug], `${slug} has no entry`).toBeDefined();
     }
   });
 
-  it("puts every hand at hand height, never at the thigh", () => {
-    // The measured range is 0.531 to 0.597. Anything materially outside it means
-    // the rig changed shape or the wrong bone was read.
-    for (const [slug, socket] of entries) {
-      expect(socket.y, `${slug} socket is too low`).toBeGreaterThan(0.5);
-      expect(socket.y, `${slug} socket is too high`).toBeLessThan(0.68);
-    }
-  });
-
-  it("puts every hand out at the arm, not on the spine", () => {
-    for (const [slug, socket] of entries) {
-      expect(Math.abs(socket.x), `${slug} socket is too close to the centre`).toBeGreaterThan(0.3);
-      expect(Math.abs(socket.x), `${slug} socket is outside the body`).toBeLessThan(0.55);
-    }
-  });
-
-  it("keeps every hand near the body's own depth", () => {
-    for (const [slug, socket] of entries) {
-      expect(Math.abs(socket.z), `${slug} socket is far in front of the body`).toBeLessThan(0.3);
-    }
-  });
-
-  it("records which hand closed rather than assuming the right one", () => {
-    // The image model does not reliably honour "the right hand". On the first
-    // pass Ember came back holding with its left, and assuming otherwise puts
-    // its weapon in an open hand. It was re-rolled until it matched, but the
-    // field stays because the model can drift again on any future run.
+  it("records which hand closed, because no geometry can answer that", () => {
     for (const [, socket] of entries) {
       expect(["LeftHand", "RightHand"]).toContain(socket.bone);
     }
   });
 
-  it("has every character holding with the same hand", () => {
-    // Not a correctness requirement, a consistency one: the code handles either
-    // side, but one champion gripping with the opposite hand to everyone else
-    // reads as a bug to anyone looking at the screen.
-    const hands = new Set(entries.map(([, socket]) => socket.bone));
-    expect(hands.size).toBe(1);
+  it("has every character gripping with the same hand", () => {
+    // A consistency requirement, not a correctness one. The code handles either
+    // side, but one champion gripping opposite everyone else reads as a bug.
+    expect(new Set(entries.map(([, s]) => s.bone)).size).toBe(1);
   });
 
-  it("agrees on side between the bone it names and the offset it gives", () => {
-    // A left hand sits on positive x on these rigs and a right hand on negative.
-    // If those ever disagree the weapon is hanging off the wrong shoulder.
-    for (const [slug, socket] of entries) {
-      const expected = socket.bone === "LeftHand" ? 1 : -1;
-      expect(Math.sign(socket.x), `${slug} bone and offset disagree`).toBe(expected);
-    }
-  });
-
-  it("falls back to a plausible socket for an unknown character", () => {
-    // A character generated after this table was last built should still hold
-    // its weapon at roughly hand height rather than at its feet.
+  it("falls back rather than returning nothing for an unknown character", () => {
     expect(handSocketFor("not-a-character")).toEqual(DEFAULT_HAND_SOCKET);
-    expect(DEFAULT_HAND_SOCKET.y).toBeGreaterThan(0.5);
+  });
+
+  it("no longer positions anything from the estimated ratios", () => {
+    /*
+     * The x, y and z fields are still generated, because derive-sockets.ts
+     * measures them and they are useful when diagnosing a rig. Nothing may
+     * position a weapon from them again: that is what put the sword below the
+     * fist, and the failure was invisible until someone looked at the screen.
+     */
+    const source = readFileSync(new URL("../src/ui/HeldWeapon.tsx", import.meta.url), "utf8");
+    expect(source).not.toContain("handSocketFor");
+    expect(source).not.toContain("socket.height");
   });
 });
