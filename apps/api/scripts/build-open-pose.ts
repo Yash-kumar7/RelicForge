@@ -46,8 +46,11 @@ import { optimizeGlb } from "../src/generation/optimizeGlb.js";
  */
 const COMBAT_STANCE = [
   "Keep this exact character unchanged: same armour, same colours, same materials,",
-  "same proportions, same camera distance, same lighting, same background.",
-  "Change only the pose. The character is now in a low fighting stance,",
+  "same proportions, same camera distance, same lighting.",
+  "Change two things only.",
+  "First, the background becomes pure solid black, #000000, edge to edge,",
+  "with no gradient, no vignette, no floor, no shadow and no backdrop of any kind.",
+  "Second, the character is now in a low fighting stance,",
   "turned about thirty degrees to its left, weight forward on a bent front leg,",
   "shoulders squared and dropped, one arm raised and ready, braced to strike.",
   "Full body still visible from head to feet. Both hands empty, holding nothing.",

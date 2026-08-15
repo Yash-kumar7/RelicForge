@@ -226,7 +226,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               alt=""
               aria-hidden
               initial={{ opacity: 0, x: -60, rotateY: 34 }}
-              animate={{ opacity: 0.78, x: 0, rotateY: 22 }}
+              animate={{ opacity: 0.92, x: 0, rotateY: 22 }}
               exit={{ opacity: 0, x: -30 }}
               transition={{ duration: 1.8, ease: "easeOut" }}
               /*
@@ -241,15 +241,20 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
                */
               style={{ transformOrigin: "left bottom" }}
               /*
-               * The edges are dissolved, not cropped.
+               * Screened rather than masked.
                *
-               * These concepts are generated on a solid pale background, so
-               * dropping one onto a dark page shows the whole rectangle and the
-               * figure arrives inside a grey card. Fading the image out before
-               * its own border is reached leaves the figure and loses the sheet
-               * it was painted on.
+               * These were painted on a pale background, then regenerated on
+               * pure black so they would sit on a dark page. That still left a
+               * visible rectangle, because the page is #070605 and the image is
+               * #000000: the figure arrived in a box very slightly darker than
+               * everything around it.
+               *
+               * Screen blending solves it exactly rather than approximately.
+               * Black contributes nothing under that mode, so the background
+               * disappears completely whatever colour the page happens to be,
+               * and the fade that was hiding the seam is no longer needed.
                */
-              className="absolute bottom-[13svh] left-[-3%] h-[68svh] w-auto object-contain [mask-image:radial-gradient(ellipse_74%_80%_at_50%_50%,#000_62%,transparent_97%)] [-webkit-mask-image:radial-gradient(ellipse_74%_80%_at_50%_50%,#000_62%,transparent_97%)]"
+              className="absolute bottom-[13svh] left-[-3%] h-[68svh] w-auto object-contain mix-blend-screen"
             />
           )}
         </AnimatePresence>
@@ -275,13 +280,13 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               alt=""
               aria-hidden
               initial={{ opacity: 0, x: 60, rotateY: -34 }}
-              animate={{ opacity: 0.72, x: 0, rotateY: -22 }}
+              animate={{ opacity: 0.88, x: 0, rotateY: -22 }}
               exit={{ opacity: 0, x: 30 }}
               transition={{ duration: 1.8, ease: "easeOut" }}
               style={{ transformOrigin: "right bottom" }}
               /* A touch darker and cooler than the glow behind it, so the boss
                stays its own colour instead of being tinted by the forge. */
-            className="absolute bottom-[13svh] left-[-3%] h-[72svh] w-auto object-contain brightness-[0.9] contrast-[1.05] [mask-image:radial-gradient(ellipse_74%_80%_at_50%_50%,#000_62%,transparent_97%)] [-webkit-mask-image:radial-gradient(ellipse_74%_80%_at_50%_50%,#000_62%,transparent_97%)]"
+            className="absolute bottom-[13svh] left-[-3%] h-[72svh] w-auto object-contain brightness-[0.92] contrast-[1.04] mix-blend-screen"
             />
           )}
         </AnimatePresence>
