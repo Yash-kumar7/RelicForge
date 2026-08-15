@@ -411,7 +411,18 @@ export function TitleScreen() {
           */}
           <PendingForgePanel />
 
-          <ol className="mb-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em]">
+          {/*
+            Rank rides the step row, at the far end.
+
+            It has been three places and each was wrong for the same reason: it
+            is chrome, and chrome belongs with chrome. Above the question it was
+            the first thing read on a screen about choosing a character. Below
+            the button it read as a footnote to the button. Here it sits opposite
+            the steps, which is the other thing on this page that tells you where
+            you are rather than what to do.
+          */}
+          <div className="mb-5 flex items-baseline justify-between gap-6">
+          <ol className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em]">
             {steps.map((label, index) => {
               const reached = index <= step;
               return (
@@ -437,6 +448,11 @@ export function TitleScreen() {
               );
             })}
           </ol>
+
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.22em] text-brass-800">
+              rank {rank.name} · {xp} xp
+            </span>
+          </div>
 
           {section === 0 && (
           <section>
@@ -692,15 +708,6 @@ export function TitleScreen() {
               thing read before the fight starts, which is when it means
               something.
             */}
-            {/* Rank sits with the rest of the chrome rather than above the
-                question, where it was the first thing read on a screen about
-                choosing a character. */}
-            {bleed && (
-              <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.25em] text-brass-800">
-                rank {rank.name} · {xp} xp
-              </p>
-            )}
-
             {section === 2 && (
               <p className="text-[11px] leading-relaxed text-stone-600">
                 How hard you swing, how often you dodge, and how close to death you finish all
