@@ -238,11 +238,17 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               exit={{ opacity: 0 }}
               className="font-display text-xl tracking-[0.22em] text-ember-300 sm:text-2xl"
             >
+              {/*
+                The name only.
+
+                It used to carry "shattered - elegant - forged from the Ashen
+                Warden" underneath. Those are the game's own terms, and on a
+                first screen they are three words a visitor has no definition
+                for. The relationship they were trying to state is already on
+                screen: the boss is named at the left and the weapon it produced
+                is floating in front of it.
+              */}
               {current.name.toUpperCase()}
-              <span className="mt-2 block font-mono text-[10px] uppercase tracking-[0.28em] text-bone-400">
-                {current.dna.condition} · {current.dna.temperament} · forged from{" "}
-                {current.dna.bossInfluence}
-              </span>
             </motion.p>
           )}
         </AnimatePresence>

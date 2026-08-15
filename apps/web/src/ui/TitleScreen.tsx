@@ -12,6 +12,7 @@ import { ArmamentPanel } from "./ArmamentPanel";
 import { PendingForgePanel } from "./PendingForgePanel";
 import { SpecimenPlate } from "./SpecimenPlate";
 import { TitleHero } from "./TitleHero";
+import { HowItWorks } from "./HowItWorks";
 import { rankFor } from "../state/useProgress";
 import { useProgress } from "../state/useProgress";
 
@@ -110,44 +111,19 @@ export function TitleScreen() {
 
           {/* Solid ground under everything that has to be read. */}
           <div className="relative z-10 w-full bg-ash-950">
-          <div className="mx-auto w-full max-w-4xl px-8 pb-20">
             {/*
-              The premise, for anyone who scrolled to ask. Players arrive with a
-              lifetime of loot tables behind them and will assume the weapon was
-              picked from a list, which is the one thing this game does not do.
-            */}
-            <p className="border-t border-brass-800 pt-10 text-sm leading-relaxed text-bone-400">
-              Most games hand you loot from a list. Kill the boss, roll the table, receive the same
-              sword eleven million other players received.
-            </p>
-            <p className="mt-4 text-sm leading-relaxed text-bone-400">
-              Here the weapon does not exist until you earn it. When the boss falls, the forge
-              reads how you fought and generates a new 3D weapon, then puts it in your hands.
-            </p>
+              The pipeline, shown rather than described.
 
-            <ol className="mt-10 grid gap-px overflow-hidden border border-brass-800 bg-brass-800 sm:grid-cols-3">
-              {[
-                ["Fight", "Swing hard, dodge, survive. Everything you do is recorded."],
-                [
-                  "Forge",
-                  "Your fight becomes a design, then a real 3D model. Usually instant, sometimes a couple of minutes while meshy-7 works.",
-                ],
-                ["Wield", "Claim it and carry it into the next fight."],
-              ].map(([title, copy], i) => (
-                <li key={title} className="bg-ash-950 px-5 py-5">
-                  {/* Numbered because this genuinely is a sequence: you cannot
-                      forge before fighting or wield before forging. */}
-                  <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-brass-700">
-                    {String(i + 1).padStart(2, "0")}
-                  </p>
-                  <p className="mt-2 font-display text-lg tracking-[0.14em] text-bone-200">
-                    {title}
-                  </p>
-                  <p className="mt-2 text-[12px] leading-relaxed text-bone-400">{copy}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
+              This was two paragraphs and three cards, which asks a reader to
+              take on trust the one thing they have every reason to doubt. The
+              walkthrough runs a single real relic through all four steps using
+              its own data, so the claim is demonstrated by the thing it is a
+              claim about.
+            */}
+            <HowItWorks />
+
+            {/* The evidence, for anyone who wants the detail. */}
+            <SpecimenPlate />
           </div>
         </div>
       </div>
