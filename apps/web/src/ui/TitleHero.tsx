@@ -209,11 +209,21 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               alt=""
               aria-hidden
               initial={{ opacity: 0, x: -60, rotateY: 34 }}
-              animate={{ opacity: 0.62, x: 0, rotateY: 22 }}
+              animate={{ opacity: 0.78, x: 0, rotateY: 22 }}
               exit={{ opacity: 0, x: -30 }}
               transition={{ duration: 1.8, ease: "easeOut" }}
+              /*
+               * Not mirrored.
+               *
+               * A horizontal flip was meant to turn the champion inward, and
+               * combined with rotateY it inverted the rotation instead, turning
+               * the figure away from the camera and foreshortening it to
+               * nothing. These concepts are drawn front-on, so a figure does not
+               * face left or right to begin with and the rotation alone puts it
+               * on the stage.
+               */
               style={{ transformOrigin: "left bottom" }}
-              className="absolute bottom-0 left-[-4%] h-[70svh] w-auto -scale-x-100 object-contain"
+              className="absolute bottom-0 left-[-3%] h-[70svh] w-auto object-contain"
             />
           )}
         </AnimatePresence>
@@ -226,11 +236,13 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               alt=""
               aria-hidden
               initial={{ opacity: 0, x: 60, rotateY: -34 }}
-              animate={{ opacity: 0.62, x: 0, rotateY: -22 }}
+              animate={{ opacity: 0.72, x: 0, rotateY: -22 }}
               exit={{ opacity: 0, x: 30 }}
               transition={{ duration: 1.8, ease: "easeOut" }}
               style={{ transformOrigin: "right bottom" }}
-              className="absolute bottom-0 right-[-4%] h-[76svh] w-auto object-contain"
+              /* A touch darker and cooler than the glow behind it, so the boss
+               stays its own colour instead of being tinted by the forge. */
+            className="absolute bottom-0 right-[-3%] h-[76svh] w-auto object-contain brightness-[0.85] contrast-[1.08]"
             />
           )}
         </AnimatePresence>
