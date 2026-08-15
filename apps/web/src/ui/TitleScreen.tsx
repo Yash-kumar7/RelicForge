@@ -4,7 +4,7 @@ import type { Affinity } from "@relic/core";
 import { championFor, describeChampion } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
-import { BOSSES, highestCleared, isCleared } from "../game/bosses";
+import { BOSSES, bossAt, highestCleared, isCleared } from "../game/bosses";
 import { TitleShowcase } from "./TitleShowcase";
 import { ChampionPreview } from "./ChampionPreview";
 import { TitleBackdrop } from "./TitleBackdrop";
@@ -213,12 +213,32 @@ export function TitleScreen() {
               is no longer the thing being decided, it is who you are sending,
               and saying so keeps the left column from looking like a leftover.
             */}
-            <p>{step === 2 ? "Sending" : "Your champion"}</p>
+            <p>{step === 2 ? "Your enemy" : "Your champion"}</p>
             <p className="font-mono text-[10px] leading-4 tracking-[0.25em] text-stone-700">
               {rank.name} · {xp} xp
             </p>
           </div>
-          <ChampionPreview affinity={affinity} />
+          {/*
+            The enemy takes the stage on the enemy step.
+
+            Stage select shows the stage. Keeping the champion here left the
+            thing being chosen as a row in a list while the thing already chosen
+            held the large view, and the boss is what the player is deciding
+            about.
+
+            Falls back to the champion until one is picked, because an empty
+            frame says less than the character who is about to walk into it.
+          */}
+          {step === 2 && bossLevel !== null ? (
+            <BossPreview
+              level={bossLevel}
+              title={bossAt(bossLevel).title}
+              accent={bossAt(bossLevel).accent}
+              className="h-[26rem] w-full border border-ash-800 bg-ash-950"
+            />
+          ) : (
+            <ChampionPreview affinity={affinity} />
+          )}
         </div>
 
         {/* Right: element, then weapon, then who you fight, then descend. */}
@@ -401,23 +421,19 @@ export function TitleScreen() {
                       enough to decide by, and deciding is the whole purpose of
                       this screen.
                     */}
-                    {selected && (
-                      <BossPreview
-                        level={boss.level}
-                        title={boss.title}
-                        accent={boss.accent}
-                        className="h-72 w-full border-b border-ember-500/30 bg-ash-950"
-                      />
-                    )}
-
+                    {/*
+                      No inline preview any more. Selecting a boss used to expand
+                      its row into a full 3D view, which put two WebGL contexts on
+                      one screen and made the list jump under the cursor. The
+                      large view lives on the left now, and every row keeps its
+                      portrait so the list stays scannable.
+                    */}
                     <span className="flex items-start gap-4 px-4 py-3">
-                      {!selected && (
-                        <BossPortrait
-                          title={boss.title}
-                          locked={false}
-                          className="h-20 w-16 shrink-0 border border-ash-800"
-                        />
-                      )}
+                      <BossPortrait
+                        title={boss.title}
+                        locked={false}
+                        className="h-20 w-16 shrink-0 border border-ash-800"
+                      />
                       <span className="mt-0.5 w-7 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em]">
                         {boss.level.toString().padStart(2, "0")}
                       </span>
