@@ -16,8 +16,18 @@ const CHAMPION_HEIGHT = 2.6;
 export function ChampionPreview({
   affinity,
   armed = true,
+  bleed = false,
 }: {
   affinity: Affinity;
+  /**
+   * Drops the frame and fills the half of the screen the champion is on.
+   *
+   * Framed, the figure shares a rectangle with the column of choices beside it
+   * and needs a border to say where one ends. Bleeding, it owns its half
+   * outright and is cropped by the viewport, so there is nothing to delimit: it
+   * ends off-screen, the way the fighters on the title screen do.
+   */
+  bleed?: boolean;
   /**
    * False while the player is still choosing who to be.
    *
@@ -93,7 +103,12 @@ export function ChampionPreview({
        * In the page's own brass rather than the old grey, and with only a breath
        * of fill, so it reads as a plate around a portrait instead of a widget.
        */
-      className="h-[calc(100svh-7rem)] max-h-[54rem] min-h-[30rem] w-full border border-brass-800 bg-white/[0.015]"
+      framing={bleed ? 0.06 : 0.45}
+      className={
+        bleed
+          ? "h-[100svh] w-full"
+          : "h-[calc(100svh-7rem)] max-h-[54rem] min-h-[30rem] w-full border border-brass-800 bg-white/[0.015]"
+      }
     />
   );
 }

@@ -89,6 +89,14 @@ export function TitleScreen() {
   const phase = useGameStore((s) => s.phase);
   const setPhase = useGameStore((s) => s.setPhase);
   const [step, setStep] = useState(0);
+
+  /*
+   * ?bleed switches the champion between a framed portrait and a full-height
+   * figure cropped by the viewport, so the two can be compared on the same
+   * screen rather than described.
+   */
+  const bleed =
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).has("bleed");
   const owned = useLoadout((s) => s.owned);
   const selectArmament = useLoadout((s) => s.select);
 
@@ -208,7 +216,13 @@ export function TitleScreen() {
       laid out. The extra height is affordable now that a step shows one section
       instead of three stacked ones.
     */
-    <div className="h-full overflow-y-auto bg-ash-950 px-6 pb-10 pt-14">
+    <div
+      className={
+        bleed
+          ? "h-full overflow-y-auto bg-ash-950 pb-10 pl-0 pr-6 pt-14"
+          : "h-full overflow-y-auto bg-ash-950 px-6 pb-10 pt-14"
+      }
+    >
       {/*
         The width of the screen, not a column in the middle of it.
 
@@ -227,7 +241,7 @@ export function TitleScreen() {
           the page moved at all. Two headings that are meant to share a line
           cannot have one of them positioned against the viewport.
         */}
-        <div className="lg:self-start">
+        <div className={bleed ? "relative lg:self-stretch" : "lg:self-start"}>
           <div className={`${SECTION_HEADING} mb-2 justify-between`}>
             {/*
               Named for the step it belongs to. On the enemy step the champion
@@ -288,7 +302,7 @@ export function TitleScreen() {
               className="h-[calc(100svh-7rem)] max-h-[54rem] min-h-[30rem] w-full border border-brass-800 bg-white/[0.015]"
             />
           ) : (
-            <ChampionPreview affinity={affinity} armed={section > 0} />
+            <ChampionPreview affinity={affinity} armed={section > 0} bleed={bleed} />
           )}
           </div>
 
@@ -299,8 +313,16 @@ export function TitleScreen() {
             a row on the other side of the page, so the person filling the left
             half of the screen was anonymous while you were looking at them.
           */}
-          {section !== 2 && (
+          {section !== 2 && !bleed && (
             <p className="mt-3 text-center font-display text-2xl tracking-[0.26em] text-bone-200 lg:text-3xl">
+              {championFor(affinity).name.toUpperCase()}
+            </p>
+          )}
+
+          {/* Bleeding, the name sits over the figure rather than under a frame
+              that no longer exists. */}
+          {section !== 2 && bleed && (
+            <p className="pointer-events-none absolute bottom-[6svh] left-10 font-display text-4xl tracking-[0.26em] text-bone-200">
               {championFor(affinity).name.toUpperCase()}
             </p>
           )}

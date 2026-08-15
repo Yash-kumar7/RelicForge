@@ -179,6 +179,7 @@ export function CharacterViewer({
   autoRotate = true,
   weapon,
   slug,
+  framing = 0.45,
 }: {
   url: string;
   height: number;
@@ -188,6 +189,14 @@ export function CharacterViewer({
   className?: string;
   caption?: string;
   autoRotate?: boolean;
+  /**
+   * How much room to leave around the figure.
+   *
+   * Lower brings the camera in, so the character fills more of the view and is
+   * cropped by it. A framed portrait wants air; a figure meant to bleed off the
+   * edge of the page wants none.
+   */
+  framing?: number;
   weapon?: HeldWeaponSpec | undefined;
 }) {
   const [available, setAvailable] = useState<boolean | null>(null);
@@ -208,7 +217,7 @@ export function CharacterViewer({
   return (
     <div className={`relative cursor-grab active:cursor-grabbing ${className}`}>
       {available && (
-        <Canvas camera={{ position: [0, 0.25, fitDistance(height)], fov: FOV }}>
+        <Canvas camera={{ position: [0, 0.25, fitDistance(height, framing)], fov: FOV }}>
           <ambientLight intensity={0.55} />
           <directionalLight position={[3, 5, 4]} intensity={2.1} />
           <directionalLight position={[-3, 2, -2]} intensity={0.9} color={accent} />
