@@ -102,12 +102,21 @@ describe("facing convention", () => {
 });
 
 describe("describeBoss", () => {
-  it("gets harder in the numbers a player can see, not only in the fiction", () => {
-    const health = (level: number) =>
-      Number(describeBoss(level, 100).find((s) => s.label === "health")?.value);
+  it("gets harder in the number a player can see, not only in the fiction", () => {
+    // Fewer hits to survive as the ladder goes up, for a champion of fixed
+    // health. Monotonic, or a rung would look easier than the one before it.
+    const hits = (level: number) =>
+      parseInt(describeBoss(level, 100).find((s) => s.label === "kills you in")?.value ?? "0", 10);
     for (let level = 2; level <= MAX_LEVEL; level++) {
-      expect(health(level)).toBeGreaterThan(health(level - 1));
+      expect(hits(level)).toBeLessThanOrEqual(hits(level - 1));
     }
+    expect(hits(MAX_LEVEL)).toBeLessThan(hits(1));
+  });
+
+  it("says one thing, because three numbers left the reader doing the sums", () => {
+    // Health and attack damage were both true and neither was usable on its
+    // own: 1000 health means nothing without knowing what you hit for.
+    expect(describeBoss(1, 100)).toHaveLength(1);
   });
 
   it("answers the question that decides the fight", () => {
@@ -130,12 +139,7 @@ describe("describeBoss", () => {
     }
   });
 
-  it("carries the unit on any value that is not a bare count", () => {
-    // "hits you for 22" left the 22 to be guessed at and could be read as a
-    // rate. Every card on this screen names the thing and puts the unit on the
-    // number.
-    const attack = describeBoss(1, 100).find((s) => s.label === "its attack");
-    expect(attack?.value).toContain("damage");
-    expect(describeBoss(1, 100).find((s) => s.label === "kills you in")?.value).toContain("hits");
+  it("carries its unit, so the number is never bare", () => {
+    expect(describeBoss(1, 100)[0]?.value).toContain("hits");
   });
 });

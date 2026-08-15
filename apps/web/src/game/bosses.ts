@@ -1,5 +1,4 @@
 import { COMBAT } from "./combat";
-import { BOSS_MAX_HP } from "../state/useGameStore";
 /**
  * The boss ladder.
  *
@@ -170,23 +169,20 @@ export function describeBoss(
   championHealth: number,
 ): { label: string; value: string }[] {
   const boss = bossAt(level);
-  const health = Math.round(BOSS_MAX_HP * boss.hp);
   const damage = Math.round(COMBAT.boss.damage * boss.damage);
 
-  return [
-    { label: "health", value: `${health}` },
-    /*
-     * Named and given its unit, matching the champion cards, where a row reads
-     * "light attack: 30 damage". "Hits you for 22" left the 22 to be guessed at
-     * and read as a rate rather than a quantity.
-     */
-    { label: "its attack", value: `${damage} damage` },
-    /*
-     * The number that actually decides whether to take this fight, and the
-     * reason this takes the champion's health rather than a constant: the same
-     * boss kills Ember in three hits and Frost in six, and that difference is
-     * the whole point of choosing between them.
-     */
-    { label: "kills you in", value: `${Math.ceil(championHealth / damage)} hits` },
-  ];
+  /*
+   * One number, not three.
+   *
+   * Health and attack damage were both true and neither was usable: 1000 health
+   * means nothing without knowing what you hit for, and "its attack: 22 damage"
+   * means nothing without knowing what you have. A player was being asked to do
+   * the arithmetic that decides whether to take the fight.
+   *
+   * This is that arithmetic already done, and it is the only question the enemy
+   * step actually asks. It needs the champion's health because the same boss
+   * kills Ember in three hits and Frost in six.
+   */
+  return [{ label: "kills you in", value: `${Math.ceil(championHealth / damage)} hits` }];
+
 }
