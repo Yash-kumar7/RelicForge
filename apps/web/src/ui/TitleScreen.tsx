@@ -513,7 +513,12 @@ export function TitleScreen() {
               numbers, instead of forcing three columns of wrapped text to be
               compared vertically.
             */}
-            <div className="mt-5 flex flex-col gap-5">
+            {/*
+              Tight. Three rows at nearly two hundred pixels each, plus a detail
+              panel and a button, is taller than any laptop, and what fell off
+              the bottom was the button.
+            */}
+            <div className="mt-5 flex flex-col gap-1">
               {AFFINITIES.map((a) => (
                 <button
                   key={a.id}
@@ -530,7 +535,7 @@ export function TitleScreen() {
                   */
                   onClick={() => chooseAffinity(a.id)}
                   className={[
-                    "group flex items-center gap-5 overflow-hidden border-l-2 py-4 pl-5 pr-4 text-left transition",
+                    "group flex items-center gap-4 overflow-hidden border-l-2 py-3 pl-4 pr-4 text-left transition",
                     affinity === a.id
                       ? `${a.accent} bg-gradient-to-r from-white/[0.04] to-transparent`
                       : "border-transparent text-stone-500 hover:border-ash-700 hover:bg-white/[0.02]",
@@ -548,7 +553,7 @@ export function TitleScreen() {
                   */}
                   <span
                     className={[
-                      "relative h-24 w-20 shrink-0 overflow-hidden transition",
+                      "relative h-16 w-14 shrink-0 overflow-hidden transition",
                       affinity === a.id ? "opacity-100" : "opacity-45 grayscale",
                     ].join(" ")}
                   >
@@ -558,7 +563,7 @@ export function TitleScreen() {
                       aria-hidden
                       /* Framed from the chest up: at this size a full figure is
                          a smudge, and a helm is recognisable. */
-                      className="absolute left-1/2 top-0 h-[19rem] w-auto max-w-none -translate-x-1/2 object-contain"
+                      className="absolute left-1/2 top-0 h-[13rem] w-auto max-w-none -translate-x-1/2 object-contain"
                     />
                   </span>
 
@@ -592,16 +597,14 @@ export function TitleScreen() {
                     gap between 80 and 130 is the length of the difference
                     rather than a fraction of some invisible ceiling.
                   */}
-                  <span className="mt-4 block max-w-[15rem]">
-                    <span className="flex items-baseline justify-between">
-                      <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
-                        health
-                      </span>
-                      <span className="font-display text-xl tabular-nums text-bone-200">
-                        {championStats(championFor(a.id)).health}
+                  <span className="mt-2 flex max-w-[16rem] items-center gap-3">
+                    <span className="font-mono text-[10px] tabular-nums text-bone-300">
+                      {championStats(championFor(a.id)).health}
+                      <span className="ml-1 text-[9px] uppercase tracking-[0.2em] text-brass-700">
+                        hp
                       </span>
                     </span>
-                    <span className="mt-1.5 block h-[3px] w-full bg-ash-800">
+                    <span className="block h-[3px] flex-1 bg-ash-800">
                       <span
                         className={`block h-[3px] transition-all duration-500 ${
                           affinity === a.id ? a.bar : "bg-stone-600"
