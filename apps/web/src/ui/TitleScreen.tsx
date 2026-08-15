@@ -451,10 +451,20 @@ export function TitleScreen() {
                 {step === 1 && armament === null ? "Choose your weapon" : "Continue"}
               </button>
             )}
-            <p className="text-[11px] leading-relaxed text-stone-600">
-              How hard you swing, how often you dodge, and how close to death you finish all shape
-              the weapon the forge makes for you.
-            </p>
+            {/*
+              Only above Descend.
+
+              It describes the fight, so on the element and weapon steps it was
+              answering a question nobody had asked yet. Here it is the last
+              thing read before the fight starts, which is when it means
+              something.
+            */}
+            {step === 2 && (
+              <p className="text-[11px] leading-relaxed text-stone-600">
+                How hard you swing, how often you dodge, and how close to death you finish all
+                shape the weapon the forge makes for you.
+              </p>
+            )}
             <button
               type="button"
               onClick={startFight}
