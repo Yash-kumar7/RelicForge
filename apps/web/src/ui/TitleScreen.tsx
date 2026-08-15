@@ -465,29 +465,30 @@ export function TitleScreen() {
                 shape the weapon the forge makes for you.
               </p>
             )}
-            <button
-              type="button"
-              onClick={startFight}
-              disabled={bossLevel === null || armament === null}
-              className={[
-                "mt-4 w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
-                bossLevel === null || armament === null
-                  ? "cursor-not-allowed border-ash-800 text-stone-700"
-                  : "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
-              ].join(" ")}
-            >
-              {/*
-                The button says what is still missing, in the same words the
-                sections above use. It said "armament" and "quarry", which are
-                the state field names and the two words already removed from
-                every heading on this screen.
-              */}
-              {armament === null
-                ? "Choose your weapon"
-                : bossLevel === null
-                  ? "Choose who you fight"
-                  : "Descend"}
-            </button>
+            {/*
+              Descend belongs to the last step only.
+
+              It rendered on all three, and with nothing chosen yet its label
+              read "Choose your weapon", so the element step showed a Continue
+              button and a second, disabled button telling the player to do
+              something two steps away. Each step now offers exactly one way
+              forward.
+            */}
+            {step === 2 && (
+              <button
+                type="button"
+                onClick={startFight}
+                disabled={bossLevel === null}
+                className={[
+                  "mt-4 w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
+                  bossLevel === null
+                    ? "cursor-not-allowed border-ash-800 text-stone-700"
+                    : "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
+                ].join(" ")}
+              >
+                {bossLevel === null ? "Choose who you fight" : "Descend"}
+              </button>
+            )}
           </div>
         </div>
       </div>
