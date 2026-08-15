@@ -156,6 +156,28 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
         image behind a moving object announces itself as a backdrop.
       */}
       {/*
+        Ground the art into the page rather than letting it end at an edge.
+
+        Softer, and behind the figures rather than over them. It was written for
+        one centred portrait and darkened hardest at the left and right edges,
+        which is exactly where the two fighters stand: it was painting them out
+        of the picture entirely.
+      */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(7,6,5,0.85)_92%)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ash-950 to-transparent" />
+      {/*
+        The forge, under the floor.
+
+        The page was a black void with figures cut out of it, which is the one
+        atmosphere a game about a forge should not have. A warm source low and
+        centred gives the figures something to be lit from and stand on, and it
+        sits directly beneath the weapon, so the glow reads as the thing that
+        made it.
+      */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_100%,rgba(255,107,26,0.16),transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_30%_20%_at_50%_98%,rgba(255,140,66,0.22),transparent_70%)]" />
+
+      {/*
         The face-off.
 
         A single figure behind a floating weapon is a product shot. Two figures
@@ -187,7 +209,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               alt=""
               aria-hidden
               initial={{ opacity: 0, x: -60, rotateY: 34 }}
-              animate={{ opacity: 0.36, x: 0, rotateY: 22 }}
+              animate={{ opacity: 0.62, x: 0, rotateY: 22 }}
               exit={{ opacity: 0, x: -30 }}
               transition={{ duration: 1.8, ease: "easeOut" }}
               style={{ transformOrigin: "left bottom" }}
@@ -204,7 +226,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               alt=""
               aria-hidden
               initial={{ opacity: 0, x: 60, rotateY: -34 }}
-              animate={{ opacity: 0.36, x: 0, rotateY: -22 }}
+              animate={{ opacity: 0.62, x: 0, rotateY: -22 }}
               exit={{ opacity: 0, x: 30 }}
               transition={{ duration: 1.8, ease: "easeOut" }}
               style={{ transformOrigin: "right bottom" }}
@@ -213,21 +235,6 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
           )}
         </AnimatePresence>
       </div>
-
-      {/* Ground the art into the page rather than letting it end at an edge. */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_18%,#0a0908_78%)]" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ash-950 to-transparent" />
-      {/*
-        The forge, under the floor.
-
-        The page was a black void with figures cut out of it, which is the one
-        atmosphere a game about a forge should not have. A warm source low and
-        centred gives the figures something to be lit from and stand on, and it
-        sits directly beneath the weapon, so the glow reads as the thing that
-        made it.
-      */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_100%,rgba(255,107,26,0.16),transparent_70%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_30%_20%_at_50%_98%,rgba(255,140,66,0.22),transparent_70%)]" />
 
       {/*
         A band of dark for the title to sit on.
