@@ -11,6 +11,16 @@ export function DefeatScreen() {
   const reset = useGameStore((s) => s.reset);
   const telemetry = useGameStore((s) => s.telemetry);
   const bossHp = useGameStore((s) => s.bossHp);
+  /*
+   * The boss's real maximum, not the base constant.
+   *
+   * This divided by a hard-coded 1000 while the ladder scales a boss's health by
+   * up to 2.4, so losing to the Drowned Choir reported that it had 125% of
+   * itself left. Every rung above the first was wrong, and wrong in the direction
+   * that makes the game look broken at the exact moment a player has just lost.
+   */
+  const bossMaxHp = useGameStore((s) => s.bossMaxHp);
+  const bossName = useGameStore((s) => s.boss)().title;
 
   return (
     /* Nothing to reveal here, so the arena is hidden outright rather than left
@@ -22,7 +32,10 @@ export function DefeatScreen() {
         transition={{ duration: 1.4 }}
         className="text-center"
       >
-        <h2 className="font-display text-5xl tracking-[0.2em] text-stone-500">THE WARDEN STANDS</h2>
+        {/* Named, because four of the five bosses are not the Warden. */}
+        <h2 className="font-display text-5xl tracking-[0.2em] text-stone-500">
+          {bossName.toUpperCase()} STANDS
+        </h2>
         <p className="mt-4 text-xs uppercase tracking-[0.3em] text-stone-600">
           No victory, no relic
         </p>
@@ -33,8 +46,13 @@ export function DefeatScreen() {
             <dd className="mt-1 text-stone-400">{Math.round(telemetry.damageDealt)}</dd>
           </div>
           <div>
-            <dt className="text-stone-700">warden left</dt>
-            <dd className="mt-1 text-stone-400">{Math.round((bossHp / 1000) * 100)}%</dd>
+            {/* "Warden left 40%" leaves the player working out what is left of
+                what. The health it had when you died is the same number the bar
+                above the fight was showing, so it is said the same way. */}
+            <dt className="text-stone-700">its health left</dt>
+            <dd className="mt-1 text-stone-400">
+              {Math.max(0, Math.round(bossHp))} / {Math.round(bossMaxHp)}
+            </dd>
           </div>
           <div>
             <dt className="text-stone-700">dodges</dt>
