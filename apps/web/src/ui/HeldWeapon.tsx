@@ -43,10 +43,19 @@ export function HeldWeapon({
    * origin, so the shaft runs straight through whatever the socket sits inside.
    * Sitting it dead centre in the hand ran the blade through the forearm.
    */
+  /*
+   * The forward offset is measured, the other two are not.
+   *
+   * 0.42 of body depth put the weapon well in front of the arm, so it read as
+   * floating past the fingers rather than sitting in the palm. The rigged twins
+   * of these champions place RightHand at 0.065 against a body 0.459 deep,
+   * which is 0.14, and that is what this is now. Width and height are left as
+   * they were because the iron sword hangs correctly from them.
+   */
   const hand: [number, number, number] = [
     socket.width * 0.44,
     socket.height * 0.46,
-    socket.depth * 0.42,
+    socket.depth * 0.14,
   ];
   /*
    * Leaned out and forward rather than stood upright.

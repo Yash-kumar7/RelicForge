@@ -1,8 +1,9 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Group } from "three";
-import type { WeaponClass } from "@relic/core";
+import type { OrientationHint, WeaponClass } from "@relic/core";
 import { HeldRelicMesh } from "./HeldRelicMesh";
+import { bossWeaponHint } from "./orientationHints";
 import { bossSwing } from "./bossState";
 import { BossHandWeaponSwing } from "./HandWeapon";
 
@@ -43,7 +44,7 @@ export function BossWeapon({
 
   return (
     <Suspense fallback={null}>
-      <SwingingWeapon url={url} weaponClass={weaponClass} height={height} />
+      <SwingingWeapon url={url} weaponClass={weaponClass} height={height} slug={slug} />
     </Suspense>
   );
 }
@@ -54,14 +55,22 @@ export function BossWeapon({
  * Oversized relative to the wielder on purpose: a two-handed slab of stone
  * should look like it takes a boss to lift.
  */
+/** An empty object when there is no hint, rather than `hint: undefined`. */
+function hintProps(slug: string): { hint?: OrientationHint } {
+  const hint = bossWeaponHint(slug);
+  return hint ? { hint } : {};
+}
+
 function SwingingWeapon({
   url,
   weaponClass,
   height,
+  slug,
 }: {
   url: string;
   weaponClass: WeaponClass;
   height: number;
+  slug: string;
 }) {
   const arm = useRef<Group>(null);
 
@@ -83,7 +92,9 @@ function SwingingWeapon({
       rotation={[0.25, 0, -0.35]}
       scale={1.45}
     >
-      <HeldRelicMesh url={url} weaponClass={weaponClass} />
+      {/* Spread so exactOptionalPropertyTypes is satisfied without widening
+          the prop to accept an explicit undefined. */}
+      <HeldRelicMesh url={url} weaponClass={weaponClass} {...hintProps(slug)} />
     </group>
   );
 }
