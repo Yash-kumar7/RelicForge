@@ -5,6 +5,7 @@ import { useGameStore } from "../state/useGameStore";
 import { themeForBoss } from "./theme";
 import { ARENA_RADIUS } from "./arenaGeometry";
 import { ArenaFeatures, hasWall } from "./arenaFeatures";
+import { Forge } from "./Forge";
 
 export { ARENA_RADIUS } from "./arenaGeometry";
 
@@ -186,19 +187,7 @@ export function Arena() {
 
       {/* The forge. Dormant during the fight, the focal point afterwards. */}
       <group position={[0, 0, -ARENA_RADIUS + 2.5]}>
-        <mesh position={[0, 1.1, 0]}>
-          <boxGeometry args={[3.4, 2.2, 1.6]} />
-          <meshStandardMaterial color={theme.pillar} roughness={0.85} metalness={0.25} />
-        </mesh>
-        <mesh position={[0, 1.35, 0.85]}>
-          <boxGeometry args={[1.8, 1.2, 0.2]} />
-          <meshStandardMaterial
-            color={theme.forge}
-            emissive={theme.forge}
-            emissiveIntensity={forgeActive ? 3.2 : 0.5}
-            toneMapped={false}
-          />
-        </mesh>
+        <Forge active={forgeActive} stone={theme.pillar} glow={theme.forge} />
         <pointLight
           ref={forgeLight}
           position={[0, 1.6, 1.6]}
