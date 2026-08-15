@@ -31,10 +31,14 @@ interface ShowcaseRelic {
   status: string;
 }
 
+/** The ladder entry behind a relic's bossInfluence, for its art and its rung. */
+function bossFor(bossName: string) {
+  return BOSSES.find((b) => b.name === bossName) ?? null;
+}
+
 /** Slugified the same way the ladder does, so the art matches the boss named. */
 function slugFor(bossName: string): string {
-  const boss = BOSSES.find((b) => b.name === bossName);
-  return (boss?.title ?? bossName)
+  return (bossFor(bossName)?.title ?? bossName)
     .toLowerCase()
     .replace(/^the /, "")
     .replace(/[^a-z0-9]+/g, "-");
@@ -100,6 +104,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
   }, [relics.length]);
 
   const current = relics[index];
+  const boss = current ? bossFor(current.dna.bossInfluence) : null;
   const art = current ? `/assets/bosses/${slugFor(current.dna.bossInfluence)}/concept.png` : null;
 
   return (
@@ -139,6 +144,37 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
         be read against.
       */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[38svh] bg-gradient-to-b from-ash-950 via-ash-950/80 to-transparent" />
+
+      {/*
+        Who this is.
+
+        The painting was unlabelled, so a visitor met an armoured figure with no
+        name and no reason to be there. Naming it and giving it a rung turns the
+        backdrop into the thing the weapon in front of it was taken from, which
+        is the only reason it is on the page.
+      */}
+      <AnimatePresence>
+        {boss && (
+          <motion.figcaption
+            key={boss.title}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute bottom-[7svh] left-8 z-10 hidden border-l border-brass-700 pl-4 text-left lg:block"
+          >
+            <span className="block font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
+              boss {String(boss.level).padStart(2, "0")}
+            </span>
+            <span className="mt-1 block font-display text-base tracking-[0.16em] text-bone-200">
+              {boss.title}
+            </span>
+            <span className="mt-1 block max-w-[16rem] font-mono text-[10px] leading-relaxed text-bone-400">
+              {boss.blurb}
+            </span>
+          </motion.figcaption>
+        )}
+      </AnimatePresence>
 
       {/* The name. */}
       <motion.header
