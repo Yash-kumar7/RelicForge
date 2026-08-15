@@ -15,7 +15,21 @@
   --color-frost-400: #7cc7e8;
   --color-frost-300: #a8ddf0;
 
+  /*
+   * Bone and brass, for anything presented as a record rather than as chrome.
+   *
+   * The game is near-black with a single ember accent, which is correct in the
+   * arena and turns the landing page into a dashboard. These two give the
+   * catalogue plate the register of aged paper and tarnished metal without
+   * introducing a second bright colour to compete with the forge.
+   */
+  --color-bone-200: #d6cfc4;
+  --color-bone-400: #9a9184;
+  --color-brass-700: #6b5c4a;
+  --color-brass-800: #453b30;
+
   --font-display: "Cinzel", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 :root {

@@ -1,17 +1,16 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import type { Affinity } from "@relic/core";
 import { championFor, championStats, describeChampion } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
-import { BOSSES, bossAt, describeBoss, highestCleared, isCleared } from "../game/bosses";
-import { TitleShowcase } from "./TitleShowcase";
+import { BOSSES, bossAt, describeBoss, isCleared } from "../game/bosses";
 import { ChampionPreview } from "./ChampionPreview";
 import { TitleBackdrop } from "./TitleBackdrop";
 import { BossPortrait } from "./BossPortrait";
 import { BossPreview } from "./BossPreview";
 import { ArmamentPanel } from "./ArmamentPanel";
 import { PendingForgePanel } from "./PendingForgePanel";
+import { SpecimenPlate } from "./SpecimenPlate";
 import { rankFor } from "../state/useProgress";
 import { useProgress } from "../state/useProgress";
 
@@ -73,109 +72,69 @@ export function TitleScreen() {
   const chooseAffinity = useGameStore((s) => s.chooseAffinity);
   const chooseBossLevel = useGameStore((s) => s.chooseBossLevel);
   const startFight = useGameStore((s) => s.startFight);
-  const owned = useLoadout((s) => s.owned);
   const armament = useLoadout((s) => s.armament);
   const xp = useProgress((s) => s.xp);
-  const fightsWon = useProgress((s) => s.fightsWon);
   const rank = rankFor(xp);
 
   if (phase === "TITLE") {
+    /*
+     * The landing page is a plate, not a splash.
+     *
+     * It used to stack a title, a spinning relic, two paragraphs and three
+     * cards, all arriving together, so nothing was dominant and the object
+     * doing the arguing read as decoration beside the text describing it.
+     *
+     * Now the hero is one thing: the relic, annotated with the fight that made
+     * it. Everything explanatory moved below the fold, where someone who wants
+     * it can scroll and someone who wants to play can press one button.
+     */
     return (
-      <div className="relative flex h-full flex-col items-center overflow-y-auto bg-ash-950 py-12">
-        {/* Always-on motion. The showcase below needs relics to exist; the very
-            first thing a visitor sees cannot be a static page waiting on a
-            fetch. */}
+      <div className="relative h-full overflow-y-auto bg-ash-950">
+        {/* Always-on motion, so the very first thing a visitor sees is not a
+            static page waiting on a fetch. */}
         <TitleBackdrop />
 
-        <div className="relative flex w-full flex-col items-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2 }}
-          className="text-center"
-        >
-          <h1 className="font-display text-7xl tracking-[0.18em] text-ember-400 drop-shadow-[0_0_40px_rgba(255,107,26,0.35)]">
-            RELICFORGE
-          </h1>
-          <p className="mt-4 text-xs uppercase tracking-[0.45em] text-stone-500">
-            Every legendary is actually legendary
-          </p>
-        </motion.div>
+        <div className="relative flex flex-col items-center">
+          <SpecimenPlate onEnter={() => setPhase("CHOOSE_AFFINITY")} />
 
-        {/* A real generated relic, spinning, loaded from the same cache the
-            game uses. The page argues that generated 3D belongs in a runtime,
-            so the page should be running some. */}
-        <TitleShowcase />
-
-        {/*
-          The premise has to be stated on the front page. Players arrive with a
-          lifetime of loot tables behind them and will assume the weapon was
-          picked from a list, which is the one thing this game does not do.
-        */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 1 }}
-          className="mt-6 max-w-2xl px-8 text-center"
-        >
-          <p className="text-sm leading-relaxed text-stone-400">
-            Most games hand you loot from a list. Kill the boss, roll the table, receive the same
-            sword eleven million other players received.
-          </p>
-          <p className="mt-4 text-sm leading-relaxed text-stone-400">
-            Here the weapon does not exist until you earn it. When the boss falls, the forge reads
-            how you fought and generates a new 3D weapon in real time, then puts it in your hands.
-          </p>
-
-          <div className="mt-8 grid gap-3 text-left sm:grid-cols-3">
-            {[
-              ["1 · Fight", "Swing hard, dodge, survive. Everything you do is recorded."],
-              ["2 · Forge", "Your fight becomes a design, then a real 3D model, generated while you wait. About two minutes."],
-              ["3 · Wield", "Claim it and carry it. Nobody else will ever have that weapon."],
-            ].map(([title, body]) => (
-              <div key={title} className="border border-ash-800 px-4 py-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ember-400">
-                  {title}
-                </p>
-                <p className="mt-2 text-[11px] leading-relaxed text-stone-500">{body}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="mt-6 text-[11px] leading-relaxed text-stone-600">
-            Fight recklessly and it comes out brutal and cracked. Fight carefully and it comes out
-            elegant and flawless. Two players can beat the same boss and walk away holding
-            completely different weapons.
-          </p>
-        </motion.div>
-
-        <motion.button
-          type="button"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9, duration: 1 }}
-          onClick={() => setPhase("CHOOSE_AFFINITY")}
-          className="mt-10 border border-ember-500/50 px-12 py-3 text-xs uppercase tracking-[0.4em] text-ember-300 transition hover:bg-ember-500/10"
-        >
-          Enter the Arena
-        </motion.button>
-
-        {(owned.length > 0 || fightsWon > 0) && (
-          <div className="mt-8 text-center">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ember-400">
-              {rank.name}
+          <div className="w-full max-w-4xl px-8 pb-20">
+            {/*
+              The premise, for anyone who scrolled to ask. Players arrive with a
+              lifetime of loot tables behind them and will assume the weapon was
+              picked from a list, which is the one thing this game does not do.
+            */}
+            <p className="border-t border-brass-800 pt-10 text-sm leading-relaxed text-bone-400">
+              Most games hand you loot from a list. Kill the boss, roll the table, receive the same
+              sword eleven million other players received.
             </p>
-            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
-              {xp} xp · {owned.length} relic{owned.length === 1 ? "" : "s"} kept ·{" "}
-              {highestCleared()} boss{highestCleared() === 1 ? "" : "es"} cleared
+            <p className="mt-4 text-sm leading-relaxed text-bone-400">
+              Here the weapon does not exist until you earn it. When the boss falls, the forge
+              reads how you fought and generates a new 3D weapon, then puts it in your hands.
             </p>
-          </div>
-        )}
 
-        <p className="mt-12 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
-          weapons forged live by meshy-7 from your fight · bosses and champions
-          pre-generated with meshy-7
-        </p>
+            <ol className="mt-10 grid gap-px overflow-hidden border border-brass-800 bg-brass-800 sm:grid-cols-3">
+              {[
+                ["Fight", "Swing hard, dodge, survive. Everything you do is recorded."],
+                [
+                  "Forge",
+                  "Your fight becomes a design, then a real 3D model. Usually instant, sometimes a couple of minutes while meshy-7 works.",
+                ],
+                ["Wield", "Claim it and carry it into the next fight."],
+              ].map(([title, copy], i) => (
+                <li key={title} className="bg-ash-950 px-5 py-5">
+                  {/* Numbered because this genuinely is a sequence: you cannot
+                      forge before fighting or wield before forging. */}
+                  <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-brass-700">
+                    {String(i + 1).padStart(2, "0")}
+                  </p>
+                  <p className="mt-2 font-display text-lg tracking-[0.14em] text-bone-200">
+                    {title}
+                  </p>
+                  <p className="mt-2 text-[12px] leading-relaxed text-bone-400">{copy}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
       </div>
     );
