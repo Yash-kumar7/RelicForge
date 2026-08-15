@@ -49,3 +49,30 @@ export const IRON_SCALE = HELD_LENGTH.iron / IRON_SWORD_LENGTH;
 export function relicScale(weaponClass: WeaponClass): number {
   return HELD_LENGTH[weaponClass] / CANONICAL_LENGTH[weaponClass];
 }
+
+/**
+ * How long a boss's weapon is, as a fraction of the boss's own height.
+ *
+ * Boss weapons were sized by three separate magic numbers: 1.15 in the fight,
+ * 1.35 on the ladder and 1.45 for the unrigged fallback. One weapon, three
+ * sizes, none of them derived from anything. The spears came out at 84 percent
+ * of the boss's height, which reads as the boss carrying a flagpole.
+ *
+ * These are chosen against the boss rather than inherited from the champion
+ * numbers, because a boss is 2.6 units to a champion's 1.8 and a weapon that
+ * scaled with its wielder would grow into scenery. A boss's weapon should look
+ * heavy in its hands, not longer than it is tall.
+ */
+const BOSS_WEAPON_FRACTION: Record<WeaponClass, number> = {
+  greatsword: 0.52,
+  spear: 0.66,
+  warhammer: 0.46,
+};
+
+/**
+ * Multiplier a boss weapon needs on top of the carried size, so every screen
+ * draws it identically.
+ */
+export function bossWeaponScale(weaponClass: WeaponClass, bossHeight: number): number {
+  return (BOSS_WEAPON_FRACTION[weaponClass] * bossHeight) / HELD_LENGTH[weaponClass];
+}

@@ -9,6 +9,7 @@ import { IRON_SCALE } from "./weaponScale";
 import { playerHandle } from "./Player";
 import { swingProgress } from "./swing";
 import { bossState, bossSwing } from "./bossState";
+import { bossWeaponScale } from "./weaponScale";
 import { bossWeaponHint } from "./orientationHints";
 import type { OrientationHint } from "@relic/core";
 
@@ -114,11 +115,14 @@ export function BossHandWeaponSwing({
   url,
   weaponClass,
   slug,
+  height,
 }: {
   url: string;
   weaponClass: WeaponClass;
   /** Selects the orientation hint for weapons the heuristic cannot resolve. */
   slug: string;
+  /** The boss's own height, which its weapon is sized against. */
+  height: number;
 }) {
   const arm = useRef<Group>(null);
 
@@ -149,7 +153,7 @@ export function BossHandWeaponSwing({
   });
 
   return (
-    <group ref={arm} scale={1.15}>
+    <group ref={arm} scale={bossWeaponScale(weaponClass, height)}>
       {/*
         The hint applies here too.
 

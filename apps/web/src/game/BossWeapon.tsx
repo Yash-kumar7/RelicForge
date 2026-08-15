@@ -4,6 +4,7 @@ import { Group } from "three";
 import type { OrientationHint, WeaponClass } from "@relic/core";
 import { HeldRelicMesh } from "./HeldRelicMesh";
 import { bossWeaponHint } from "./orientationHints";
+import { bossWeaponScale } from "./weaponScale";
 import { bossSwing } from "./bossState";
 import { BossHandWeaponSwing } from "./HandWeapon";
 
@@ -90,7 +91,7 @@ function SwingingWeapon({
       ref={arm}
       position={[height * 0.3, height * 0.42, 0.2]}
       rotation={[0.25, 0, -0.35]}
-      scale={1.45}
+      scale={bossWeaponScale(weaponClass, height)}
     >
       {/* Spread so exactOptionalPropertyTypes is satisfied without widening
           the prop to accept an explicit undefined. */}
@@ -110,9 +111,11 @@ function SwingingWeapon({
 export function BossHandWeapon({
   slug,
   weaponClass,
+  height,
 }: {
   slug: string;
   weaponClass: WeaponClass;
+  height: number;
 }) {
   const url = `/assets/bosses/${slug}/weapon.glb`;
   const [available, setAvailable] = useState(false);
@@ -131,7 +134,7 @@ export function BossHandWeapon({
 
   return (
     <Suspense fallback={null}>
-      <BossHandWeaponSwing url={url} weaponClass={weaponClass} slug={slug} />
+      <BossHandWeaponSwing url={url} weaponClass={weaponClass} slug={slug} height={height} />
     </Suspense>
   );
 }

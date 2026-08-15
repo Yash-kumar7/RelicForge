@@ -1,6 +1,7 @@
 import { CharacterViewer, type HeldWeaponSpec } from "./CharacterViewer";
 import { bossSlug } from "./BossPortrait";
 import { bossWeaponHint } from "../game/orientationHints";
+import { bossWeaponScale } from "../game/weaponScale";
 import { bossAt } from "../game/bosses";
 
 /**
@@ -41,7 +42,10 @@ export function BossPreview({
     kind: "relic",
     url: `/assets/bosses/${slug}/weapon.glb`,
     weaponClass: bossAt(level).weaponClass,
-    scale: 1.35,
+    // Derived, not chosen. The ladder used 1.35 while the fight used 1.15, so
+    // the same weapon was a different size depending on which screen you were
+    // looking at.
+    scale: bossWeaponScale(bossAt(level).weaponClass, BOSS_HEIGHT),
     ...(hint ? { hint } : {}),
   };
 

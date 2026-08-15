@@ -12,6 +12,7 @@ import { setBossAction } from "./bossState";
 import { bossAt } from "./bosses";
 import { BossModel } from "./BossModel";
 import { BossWeapon, BossHandWeapon } from "./BossWeapon";
+import { BOSS_HEIGHT } from "./BossModel";
 import { BossDamagePopups } from "./BossDamagePopups";
 
 /**
@@ -320,6 +321,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
           <BossHandWeapon
             slug={bossSlug}
             weaponClass={bossAt(bossLevel ?? 1).weaponClass}
+            height={BOSS_HEIGHT}
           />
         </BossModel>
 

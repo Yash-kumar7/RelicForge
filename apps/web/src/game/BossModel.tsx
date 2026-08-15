@@ -16,7 +16,8 @@ import { AnimatedCharacter } from "./AnimatedCharacter";
  * parent either way, so behaviour does not change with the asset.
  */
 
-const BOSS_HEIGHT = 2.75;
+/** Exported so anything sized against the boss uses the same number. */
+export const BOSS_HEIGHT = 2.75;
 
 function StaticBoss({ slug, onLoaded }: { slug: string; onLoaded: () => void }) {
   const { scene } = useGLTF(`/assets/bosses/${slug}/model.glb`);

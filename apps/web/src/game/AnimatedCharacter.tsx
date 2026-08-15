@@ -80,6 +80,20 @@ const IDLE_TIME_SCALE = 0.18;
 const HAND_CLEARANCE = 0.035;
 
 /**
+ * How far past the wrist the fist actually closes, as a fraction of height.
+ *
+ * The hand bone sits at the wrist, but fingers close further along the hand, so
+ * a grip placed at the bone hangs behind the fist that is supposed to be holding
+ * it: the knuckles end up level with the blade while the whole hilt dangles
+ * below them.
+ *
+ * The direction is taken from the forearm rather than assumed, because the arm
+ * moves. Whichever way the hand is pointing, the grip travels a little further
+ * that way.
+ */
+const GRIP_REACH = 0.05;
+
+/**
  * Rest pose of a carried weapon, relative to the hand.
  *
  * Applied on the socket rather than by the caller because only the socket knows
@@ -140,6 +154,9 @@ function HandFollower({
   const position = useMemo(() => new Vector3(), []);
   const quaternion = useMemo(() => new Quaternion(), []);
   const scale = useMemo(() => new Vector3(), []);
+  const forearmWorld = useMemo(() => new Vector3(), []);
+  const handWorld = useMemo(() => new Vector3(), []);
+  const reach = useMemo(() => new Vector3(), []);
 
   useFrame(() => {
     const group = socket.current;
@@ -166,6 +183,23 @@ function HandFollower({
     const clearance = height * HAND_CLEARANCE;
     group.position.x += outward * clearance;
     group.position.z += clearance * 0.8;
+
+    /*
+     * Along the forearm, out past the wrist, to where the fingers close.
+     *
+     * Falls back to doing nothing if the bone has no parent to measure against,
+     * which is better than guessing a direction on a rig that does not have the
+     * shape this assumes.
+     */
+    const forearm = bone.parent;
+    if (forearm) {
+      forearmWorld.setFromMatrixPosition(forearm.matrixWorld);
+      handWorld.setFromMatrixPosition(bone.matrixWorld);
+      reach.subVectors(handWorld, forearmWorld);
+      if (reach.lengthSq() > 1e-8) {
+        group.position.addScaledVector(reach.normalize(), height * GRIP_REACH);
+      }
+    }
 
     // Mirrored with the hand, so the blade leans away from the body on either
     // side. This is the part a fixed rotation cannot get right.
