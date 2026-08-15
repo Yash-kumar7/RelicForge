@@ -41,6 +41,19 @@ const SECTION_HEADING = "flex h-4 items-baseline text-[11px] uppercase leading-4
 /** Character select, then loadout, then stage select. */
 const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
 
+/**
+ * The light each champion stands in.
+ *
+ * Faint on purpose: enough that switching element changes the temperature of the
+ * screen, not so much that it becomes a coloured page. The figure is lit by its
+ * own art already, so this is the room rather than the key light.
+ */
+const ELEMENT_GLOW: Record<Affinity, string> = {
+  fire: "rgba(255,107,26,0.16)",
+  ice: "rgba(74,168,216,0.15)",
+  storm: "rgba(251,191,36,0.13)",
+};
+
 const AFFINITIES: {
   id: Affinity;
   name: string;
@@ -235,6 +248,25 @@ export function TitleScreen() {
             Falls back to the champion until one is picked, because an empty
             frame says less than the character who is about to walk into it.
           */}
+          {/*
+            The chosen element lights the room.
+
+            The champion stood in a bordered box on a flat page, so choosing a
+            different one changed a figure and nothing else. In the games this is
+            built after, picking a character changes the whole screen: the light
+            behind them is theirs. It costs one gradient and it is the difference
+            between a settings panel and a character select.
+          */}
+          <div className="relative">
+            <div
+              className={[
+                "pointer-events-none absolute inset-0 -z-10 transition-opacity duration-700",
+                section === 2 ? "opacity-0" : "opacity-100",
+              ].join(" ")}
+              style={{
+                background: `radial-gradient(ellipse 62% 52% at 50% 58%, ${ELEMENT_GLOW[affinity]}, transparent 72%)`,
+              }}
+            />
           {section === 2 && bossLevel !== null ? (
             <BossPreview
               level={bossLevel}
@@ -243,10 +275,24 @@ export function TitleScreen() {
               /* Same frame the champion gets. The two views sit in the same
                  place on consecutive steps, so a smaller one reads as the enemy
                  mattering less than the character choosing to fight it. */
-              className="h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full border border-ash-800 bg-ash-900/40"
+              className="h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full"
             />
           ) : (
             <ChampionPreview affinity={affinity} armed={section > 0} />
+          )}
+          </div>
+
+          {/*
+            The name under the figure, at size.
+
+            A character select names its character. This had the name only inside
+            a row on the other side of the page, so the person filling the left
+            half of the screen was anonymous while you were looking at them.
+          */}
+          {section !== 2 && (
+            <p className="mt-3 text-center font-display text-2xl tracking-[0.26em] text-bone-200 lg:text-3xl">
+              {championFor(affinity).name.toUpperCase()}
+            </p>
           )}
         </div>
 
@@ -344,10 +390,10 @@ export function TitleScreen() {
                   */
                   onClick={() => chooseAffinity(a.id)}
                   className={[
-                    "flex items-center gap-5 overflow-hidden border px-5 py-4 text-left transition",
+                    "group flex items-center gap-5 overflow-hidden border-l-2 py-4 pl-5 pr-4 text-left transition",
                     affinity === a.id
-                      ? a.accent
-                      : "border-ash-700 text-stone-500 hover:border-stone-500",
+                      ? `${a.accent} bg-gradient-to-r from-white/[0.04] to-transparent`
+                      : "border-transparent text-stone-500 hover:border-ash-700 hover:bg-white/[0.02]",
                   ].join(" ")}
                 >
                   {/*
