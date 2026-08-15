@@ -4,8 +4,8 @@ import { useGameStore } from "../state/useGameStore";
 import { COMBAT, attackSpec } from "../game/combat";
 import { combinedTraits } from "../game/equipped";
 import { useLoadout } from "../state/useLoadout";
-import { bossAt, bossTitleFor } from "../game/bosses";
-import { championFor, championStats } from "../game/champions";
+import { bossAt } from "../game/bosses";
+import { bossSlug } from "./BossPortrait";
 
 /**
  * Onboarding, in one screen.
@@ -49,11 +49,6 @@ export function PreFightBriefing() {
    * briefed on a different fight. The name comes from the ladder now.
    */
   const boss = bossAt(bossLevel ?? 1);
-  const champion = championFor(affinity);
-  const health = {
-    yours: championStats(champion).health,
-    theirs: Math.round(COMBAT.boss.maxHp * boss.hp),
-  };
 
   /**
    * One click does both jobs: it starts the fight and takes pointer lock.
@@ -90,117 +85,151 @@ export function PreFightBriefing() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 z-10 flex flex-col bg-black/85 backdrop-blur-sm"
         onClick={begin}
       >
-        <div className="max-w-2xl px-8 text-center">
-          <p className="text-[11px] uppercase tracking-[0.45em] text-stone-600">Your objective</p>
-          <h2 className={`mt-4 font-display text-4xl tracking-[0.12em] ${accent}`}>
-            DEFEAT {bossTitleFor(bossLevel ?? 1, affinity).toUpperCase()}
-          </h2>
+        {/*
+          The boss, at the size the fight deserves.
 
-          {/*
-            One paragraph, where there were two.
-            
-            The second said the same thing as the first in different words, and
-            nine lines of reading is a lot to put between a player and a fight
-            they have already chosen. The half worth keeping is the half that
-            says the weapon is being decided while you play.
-          */}
-          <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-stone-400">
-            There is no loot table. When {boss.name} falls, the forge reads{" "}
-            <span className="text-stone-200">how you won</span> and builds a weapon that has never
-            existed before. Fight recklessly and it comes out brutal and cracked; fight carefully
-            and it comes out precise and clean.
-          </p>
+          This screen was a 42rem column of centred text with a third of the
+          window empty down each side, which is the shape of a form rather than
+          the shape of a fight. An intro exists to make the thing you are about
+          to fight look worse than anything you have fought, and it cannot do
+          that as a name in a paragraph. It stands in the frame now, bleeding off
+          the right edge, and the reading sits over its own room on the left.
+        */}
+        <motion.img
+          key={boss.level}
+          src={`/assets/bosses/${bossSlug(boss.title)}/concept-cut.png`}
+          alt=""
+          aria-hidden
+          initial={{ opacity: 0, scale: 1.06 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.4, ease: "easeOut" }}
+          /* Faded into the page rather than cut against it, so the figure reads
+             as standing in the dark instead of pasted onto it. */
+          className="pointer-events-none absolute bottom-0 right-[-4%] h-[88svh] max-w-[62vw] object-contain object-bottom opacity-45 [mask-image:linear-gradient(to_left,black_58%,transparent)] lg:right-[2%] lg:opacity-70"
+        />
 
-          {/*
-            The matchup, in the two numbers that decide it.
-            
-            A boss was chosen off a ladder that showed its health, and then this
-            screen quoted the damage a swing does without either health bar it
-            counts against, so there was no way to know whether 30 was a lot.
-          */}
-          <dl className="mx-auto mt-6 flex max-w-lg items-center justify-center gap-8 font-mono text-[11px] uppercase tracking-[0.2em]">
-            <div className="text-right">
-              <dt className="text-stone-600">{champion.name}</dt>
-              <dd className={`mt-1 text-lg tabular-nums ${accent}`}>{health.yours} health</dd>
-            </div>
-            <span className="text-stone-700">vs</span>
-            <div className="text-left">
-              <dt className="text-stone-600">{boss.title}</dt>
-              <dd className="mt-1 text-lg tabular-nums text-stone-300">{health.theirs} health</dd>
-            </div>
-          </dl>
+        {/* Its own colour, under its own feet. */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: `radial-gradient(ellipse 46% 40% at 72% 78%, ${boss.accent}22, transparent 70%)`,
+          }}
+        />
 
-          {/* The telegraph ring is a mechanic, and an unexplained red circle on
-              the floor reads as a graphical fault rather than a warning. */}
-          <p className="mx-auto mt-8 max-w-lg border border-red-500/30 px-4 py-3 text-[11px] leading-relaxed text-stone-400">
-            <span className="text-red-400">A ring on the ground</span> means the blow is coming. It
-            grows as it gets closer, and everything inside it will be hit. Dodge out, or dodge
-            through.
-          </p>
+        <div className="relative flex flex-1 items-center overflow-y-auto">
+          <div className="mx-auto w-full max-w-7xl px-8 py-10 lg:px-14">
+            <div className="max-w-xl">
+              <p className="font-mono text-[10px] uppercase tracking-[0.45em] text-stone-600">
+                Your objective
+              </p>
+              {/*
+                The name alone, at size.
 
-          {/*
-            The two attacks are the largest single input into the relic, and the
-            plain control list never said what separated them or what choosing
-            one did. A player who does not know that heavy swings produce a
-            brutal weapon cannot make the choice the game is asking them to make.
-          */}
-          <div className="mx-auto mt-4 grid max-w-lg gap-3 sm:grid-cols-2">
-            <div className="border border-frost-500/40 px-4 py-3 text-left">
-              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-frost-400">
-                left click · quick attack
-              </p>
-              <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
-                {light.damage} damage
-                {light.damage !== COMBAT.lightAttack.damage && (
-                  <span className="ml-2 text-[11px] text-frost-400">
-                    {carried?.name}
-                  </span>
-                )}
-              </p>
-              <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
-                Fast and safe to throw. Favour it while dodging and the forge reads
-                you as <span className="text-frost-300">elegant</span>: a narrow, precise
-                weapon.
-              </p>
-            </div>
+                It read "DEFEAT THE ASHEN WARDEN, EMBER-SCARRED" across two
+                lines, and the epithet is the part a first-time player cannot
+                decode. A fight intro names the thing and lets the word defeat be
+                implied by the fact that it is standing there.
+              */}
+              <h2 className={`mt-3 font-display text-5xl leading-[1.05] tracking-[0.06em] lg:text-6xl ${accent}`}>
+                {boss.title.toUpperCase()}
+              </h2>
+              {/* The one line that says what this fight will do to you. It was
+                  on the ladder and then thrown away at the moment it matters. */}
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-400">{boss.blurb}</p>
 
-            <div className="border border-ember-500/40 px-4 py-3 text-left">
-              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-ember-400">
-                right click · strong attack
+              <p className="mt-6 max-w-md border-l border-brass-800 pl-4 text-[13px] leading-relaxed text-stone-500">
+                There is no loot table. When it falls, the forge reads{" "}
+                <span className="text-stone-200">how you won</span> and builds a weapon that has
+                never existed before.
               </p>
-              <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
-                {heavy.damage} damage
-                {heavy.damage !== COMBAT.heavyAttack.damage && (
-                  <span className="ml-2 text-[11px] text-ember-400">
-                    {carried?.name}
-                  </span>
-                )}
-              </p>
-              <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
-                Slow to start, and it staggers. Lean on it and the forge
-                reads you as <span className="text-ember-300">brutal</span>: an oversized,
-                heavy weapon.
+
+              {/*
+                The choice that shapes the weapon, as two lines rather than two
+                cards. It is a comparison: one damage figure against the other,
+                and one outcome against the other, which a table does and a pair
+                of boxes does not.
+              */}
+              <dl className="mt-7 space-y-2.5">
+                {[
+                  {
+                    key: "left click",
+                    name: "quick attack",
+                    damage: light.damage,
+                    changed: light.damage !== COMBAT.lightAttack.damage,
+                    tone: "text-frost-300",
+                    rule: "border-frost-500/50",
+                    reads: "precise",
+                    note: "Ends before it can punish you.",
+                  },
+                  {
+                    key: "right click",
+                    name: "strong attack",
+                    damage: heavy.damage,
+                    changed: heavy.damage !== COMBAT.heavyAttack.damage,
+                    tone: "text-ember-300",
+                    rule: "border-ember-500/50",
+                    reads: "brutal",
+                    note: "Staggers it, and commits you for longer.",
+                  },
+                ].map((attack) => (
+                  <div
+                    key={attack.key}
+                    className={`flex items-baseline gap-4 border-l-2 ${attack.rule} pl-4`}
+                  >
+                    <dt className="w-24 shrink-0 font-mono text-[10px] uppercase leading-5 tracking-[0.2em] text-stone-500">
+                      {attack.key}
+                    </dt>
+                    <dd className="min-w-0 flex-1">
+                      <span className={`font-mono text-base tabular-nums ${attack.tone}`}>
+                        {attack.damage} damage
+                      </span>
+                      {attack.changed && carried && (
+                        <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-600">
+                          {carried.name}
+                        </span>
+                      )}
+                      <span className="ml-2 text-[12px] text-stone-500">
+                        {attack.note} Lean on it and the forge reads you as{" "}
+                        <span className={attack.tone}>{attack.reads}</span>.
+                      </span>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+
+              {/* The telegraph ring is a mechanic, and an unexplained red circle
+                  on the floor reads as a graphical fault rather than a warning. */}
+              <p className="mt-6 max-w-md text-[12px] leading-relaxed text-stone-500">
+                <span className="text-red-400">A ring on the ground</span> means the blow is
+                coming. Everything inside it will be hit, so dodge out or dodge through.
               </p>
             </div>
           </div>
+        </div>
 
-          <dl className="mx-auto mt-6 grid max-w-md grid-cols-2 gap-x-10 gap-y-3 text-left font-mono text-[11px] uppercase tracking-[0.15em]">
+        {/*
+          Controls along the bottom edge, in one line.
+
+          Six keys in a two-column table took as much of the screen as the boss
+          did. They are reference, not reading: a player checks one of them once
+          and never looks again, so they belong at the edge of the frame.
+        */}
+        <div className="relative border-t border-ash-800 bg-black/40 px-8 py-4">
+          <dl className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.18em]">
             {[
               ["WASD", "move"],
               ["Mouse", "look"],
               ["Space", "jump"],
               // Milliseconds are a tuning value, not something a player thinks
               // in. What matters is that a well-timed dodge avoids the hit.
-              // One word. "dodge · slip through the blow" wrapped onto a second
-              // line and read as two separate controls on one key.
               ["Shift", "dodge"],
               ["Q", "heal · 2 charges"],
               ["V", "first or third person"],
             ].map(([key, action]) => (
-              <div key={key} className="flex justify-between gap-4 border-b border-ash-800 pb-1">
+              <div key={key} className="flex items-baseline gap-2">
                 <dt className="text-stone-300">{key}</dt>
                 <dd className="text-stone-600">{action}</dd>
               </div>
@@ -208,9 +237,9 @@ export function PreFightBriefing() {
           </dl>
 
           <motion.p
-            animate={{ opacity: [0.35, 1, 0.35] }}
+            animate={{ opacity: [0.4, 1, 0.4] }}
             transition={{ duration: 2.2, repeat: Infinity }}
-            className="mt-12 text-xs uppercase tracking-[0.4em] text-stone-400"
+            className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.4em] text-stone-400"
           >
             Click anywhere to begin
           </motion.p>
