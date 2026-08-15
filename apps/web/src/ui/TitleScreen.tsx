@@ -203,7 +203,7 @@ export function TitleScreen() {
           <ChampionPreview affinity={affinity} />
         </div>
 
-        {/* Right: affinity, then quarry, then descend. */}
+        {/* Right: element, then weapon, then who you fight, then descend. */}
         <div className="flex flex-col">
           <section>
             {/*
@@ -370,10 +370,16 @@ export function TitleScreen() {
                   : "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
               ].join(" ")}
             >
+              {/*
+                The button says what is still missing, in the same words the
+                sections above use. It said "armament" and "quarry", which are
+                the state field names and the two words already removed from
+                every heading on this screen.
+              */}
               {armament === null
-                ? "Choose an armament"
+                ? "Choose your weapon"
                 : bossLevel === null
-                  ? "Choose a quarry"
+                  ? "Choose who you fight"
                   : "Descend"}
             </button>
           </div>
