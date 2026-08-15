@@ -16,6 +16,14 @@ export interface BossLevel {
   /** Passed to the backend as bossInfluence, this shapes the prompt. */
   name: string;
   title: string;
+  /**
+   * One line, in plain words, saying what fighting this thing is like.
+   *
+   * These were written in fighting-game shorthand: a boss described as "honest"
+   * or one that "does not telegraph kindly" means something precise to someone
+   * who already plays these games and reads as nonsense to everyone else. A
+   * player choosing a fight wants to know what it will do to them.
+   */
   blurb: string;
   /** Multipliers on top of the difficulty profile. */
   hp: number;
@@ -36,7 +44,7 @@ export const BOSSES: BossLevel[] = [
     level: 1,
     name: "the Ashen Warden",
     title: "The Ashen Warden",
-    blurb: "A burnt sentinel that never left its post. Slow, heavy, honest.",
+    blurb: "Slow and heavy, and every swing is easy to see coming. The place to learn.",
     hp: 1,
     damage: 1,
     speed: 1,
@@ -47,7 +55,7 @@ export const BOSSES: BossLevel[] = [
     level: 2,
     name: "the Drowned Choir",
     title: "The Drowned Choir",
-    blurb: "Salt-swollen and many-voiced. Faster, and it does not telegraph kindly.",
+    blurb: "Faster than the Warden, and it hides the start of its swing.",
     hp: 1.25,
     damage: 1.15,
     speed: 1.15,
@@ -58,7 +66,7 @@ export const BOSSES: BossLevel[] = [
     level: 3,
     name: "the Gilded Husk",
     title: "The Gilded Husk",
-    blurb: "Something rich died inside this armour. It still spends like it is alive.",
+    blurb: "Empty armour that still fights. Quick, and it punishes a greedy swing.",
     hp: 1.5,
     damage: 1.3,
     speed: 1.1,
@@ -69,7 +77,7 @@ export const BOSSES: BossLevel[] = [
     level: 4,
     name: "the Rootbound King",
     title: "The Rootbound King",
-    blurb: "Held together by what grew through him. Enormous health, punishing reach.",
+    blurb: "Enormous, with reach you will misjudge. Outlasting it is the only way.",
     hp: 2,
     damage: 1.4,
     speed: 0.95,
@@ -80,7 +88,7 @@ export const BOSSES: BossLevel[] = [
     level: 5,
     name: "the Hollow Sovereign",
     title: "The Hollow Sovereign",
-    blurb: "The last thing on the ladder. Everything it lost, it takes back.",
+    blurb: "The last rung. Hits hardest and leaves the least room to recover.",
     hp: 2.4,
     damage: 1.75,
     speed: 1.3,
