@@ -122,7 +122,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
             animate={{ opacity: 0.3, scale: 1.06 }}
             exit={{ opacity: 0 }}
             transition={{ opacity: { duration: 2 }, scale: { duration: 18, ease: "linear" } }}
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-top"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_28%]"
           />
         )}
       </AnimatePresence>
@@ -130,6 +130,15 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
       {/* Ground the art into the page rather than letting it end at an edge. */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_18%,#0a0908_78%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ash-950 to-transparent" />
+      {/*
+        A band of dark for the title to sit on.
+
+        The painting is a portrait, so its head lands exactly where the title
+        goes and the two fought. Rather than shrink the type or move it off
+        centre, the top of the image falls away so the words have something to
+        be read against.
+      */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[38svh] bg-gradient-to-b from-ash-950 via-ash-950/80 to-transparent" />
 
       {/* The name. */}
       <motion.header
@@ -147,9 +156,16 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
       </motion.header>
 
       {/* The relic, in front of the boss that produced it. */}
-      <div className="relative z-10 h-[42svh] w-full max-w-3xl">
+      {/*
+        Bigger, and pulled forward.
+
+        At 42svh in front of a full-height boss the weapon read as something
+        pinned to his chest. The relic is the subject of this page and the
+        painting is the setting, so the relic has to be the larger of the two.
+      */}
+      <div className="relative z-10 -my-[4svh] h-[54svh] w-full max-w-3xl">
         {current?.modelUrl && (
-          <Canvas camera={{ position: [2.3, 0.15, 2.3], fov: 40 }} gl={{ antialias: true }}>
+          <Canvas camera={{ position: [1.9, 0.12, 1.9], fov: 40 }} gl={{ antialias: true }}>
             <ambientLight intensity={0.45} />
             <directionalLight position={[4, 6, 3]} intensity={2.4} />
             <directionalLight position={[-4, 2, -3]} intensity={1.1} color="#ff8c42" />

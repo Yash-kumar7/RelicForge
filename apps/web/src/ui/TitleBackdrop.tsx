@@ -28,7 +28,12 @@ function Embers() {
         z: (Math.random() - 0.5) * 14 - 2,
         speed: 0.5 + Math.random() * 1.6,
         drift: 0.3 + Math.random() * 0.9,
-        scale: 0.014 + Math.random() * 0.05,
+        /*
+         * Small. These reached 0.064 and read as opaque discs rather than
+         * embers, especially over a dark painting where nothing else is that
+         * bright. An ember is a speck that catches light, not a dot.
+         */
+        scale: 0.006 + Math.random() * 0.018,
         phase: Math.random() * Math.PI * 2,
       })),
     [],
@@ -61,7 +66,7 @@ function Embers() {
         color={new Color("#ff8c42")}
         blending={AdditiveBlending}
         transparent
-        opacity={0.85}
+        opacity={0.55}
         toneMapped={false}
       />
     </instancedMesh>
