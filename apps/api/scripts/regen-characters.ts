@@ -311,15 +311,17 @@ async function meshes(): Promise<void> {
 }
 
 /**
- * Copies the new models over the live ones, keeping the previous one as an asset
- * rather than as a backup.
+ * Copies the new models over the live ones, keeping the previous one beside them.
  *
- * The open-hand mesh is not dead weight, it is the other half of the feature. A
- * fist clenched around nothing looks as wrong as an open hand wrapped around a
- * sword, so the setup screen shows the relaxed character until a weapon is
- * chosen and the closed one once it is. Keeping it as model-open.glb means it is
- * served like any other asset instead of sitting beside the live file with an
- * extension nothing can load.
+ * model-open.glb was briefly a feature: the relaxed character on the setup
+ * screen until a weapon was chosen, the clenched one after. That could not work.
+ * Both poses have to be generated separately and two Meshy runs from one prompt
+ * are not the same character, so swapping between them read as the champion
+ * being replaced rather than relaxing.
+ *
+ * The file is kept anyway. Nothing renders it, but it is the only copy of the
+ * pose these characters had before the reroll, and regenerating one costs 44
+ * credits.
  */
 async function promote(): Promise<void> {
   /*

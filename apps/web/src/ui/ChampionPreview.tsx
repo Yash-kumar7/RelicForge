@@ -39,21 +39,21 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
     <CharacterViewer
       slug={slug}
       /*
-        Two meshes, chosen by whether anything is in hand.
+        One mesh, always the closed-hand one.
 
-        The champions are generated with one fist closed, which is what makes a
-        weapon read as gripped rather than passing through spread fingers. A fist
-        clenched around nothing looks just as wrong the other way, so the relaxed
-        mesh stands in until a weapon is actually chosen. The fallback covers
-        champions that have not been regenerated and therefore have no open-hand
-        variant to ask for.
+        This was briefly two: the relaxed model until a weapon was chosen, the
+        clenched one after. The idea was right and the execution cannot be. Both
+        poses have to be generated separately, and two Meshy runs from the same
+        prompt are not the same character, they differ in armour detail, in
+        proportion and in lighting. Swapping between them read as the champion
+        being replaced rather than relaxing.
+
+        A fist holding nothing is a smaller cost than a champion that changes
+        identity when you pick up a sword. Closing the hand on the existing mesh
+        is not an option: the rigs have a single bone per hand and no fingers, so
+        the pose is baked in at generation time.
       */
-      url={
-        weapon === undefined
-          ? `/assets/champions/${slug}/model-open.glb`
-          : `/assets/champions/${slug}/model.glb`
-      }
-      fallbackUrl={`/assets/champions/${slug}/model.glb`}
+      url={`/assets/champions/${slug}/model.glb`}
       height={CHAMPION_HEIGHT}
       accent={theme.forge}
       weapon={weapon}
