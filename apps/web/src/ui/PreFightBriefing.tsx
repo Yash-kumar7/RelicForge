@@ -131,7 +131,7 @@ export function PreFightBriefing() {
           with the head and leaves the empty room under the text, where the
           figure's own weight is.
         */}
-        <div className="relative flex flex-1 items-start overflow-y-auto pt-[6svh]">
+        <div className="relative flex flex-1 items-start overflow-y-auto pt-[5svh] pb-8">
           <div className="mx-auto w-full max-w-7xl px-8 py-10 lg:px-14">
             <div className="max-w-xl">
               <p className="font-mono text-[10px] uppercase tracking-[0.45em] text-stone-600">
@@ -218,53 +218,45 @@ export function PreFightBriefing() {
                 <span className="text-red-400">A ring on the ground</span> means the blow is
                 coming. Everything inside it will be hit, so dodge out or dodge through.
               </p>
+
+              {/*
+                Controls in the column, under everything else in it.
+
+                They had a bar of their own across the bottom of the window,
+                which is a lot of structure for six keys nobody reads twice, and
+                it drew a rule across the boss's legs to hold them. Everything on
+                this screen belongs to one column, so they belong in it too, last,
+                which is the order they are wanted in.
+              */}
+              <dl className="mt-7 flex max-w-md flex-wrap items-baseline gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.18em]">
+                {[
+                  ["WASD", "move"],
+                  ["Mouse", "look"],
+                  ["Space", "jump"],
+                  // Milliseconds are a tuning value, not something a player
+                  // thinks in. What matters is that a dodge avoids the hit.
+                  ["Shift", "dodge"],
+                  ["Q", "heal · 2 charges"],
+                  ["V", "first or third person"],
+                ].map(([key, action]) => (
+                  <div key={key} className="flex items-baseline gap-2">
+                    <dt className="text-stone-400">{key}</dt>
+                    <dd className="text-stone-600">{action}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              <motion.p
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 2.2, repeat: Infinity }}
+                className="mt-8 font-mono text-[10px] uppercase tracking-[0.4em] text-stone-400"
+              >
+                Click anywhere to begin
+              </motion.p>
             </div>
           </div>
         </div>
 
-        {/*
-          Controls along the bottom edge, in one line.
-
-          Six keys in a two-column table took as much of the screen as the boss
-          did. They are reference, not reading: a player checks one of them once
-          and never looks again, so they belong at the edge of the frame.
-        */}
-        {/*
-          Left, under the column it belongs to.
-
-          Centred across the full width, the strip ran under the boss's feet and
-          read as a caption on the figure rather than as the controls for the
-          reading above it. It lines up with the text now, on the same margin.
-        */}
-        <div className="relative border-t border-ash-800 bg-black/40">
-          <div className="mx-auto w-full max-w-7xl px-8 py-4 lg:px-14">
-          <dl className="flex max-w-2xl flex-wrap items-baseline gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.18em]">
-            {[
-              ["WASD", "move"],
-              ["Mouse", "look"],
-              ["Space", "jump"],
-              // Milliseconds are a tuning value, not something a player thinks
-              // in. What matters is that a well-timed dodge avoids the hit.
-              ["Shift", "dodge"],
-              ["Q", "heal · 2 charges"],
-              ["V", "first or third person"],
-            ].map(([key, action]) => (
-              <div key={key} className="flex items-baseline gap-2">
-                <dt className="text-stone-300">{key}</dt>
-                <dd className="text-stone-600">{action}</dd>
-              </div>
-            ))}
-          </dl>
-
-          <motion.p
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: 2.2, repeat: Infinity }}
-            className="mt-3 font-mono text-[10px] uppercase tracking-[0.4em] text-stone-400"
-          >
-            Click anywhere to begin
-          </motion.p>
-          </div>
-        </div>
       </motion.div>
     </AnimatePresence>
   );
