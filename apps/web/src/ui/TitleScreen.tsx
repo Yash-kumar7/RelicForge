@@ -215,7 +215,13 @@ export function TitleScreen() {
             */}
             <p>{step === 2 ? "Your enemy" : "Your champion"}</p>
             <p className="font-mono text-[10px] leading-4 tracking-[0.25em] text-stone-700">
-              {rank.name} · {xp} xp
+              {/*
+                Labelled, because unlabelled it reads as the champion's name.
+                It sits beside "Your champion" in the same small mono type, so
+                "Ashbearer" looked like an answer to that heading rather than a
+                rank the player has climbed to.
+              */}
+              rank {rank.name} · {xp} xp
             </p>
           </div>
           {/*
