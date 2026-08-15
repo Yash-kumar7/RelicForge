@@ -1,6 +1,6 @@
 # RelicForge
 
-> **The weapon does not exist until you win it.**
+> **Kill it your way. Keep what that makes.**
 
 **What if legendary loot was actually one-of-one?**
 

@@ -404,7 +404,15 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
             about this one. A tagline on a first screen has one job, which is to
             say what the thing does.
           */}
-          The weapon does not exist until you win it
+          {/*
+            The loop, in the player's order.
+
+            Earlier versions described the weapon: it does not exist until you
+            win it, which is true and leads with the object. This leads with the
+            choice, because the choice is the mechanic. How you kill it is the
+            input; the weapon is what comes out.
+          */}
+          Kill it your way. Keep what that makes.
         </p>
       </motion.header>
 
@@ -460,12 +468,16 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
 
                 A visitor reads a weapon floating between two fighters as the
                 one they are holding, and a new player holds the iron sword and
-                nothing else. It is the opposite: this is what that fight
-                produced, and it did not exist until the fight was over. One
-                line fixes the reading, and it is also the whole pitch.
+                nothing else. It is the opposite: the weapon is what beating that
+                boss produced.
+
+                It said "what this fight made", which left two questions open.
+                Which fight, given the two on screen have not fought yet, and
+                made how. Naming the kill answers both: this weapon exists
+                because that thing died.
               */}
               <span className="mb-3 block font-mono text-[9px] uppercase tracking-[0.35em] text-brass-700">
-                what this fight made
+                forged from this kill
               </span>
 
               {/*
