@@ -388,7 +388,17 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
           RELICFORGE
         </h1>
         <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.42em] text-ember-400 sm:text-[10px]">
-          Every legendary is actually legendary
+          {/*
+            The mechanic, not a joke about other games.
+
+            This was "every legendary is actually legendary", a pun on loot
+            rarity tiers: games hand out junk labelled legendary, so ours really
+            is. It only lands if the reader already knows that convention, and
+            even then it is a remark about other games rather than a statement
+            about this one. A tagline on a first screen has one job, which is to
+            say what the thing does.
+          */}
+          The weapon does not exist until you win it
         </p>
       </motion.header>
 

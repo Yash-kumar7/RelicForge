@@ -1,6 +1,6 @@
 # RelicForge
 
-> **Every legendary is actually legendary.**
+> **The weapon does not exist until you win it.**
 
 **What if legendary loot was actually one-of-one?**
 
