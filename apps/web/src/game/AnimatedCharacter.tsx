@@ -76,8 +76,21 @@ const IDLE_TIME_SCALE = 0.18;
  *
  * Expressed against height rather than in world units because the same socket
  * carries a 1.8-unit champion and a boss half again as large.
+ *
+ * Cut to roughly a quarter of what it was, because most of it was compensating
+ * for a bug rather than for anatomy. While the weapon held a fixed rotation in
+ * the character's frame, an upright blade ran parallel to a hanging arm and
+ * tracked the whole forearm, and the only way to stop that was to shove it
+ * outward until it cleared the limb entirely. It cleared the hand too: the
+ * weapon ended up floating a hand's width beside the fist rather than in it.
+ *
+ * With the rotation inherited from the bone the blade turns with the hand and
+ * never runs along the arm, so the clearance only has to cover the thickness of a
+ * palm. Some intersection with an open hand is correct: these rigs come back
+ * A-posed with the fingers spread, and a shaft passing between spread fingers
+ * reads as held, while a shaft floating clear of them reads as dropped.
  */
-const HAND_CLEARANCE = 0.035;
+const HAND_CLEARANCE = 0.008;
 
 /**
  * How far past the wrist the fist actually closes, as a fraction of height.
@@ -90,8 +103,12 @@ const HAND_CLEARANCE = 0.035;
  * The direction is taken from the forearm rather than assumed, because the arm
  * moves. Whichever way the hand is pointing, the grip travels a little further
  * that way.
+ *
+ * Also cut, for the same reason as the clearance above: at 0.05 of height it was
+ * pushing the grip most of a hand's length past the knuckles, which put the
+ * pommel where the fingertips are and the hand nowhere near the leather.
  */
-const GRIP_REACH = 0.05;
+const GRIP_REACH = 0.018;
 
 /**
  * Rest pose of a carried weapon, relative to the hand.
@@ -207,7 +224,7 @@ function HandFollower({
     const outward = Math.sign(position.x) || 1;
     const clearance = height * HAND_CLEARANCE;
     group.position.x += outward * clearance;
-    group.position.z += clearance * 0.8;
+    group.position.z += clearance * 0.4;
 
     /*
      * Along the forearm, out past the wrist, to where the fingers close.
