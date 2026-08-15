@@ -383,15 +383,18 @@ export function TitleScreen() {
           </section>
           )}
 
+          {/* No top margin. These were spaced to sit under the section above
+              them on a single scrolling page; each one is now the only thing on
+              its step and was starting lower than the element list it replaces. */}
           {step === 1 && (
-          <div className="mt-8">
+          <div>
             <ArmamentPanel />
           </div>
 
           )}
 
           {step === 2 && (
-          <section className="mt-8">
+          <section>
             {/*
               "Quarry" is a hunting word most players will not have met, and it
               was doing no work that "who you fight" does not do better.
