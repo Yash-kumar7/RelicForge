@@ -249,7 +249,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
                * its own border is reached leaves the figure and loses the sheet
                * it was painted on.
                */
-              className="absolute bottom-[17svh] left-[-3%] h-[70svh] w-auto object-contain [mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)] [-webkit-mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)]"
+              className="absolute bottom-[13svh] left-[-3%] h-[68svh] w-auto object-contain [mask-image:radial-gradient(ellipse_74%_80%_at_50%_50%,#000_62%,transparent_97%)] [-webkit-mask-image:radial-gradient(ellipse_74%_80%_at_50%_50%,#000_62%,transparent_97%)]"
             />
           )}
         </AnimatePresence>
@@ -281,7 +281,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               style={{ transformOrigin: "right bottom" }}
               /* A touch darker and cooler than the glow behind it, so the boss
                stays its own colour instead of being tinted by the forge. */
-            className="absolute bottom-[17svh] left-[-3%] h-[76svh] w-auto object-contain brightness-[0.9] contrast-[1.05] [mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)] [-webkit-mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)]"
+            className="absolute bottom-[13svh] left-[-3%] h-[72svh] w-auto object-contain brightness-[0.9] contrast-[1.05] [mask-image:radial-gradient(ellipse_74%_80%_at_50%_50%,#000_62%,transparent_97%)] [-webkit-mask-image:radial-gradient(ellipse_74%_80%_at_50%_50%,#000_62%,transparent_97%)]"
             />
           )}
         </AnimatePresence>
@@ -296,7 +296,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
         falls away into the ground colour as well, because a title should never
         depend on what happens to be behind it.
       */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[42svh] bg-gradient-to-b from-ash-950 via-ash-950/90 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[30svh] bg-gradient-to-b from-[#070605] via-[#070605]/85 to-transparent" />
 
       {/*
         Who this is.
