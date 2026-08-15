@@ -84,7 +84,17 @@ const COMPARISONS: Record<Affinity, { label: string; value: string; fill: number
            * is counting instead of naming an ability.
            */
           { label: "health", value: `${s.health}`, fill: s.health / peak.health },
-          { label: "damage", value: `${s.heavyDamage}`, fill: s.heavyDamage / peak.hit },
+          /*
+           * Strength, not damage.
+           *
+           * Damage belongs to the weapon, which this screen says a line above,
+           * and a bar called damage on a champion contradicts it. What a
+           * champion contributes is how hard they swing whatever they are
+           * holding: Ember hits harder than Frost with the same sword. The
+           * figure is what that comes to bare-handed, which is what the caption
+           * below the list now says.
+           */
+          { label: "strength", value: `${s.heavyDamage}`, fill: s.heavyDamage / peak.hit },
           {
             label: "dodges",
             value: `${s.dodgesPerTenSeconds} / 10s`,
