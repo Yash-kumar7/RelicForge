@@ -7,6 +7,7 @@ import { Group, Quaternion, Vector3 } from "three";
 import { normalizeRelic, type RelicDNA, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
 import { BOSSES } from "../game/bosses";
+import { championFor } from "../game/champions";
 
 /**
  * The title screen.
@@ -339,7 +340,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
-            className="absolute bottom-[7svh] right-8 z-10 hidden border-r border-brass-700 pr-4 text-right lg:block"
+            className="absolute bottom-[7svh] right-8 z-10 hidden max-w-[17rem] border-r-2 border-ember-500/40 pr-4 text-right lg:block"
           >
             <span className="block font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
               boss {String(boss.level).padStart(2, "0")}
@@ -363,13 +364,35 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
-            className="absolute bottom-[7svh] left-8 z-10 hidden border-l border-brass-700 pl-4 text-left lg:block"
+            /*
+              Mirrored with the boss's plate.
+
+              One side named a role and a person, the other a rung, a name and a
+              line about how it fights. Two labels either side of the same
+              composition should carry the same kind of information, or the
+              lighter one reads as unfinished.
+
+              The rule takes the element's colour rather than the page's brass,
+              so the marker beside a name belongs to that character.
+            */
+            className={`absolute bottom-[7svh] left-8 z-10 hidden max-w-[17rem] border-l-2 pl-4 text-left lg:block ${
+              championSlug === "frost"
+                ? "border-frost-500/70"
+                : championSlug === "storm"
+                  ? "border-amber-400/70"
+                  : "border-ember-500/70"
+            }`}
           >
             <span className="block font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
               your champion
             </span>
             <span className="mt-1 block font-display text-base capitalize tracking-[0.16em] text-bone-200">
               {championSlug}
+            </span>
+            <span className="mt-1 block font-mono text-[10px] leading-relaxed text-bone-400">
+              {championFor(
+                championSlug === "frost" ? "ice" : championSlug === "storm" ? "storm" : "fire",
+              ).blurb}
             </span>
           </motion.figcaption>
         )}
