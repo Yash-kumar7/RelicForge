@@ -1,4 +1,3 @@
-import { COMBAT } from "./combat";
 /**
  * The boss ladder.
  *
@@ -172,12 +171,7 @@ export function isCleared(level: number): boolean {
  * Derived from the same multipliers the fight applies, so a difficulty change
  * cannot leave this screen quoting a boss that no longer exists.
  */
-export function describeBoss(
-  level: number,
-  championHealth: number,
-): { label: string; value: string }[] {
-  const boss = bossAt(level);
-  const damage = Math.round(COMBAT.boss.damage * boss.damage);
+export function describeBoss(level: number): { label: string; value: string }[] {
 
   /*
    * One number, not three.
@@ -191,6 +185,25 @@ export function describeBoss(
    * step actually asks. It needs the champion's health because the same boss
    * kills Ember in three hits and Frost in six.
    */
-  return [{ label: "kills you in", value: `${Math.ceil(championHealth / damage)} hits` }];
+  /*
+   * What clearing this rung is worth, not what it costs.
+   *
+   * The row said how many blows a champion survives, which is a warning, and a
+   * warning on every option in a list is noise: the ladder is ordered, so the
+   * fifth is obviously harder than the first. Experience is the thing that
+   * actually differs in a way worth reading, it is the same figure the rank on
+   * the setup screen is climbing toward, and it says what a fight is for.
+   *
+   * The floor, so it is honest: a clean, unhurried win with no relic bonus.
+   * Anything harder pays more, which is stated where the fight is briefed.
+   */
+  /*
+   * The base award, which is the figure the game actually pays.
+   *
+   * "at least" was a hedge covering the bonuses a good fight adds on top, and a
+   * hedge on a reward reads as the game being unsure what it owes you. This is
+   * the number every win of this boss pays, whatever else the fight earns.
+   */
+  return [{ label: "reward", value: `${600 * bossAt(level).level} XP` }];
 
 }

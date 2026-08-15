@@ -249,14 +249,32 @@ export function CharacterViewer({
             autoRotate={autoRotate && !SOCKET_TUNING}
             autoRotateSpeed={0.7}
             enablePan={false}
-            minDistance={2}
-            maxDistance={9}
+            /*
+              Zoom bounded relative to the framing, not to fixed world units.
+
+              A flat 2..9 was a range around one particular model size, so on a
+              figure framed close the near stop was already behind the camera
+              and the wheel appeared to do nothing at all. Scaling the stops to
+              the distance the shot was composed at means every model gets the
+              same amount of travel in and out: close enough to read the grip,
+              far enough to see the whole silhouette.
+            */
+            zoomSpeed={0.8}
+            minDistance={fitDistance(height, framing) * 0.42}
+            maxDistance={fitDistance(height, framing) * 1.7}
             minPolarAngle={0.25}
             maxPolarAngle={Math.PI - 0.25}
           />
         </Canvas>
       )}
 
+      {/*
+        The wheel belongs to the model here, not to the page.
+
+        Without this the browser scrolls the setup screen the moment a pointer
+        crosses the figure, which reads as the zoom being broken rather than as
+        the page doing its normal job.
+      */}
       {caption && (
         /* Clear of the feet. At bottom-3 it sat directly under the boots, close
            enough to read as something attached to the figure rather than a note

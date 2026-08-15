@@ -102,12 +102,12 @@ export function ChampionPreview({
        */
       caption={
         bleed
-          ? "drag to inspect"
+          ? "drag to turn · scroll to zoom"
           : weapon === undefined
-            ? "your champion · choose an armament below · drag to inspect"
+            ? "your champion · choose a weapon below · drag to turn · scroll to zoom"
             : weapon.kind === "relic"
-              ? "your champion, holding your relic · drag to inspect"
-              : "your champion, holding the iron blade · drag to inspect"
+              ? "your champion, holding your relic · drag to turn · scroll to zoom"
+              : "your champion, holding the iron blade · drag to turn · scroll to zoom"
       }
       /*
        * Framed, deliberately.

@@ -30,14 +30,21 @@ export interface XpEvent {
 
 const STORAGE_KEY = "relicforge.progress.xp.v1";
 
-/** Rank thresholds. Widening gaps so early ranks arrive quickly. */
+/*
+ * Rank thresholds. Widening gaps so early ranks arrive quickly.
+ *
+ * Scaled by ten from where they started. Every ratio is identical, so the ladder
+ * paces exactly as it did; the difference is that a boss is worth 900 rather
+ * than 90, and ninety reads as loose change rather than as the reward for
+ * killing something. Games use large figures for that reason and no other.
+ */
 export const RANKS = [
   { at: 0, name: "Unproven" },
-  { at: 150, name: "Ashbearer" },
-  { at: 400, name: "Warden-Slayer" },
-  { at: 800, name: "Relic-Bound" },
-  { at: 1400, name: "Forgesworn" },
-  { at: 2200, name: "Legend-Made" },
+  { at: 1500, name: "Ashbearer" },
+  { at: 4000, name: "Warden-Slayer" },
+  { at: 8000, name: "Relic-Bound" },
+  { at: 14000, name: "Forgesworn" },
+  { at: 22000, name: "Legend-Made" },
 ] as const;
 
 export function rankFor(xp: number): { name: string; index: number; next: number | null; into: number; span: number } {
@@ -61,14 +68,14 @@ export function rankFor(xp: number): { name: string; index: number; next: number
  * shapes your weapon never pull in opposite directions.
  */
 export function xpFor(event: XpEvent): number {
-  let xp = 60 * event.bossLevel;
+  let xp = 600 * event.bossLevel;
   // Finishing near death is the hardest and most interesting outcome, and it
   // is also what produces a shattered relic.
-  if (event.healthRemaining <= 20) xp += 80;
-  else if (event.healthRemaining >= 71) xp += 30;
-  if (event.healingUsed === 0) xp += 40;
-  if (event.dodges >= 6) xp += 30;
-  if (event.forgedRelic) xp += 50;
+  if (event.healthRemaining <= 20) xp += 800;
+  else if (event.healthRemaining >= 71) xp += 300;
+  if (event.healingUsed === 0) xp += 400;
+  if (event.dodges >= 6) xp += 300;
+  if (event.forgedRelic) xp += 500;
   return xp;
 }
 

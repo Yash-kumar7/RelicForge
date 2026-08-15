@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BOSSES, MAX_LEVEL, bossAt, bossTitleFor, describeBoss, isUnlocked } from "../src/game/bosses";
+import { xpFor } from "../src/state/useProgress";
 import { themeForBoss } from "../src/game/theme";
 import { Group, Vector3 } from "three";
 
@@ -102,44 +103,46 @@ describe("facing convention", () => {
 });
 
 describe("describeBoss", () => {
-  it("gets harder in the number a player can see, not only in the fiction", () => {
-    // Fewer hits to survive as the ladder goes up, for a champion of fixed
-    // health. Monotonic, or a rung would look easier than the one before it.
-    const hits = (level: number) =>
-      parseInt(describeBoss(level, 100).find((s) => s.label === "kills you in")?.value ?? "0", 10);
+  it("says what clearing a rung is worth, not what it costs", () => {
+    /*
+     * The row used to say how many blows a champion survives, which is a
+     * warning, and a warning on every option in an ordered list is noise: the
+     * fifth rung is obviously harder than the first. Experience is what actually
+     * differs in a way worth reading, and it is the figure the rank on the setup
+     * screen is climbing toward.
+     */
+    const stat = describeBoss(1)[0];
+    expect(stat?.label).toBe("reward");
+    expect(stat?.value).toContain("XP");
+  });
+
+  it("pays more the further up the ladder it is", () => {
+    const xp = (level: number) => parseInt(describeBoss(level)[0]?.value ?? "0", 10);
     for (let level = 2; level <= MAX_LEVEL; level++) {
-      expect(hits(level)).toBeLessThanOrEqual(hits(level - 1));
+      expect(xp(level)).toBeGreaterThan(xp(level - 1));
     }
-    expect(hits(MAX_LEVEL)).toBeLessThan(hits(1));
   });
 
-  it("says one thing, because three numbers left the reader doing the sums", () => {
-    // Health and attack damage were both true and neither was usable on its
-    // own: 1000 health means nothing without knowing what you hit for.
-    expect(describeBoss(1, 100)).toHaveLength(1);
-  });
-
-  it("answers the question that decides the fight", () => {
-    // Picking a champion is choosing how to play; picking a boss is choosing
-    // what you can survive. How many hits you can take is the number that
-    // settles it, and it needs the champion's health because the same boss
-    // kills Ember in three and Frost in six.
-    const embersOdds = describeBoss(1, 80).find((s) => s.label === "kills you in");
-    const frostsOdds = describeBoss(1, 130).find((s) => s.label === "kills you in");
-    expect(embersOdds?.value).not.toBe(frostsOdds?.value);
-    expect(parseInt(frostsOdds?.value ?? "0", 10)).toBeGreaterThan(
-      parseInt(embersOdds?.value ?? "0", 10),
+  it("quotes what every win pays, never more than the fight can deliver", () => {
+    // Bonuses stack on top of this, so the stated figure is one the game can
+    // always honour rather than a best case a player might miss.
+    const stated = parseInt(describeBoss(3)[0]?.value ?? "0", 10);
+    expect(stated).toBeLessThan(
+      xpFor({
+        bossLevel: 3,
+        healthRemaining: 8,
+        dodges: 7,
+        healingUsed: 0,
+        forgedRelic: true,
+      }),
     );
   });
 
   it("states plain labels with no jargon, like every other card", () => {
-    for (const stat of describeBoss(1, 100)) {
+    for (const stat of describeBoss(1)) {
       expect(stat.label).toMatch(/^[a-z0-9 ]+$/);
       expect(stat.value).not.toContain("%");
     }
   });
-
-  it("carries its unit, so the number is never bare", () => {
-    expect(describeBoss(1, 100)[0]?.value).toContain("hits");
-  });
 });
+

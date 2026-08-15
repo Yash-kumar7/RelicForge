@@ -56,7 +56,7 @@ export function BossPreview({
       height={BOSS_HEIGHT}
       accent={accent}
       weapon={weapon}
-      caption="drag to inspect"
+      caption="drag to turn · scroll to zoom"
       className={className}
     />
   );

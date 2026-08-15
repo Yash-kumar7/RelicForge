@@ -365,7 +365,16 @@ export function TitleScreen() {
             the steps, which is the other thing on this page that tells you where
             you are rather than what to do.
           */}
-          <div className="mb-5 flex items-baseline justify-between gap-6">
+          {/*
+            Pinned, because the column scrolls.
+
+            The steps and the rank sat at the top of a scrolling column, so on
+            the enemy step, where the list of five bosses is taller than the
+            viewport, they scrolled away and the player lost the only thing
+            saying where they were in the sequence. Sticky keeps them while the
+            content moves under them.
+          */}
+          <div className="sticky top-0 z-20 mb-5 flex items-baseline justify-between gap-6 bg-ash-950 pb-3 pt-1">
           <ol className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em]">
             {steps.map((label, index) => {
               const reached = index <= step;
@@ -780,7 +789,7 @@ export function TitleScreen() {
                           </span>
                         )}
                         <dl className="w-32 space-y-1 font-mono text-[9px] uppercase tracking-[0.12em]">
-                          {describeBoss(boss.level, championStats(championFor(affinity)).health).map(
+                          {describeBoss(boss.level).map(
                             (stat) => (
                               <div key={stat.label} className="flex justify-between gap-2">
                                 <dt className="text-stone-700">{stat.label}</dt>
