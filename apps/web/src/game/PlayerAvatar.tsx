@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import { Group } from "three";
 import type { WeaponClass } from "@relic/core";
+import { handSocketFor } from "./handSockets";
 import { fitCharacter } from "../lib/characterFit";
 import { AnimatedCharacter } from "./AnimatedCharacter";
 import { useGameStore } from "../state/useGameStore";
@@ -140,6 +141,7 @@ function AvatarBody({
       <group ref={body}>
         {rigged ? (
           <AnimatedCharacter
+            handBone={handSocketFor(slug).bone}
             url={`/assets/champions/${slug}/rig/walking.glb`}
             height={AVATAR_HEIGHT}
             speed={walkSpeed}

@@ -3,6 +3,9 @@ import { useFrame } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { Group, LoopRepeat, Matrix4, Quaternion, Vector3, type Object3D } from "three";
 import { fitCharacter } from "../lib/characterFit";
+import type { HandSocketRatios } from "./handSockets";
+
+type HandBone = HandSocketRatios["bone"];
 
 /**
  * A rigged character playing its walk clip.
@@ -25,25 +28,36 @@ export interface AnimatedCharacterProps {
   /** 0 while standing, 1 at walking pace, above 1 to run. */
   speed: number;
   /**
-   * Rendered into the skeleton's right hand bone, so a weapon travels with the
-   * hand through the animation instead of hanging in the air beside it.
+   * Rendered into the skeleton's weapon hand, so a weapon travels with the hand
+   * through the animation instead of hanging in the air beside it.
    */
   children?: ReactNode;
+  /** Which hand closed around a weapon when this character was generated. */
+  handBone?: HandBone;
 }
 
 /**
  * Meshy rigs use standard humanoid bone names, so the hand can be found by name
  * rather than by guessing at an index. Several spellings are checked because a
  * rig is third-party output and naming conventions differ between exporters.
+ *
+ * Which hand is not assumed. The characters are generated with one fist closed,
+ * and the image model does not reliably honour "the right hand": Ember came back
+ * holding with its left. Nothing in the mesh tells a closed fist from an open
+ * one, so the caller passes the bone recorded in handSockets.ts.
  */
-const RIGHT_HAND_PATTERNS = [/^righthand$/i, /right.?hand/i, /hand.?r$/i, /mixamorig.*righthand/i];
+const HAND_PATTERNS: Record<HandBone, RegExp[]> = {
+  RightHand: [/^righthand$/i, /right.?hand/i, /hand.?r$/i, /mixamorig.*righthand/i],
+  LeftHand: [/^lefthand$/i, /left.?hand/i, /hand.?l$/i, /mixamorig.*lefthand/i],
+};
 
-function findRightHand(root: Object3D): Object3D | null {
+function findHand(root: Object3D, bone: HandBone): Object3D | null {
+  const patterns = HAND_PATTERNS[bone];
   let found: Object3D | null = null;
   root.traverse((node) => {
     if (found) return;
     const name = node.name ?? "";
-    if (RIGHT_HAND_PATTERNS.some((pattern) => pattern.test(name))) found = node;
+    if (patterns.some((pattern) => pattern.test(name))) found = node;
   });
   return found;
 }
@@ -176,6 +190,7 @@ export function AnimatedCharacter({
   height,
   speed,
   children,
+  handBone = "RightHand",
 }: AnimatedCharacterProps) {
   const root = useRef<Group>(null);
   const { scene, animations } = useGLTF(url);
@@ -188,7 +203,7 @@ export function AnimatedCharacter({
    */
   const fit = useMemo(() => fitCharacter(scene as Group, height), [scene, height]);
   const { actions, names } = useAnimations(animations, root);
-  const hand = useMemo(() => findRightHand(scene), [scene]);
+  const hand = useMemo(() => findHand(scene, handBone), [scene, handBone]);
 
   useEffect(() => {
     const first = names[0];

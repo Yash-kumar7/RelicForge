@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useGLTF } from "@react-three/drei";
 import type { Group } from "three";
+import { handSocketFor } from "./handSockets";
 import { fitCharacter } from "../lib/characterFit";
 import { AnimatedCharacter } from "./AnimatedCharacter";
 
@@ -91,6 +92,7 @@ export function BossModel({
         // Same reasoning as the static case: the parent's lookAt already aims
         // the model's front at the player, so a half turn would face it away.
         <AnimatedCharacter
+          handBone={handSocketFor(slug).bone}
           url={`/assets/bosses/${slug}/rig/walking.glb`}
           height={BOSS_HEIGHT}
           speed={walking}

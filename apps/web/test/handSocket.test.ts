@@ -1,56 +1,79 @@
 import { describe, expect, it } from "vitest";
+import { DEFAULT_HAND_SOCKET, HAND_SOCKETS, handSocketFor } from "../src/game/handSockets";
 
 /**
- * The estimated hand socket, held against the rigged truth.
+ * Guards the generated socket table.
  *
- * The champions on the setup screen have no skeleton, so their weapon socket is
- * estimated from the fitted bounding box. The rigged versions of the same
- * characters do have a hand bone, and reading it gives the number the estimate
- * should have been. Without this the estimate drifts silently, which is how it
- * ended up at mid-thigh, in the wrong hand, with the fingers closing on the
- * blade above the guard.
- *
- * Measured from ember/rig/walking.glb fitted to a 1.8 unit champion:
- *   RightHand world position [-0.484, 1.029, 0.065]
- *   body extents             1.142 wide, 1.800 tall, 0.459 deep
+ * Every socket bug in this project came from estimating where a hand is. The
+ * setup screen guessed 0.46 of character height, which is mid-thigh, and hung
+ * relics at the leg; it guessed a fixed sign, and put the weapon in the left
+ * hand. handSockets.ts replaces those guesses with values read out of each rig
+ * by scripts/derive-sockets.ts, and these assertions describe what a plausible
+ * socket looks like so a bad regeneration fails here rather than on screen.
  */
-const MEASURED = {
-  handX: -0.484,
-  handY: 1.029,
-  handZ: 0.065,
-  width: 1.142,
-  height: 1.8,
-  depth: 0.459,
-};
+describe("generated hand sockets", () => {
+  const entries = Object.entries(HAND_SOCKETS);
 
-/** Must match apps/web/src/ui/HeldWeapon.tsx. */
-const ESTIMATE = { x: 0.47, y: 0.572, z: 0.14 };
-
-describe("estimated hand socket", () => {
-  it("sits at the hand height the rig actually uses", () => {
-    expect(Math.abs(ESTIMATE.y - MEASURED.handY / MEASURED.height)).toBeLessThan(0.02);
+  it("covers every champion and every boss", () => {
+    for (const slug of [
+      "ember",
+      "frost",
+      "storm",
+      "ashen-warden",
+      "drowned-choir",
+      "gilded-husk",
+      "rootbound-king",
+      "hollow-sovereign",
+    ]) {
+      expect(HAND_SOCKETS[slug], `${slug} has no derived socket`).toBeDefined();
+    }
   });
 
-  it("is nowhere near the leg", () => {
-    // 0.46 of height reads as mid-thigh on a humanoid, and the grip hung about a
-    // third of a world unit below the hand.
-    expect(ESTIMATE.y).toBeGreaterThan(0.52);
+  it("puts every hand at hand height, never at the thigh", () => {
+    // The measured range is 0.531 to 0.597. Anything materially outside it means
+    // the rig changed shape or the wrong bone was read.
+    for (const [slug, socket] of entries) {
+      expect(socket.y, `${slug} socket is too low`).toBeGreaterThan(0.5);
+      expect(socket.y, `${slug} socket is too high`).toBeLessThan(0.68);
+    }
   });
 
-  it("puts the weapon at the hand's distance from the spine, whichever side that is", () => {
-    /*
-     * Magnitude only, deliberately.
-     *
-     * Meshy's rigging reorients the character, so the rigged GLB and the raw
-     * model.glb do not share a facing and the rig's sign is not this mesh's
-     * sign. Taking the measurement literally put the weapon in the left hand.
-     * How far out the hand sits does carry over; which side it is on does not.
-     */
-    expect(Math.abs(Math.abs(ESTIMATE.x) - Math.abs(MEASURED.handX / MEASURED.width)))
-      .toBeLessThan(0.06);
+  it("puts every hand out at the arm, not on the spine", () => {
+    for (const [slug, socket] of entries) {
+      expect(Math.abs(socket.x), `${slug} socket is too close to the centre`).toBeGreaterThan(0.3);
+      expect(Math.abs(socket.x), `${slug} socket is outside the body`).toBeLessThan(0.55);
+    }
   });
 
-  it("keeps the weapon at the body's own depth rather than out in front", () => {
-    expect(Math.abs(ESTIMATE.z - MEASURED.handZ / MEASURED.depth)).toBeLessThan(0.03);
+  it("keeps every hand near the body's own depth", () => {
+    for (const [slug, socket] of entries) {
+      expect(Math.abs(socket.z), `${slug} socket is far in front of the body`).toBeLessThan(0.3);
+    }
+  });
+
+  it("records which hand closed, because it is not always the right one", () => {
+    // The image model does not reliably honour "the right hand". Ember came back
+    // holding with its left, and assuming otherwise puts its weapon in an open
+    // hand.
+    expect(HAND_SOCKETS.ember?.bone).toBe("LeftHand");
+    for (const [, socket] of entries) {
+      expect(["LeftHand", "RightHand"]).toContain(socket.bone);
+    }
+  });
+
+  it("agrees on side between the bone it names and the offset it gives", () => {
+    // A left hand sits on positive x on these rigs and a right hand on negative.
+    // If those ever disagree the weapon is hanging off the wrong shoulder.
+    for (const [slug, socket] of entries) {
+      const expected = socket.bone === "LeftHand" ? 1 : -1;
+      expect(Math.sign(socket.x), `${slug} bone and offset disagree`).toBe(expected);
+    }
+  });
+
+  it("falls back to a plausible socket for an unknown character", () => {
+    // A character generated after this table was last built should still hold
+    // its weapon at roughly hand height rather than at its feet.
+    expect(handSocketFor("not-a-character")).toEqual(DEFAULT_HAND_SOCKET);
+    expect(DEFAULT_HAND_SOCKET.y).toBeGreaterThan(0.5);
   });
 });

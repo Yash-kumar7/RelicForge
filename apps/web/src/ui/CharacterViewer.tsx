@@ -56,9 +56,12 @@ function Model({
   height,
   weapon,
   accent,
+  slug,
 }: {
   url: string;
   height: number;
+  /** Identifies which character's measured hand socket to use. */
+  slug: string;
   weapon?: HeldWeaponSpec | undefined;
   accent: string;
 }) {
@@ -85,7 +88,7 @@ function Model({
 
       {weapon && (
         <Suspense fallback={null}>
-          <HeldWeapon weapon={weapon} accent={accent} socket={{ height, width, depth }} />
+          <HeldWeapon weapon={weapon} accent={accent} socket={{ height, width, depth, slug }} />
         </Suspense>
       )}
     </group>
@@ -100,10 +103,13 @@ export function CharacterViewer({
   caption,
   autoRotate = true,
   weapon,
+  slug,
 }: {
   url: string;
   height: number;
   accent: string;
+  /** Selects this character's measured hand socket. See game/handSockets.ts. */
+  slug: string;
   className?: string;
   caption?: string;
   autoRotate?: boolean;
@@ -132,7 +138,7 @@ export function CharacterViewer({
           <directionalLight position={[3, 5, 4]} intensity={2.1} />
           <directionalLight position={[-3, 2, -2]} intensity={0.9} color={accent} />
           <Suspense fallback={null}>
-            <Model url={url} height={height} weapon={weapon} accent={accent} />
+            <Model url={url} height={height} weapon={weapon} accent={accent} slug={slug} />
             <Environment preset="night" />
           </Suspense>
           {/*

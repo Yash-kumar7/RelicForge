@@ -37,6 +37,7 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
 
   return (
     <CharacterViewer
+      slug={slug}
       url={`/assets/champions/${slug}/model.glb`}
       height={CHAMPION_HEIGHT}
       accent={theme.forge}

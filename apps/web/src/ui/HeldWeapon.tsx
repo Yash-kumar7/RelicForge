@@ -3,6 +3,7 @@ import { IronSwordMesh } from "../game/IronSwordMesh";
 import { IRON_SCALE } from "../game/weaponScale";
 import { HeldRelicMesh } from "../game/HeldRelicMesh";
 import type { HeldWeaponSpec } from "./CharacterViewer";
+import { handSocketFor } from "../game/handSockets";
 
 /**
  * A weapon placed in a static champion's hand.
@@ -24,6 +25,8 @@ export interface HandSocket {
   width: number;
   /** Character depth in world units, as fitted. */
   depth: number;
+  /** Which character this is, so its measured socket can be looked up. */
+  slug: string;
 }
 
 const DEG = Math.PI / 180;
@@ -44,43 +47,32 @@ export function HeldWeapon({
    * Sitting it dead centre in the hand ran the blade through the forearm.
    */
   /*
-   * Height and depth are measured, the side is not, and the difference matters.
+   * The measured socket for this specific character, not an estimate.
    *
-   * RightHand in ember/rig/walking.glb, fitted to a 1.8 unit champion, sits at
-   * [-0.484, 1.029, 0.065] against a body 1.142 wide, 1.8 tall and 0.459 deep.
-   * The height and depth carried over directly: 0.572 and 0.14. The old 0.46 of
-   * height was mid-thigh, which hung the grip about a third of a world unit
-   * below the hand so the fingers closed on the blade above the guard.
-   *
-   * The sign did not carry over. Meshy's rigging reorients the character, so the
-   * rigged GLB and the raw model.glb do not share a facing and the rig's
-   * negative x is the other side of this mesh. Taking the measurement literally
-   * put the weapon in the left hand. The side is therefore set from the model
-   * itself rather than from its rig.
-   *
-   * Slightly outboard of the hand's centre, so the shaft rides the palm instead
-   * of running through the middle of it.
+   * Read out of its own rig by scripts/derive-sockets.ts and stored as fractions
+   * of the fitted body. Every socket bug this project has had came from guessing
+   * this: 0.46 of height is mid-thigh and hung relics at the leg, and a fixed
+   * sign put the weapon in the left hand. The values also genuinely differ per
+   * character, from 0.531 to 0.597 of height, so no single constant was ever
+   * going to be right for all of them.
    */
+  const ratios = handSocketFor(socket.slug);
   const hand: [number, number, number] = [
-    socket.width * 0.47,
-    socket.height * 0.572,
-    socket.depth * 0.14,
+    socket.width * ratios.x,
+    socket.height * ratios.y,
+    socket.depth * ratios.z,
   ];
+
   /*
-   * Leaned out and forward rather than stood upright.
+   * Leaned away from the body, mirrored with the hand.
    *
-   * The lean is what actually keeps the blade off the body: the shaft is a line
-   * through the grip, so a vertical weapon tracks the torso for its whole length
-   * no matter where the socket is, while a leaned one departs immediately above
-   * the hand. It also reads as a fighter resting a blade rather than presenting
-   * it.
+   * A rotation about z maps the blade's +Y toward +x when the angle is negative,
+   * so the roll has to follow which side the hand is on or the weapon leans
+   * across the torso. Ember holds in its left hand at positive x; the rest hold
+   * at negative x.
    */
-  /*
-   * Negative roll, matching the positive side. A rotation about z maps the
-   * blade's +Y toward +x when the angle is negative, which leans the weapon away
-   * from a body whose hand is on positive x.
-   */
-  const tilt: [number, number, number] = [20 * DEG, 0, -30 * DEG];
+  const outward = ratios.x >= 0 ? -1 : 1;
+  const tilt: [number, number, number] = [20 * DEG, 0, outward * 30 * DEG];
 
   if (weapon.kind === "iron") {
     return (
