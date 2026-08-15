@@ -134,7 +134,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
    * an open hand rather than a different one.
    */
   const art = current
-    ? `/assets/bosses/${slugFor(current.dna.bossInfluence)}/concept-open.png`
+    ? `/assets/bosses/${slugFor(current.dna.bossInfluence)}/concept-stance.png`
     : null;
 
   /** The champion whose affinity produced this relic's element. */
@@ -199,13 +199,15 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
       */}
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ perspective: "1400px", perspectiveOrigin: "50% 55%" }}
+        /* Lifted off the bottom edge. Sat on it, the figures read as standing
+           in a pit below the page rather than on the same floor as the weapon. */
+        style={{ perspective: "1400px", perspectiveOrigin: "50% 48%" }}
       >
         <AnimatePresence>
           {championSlug && (
             <motion.img
               key={`champion-${championSlug}`}
-              src={`/assets/champions/${championSlug}/concept-open.png`}
+              src={`/assets/champions/${championSlug}/concept-stance.png`}
               alt=""
               aria-hidden
               initial={{ opacity: 0, x: -60, rotateY: 34 }}
@@ -223,7 +225,16 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
                * on the stage.
                */
               style={{ transformOrigin: "left bottom" }}
-              className="absolute bottom-0 left-[-3%] h-[70svh] w-auto object-contain"
+              /*
+               * The edges are dissolved, not cropped.
+               *
+               * These concepts are generated on a solid pale background, so
+               * dropping one onto a dark page shows the whole rectangle and the
+               * figure arrives inside a grey card. Fading the image out before
+               * its own border is reached leaves the figure and loses the sheet
+               * it was painted on.
+               */
+              className="absolute bottom-[9svh] left-[-3%] h-[70svh] w-auto object-contain [mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)] [-webkit-mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)]"
             />
           )}
         </AnimatePresence>
@@ -242,7 +253,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               style={{ transformOrigin: "right bottom" }}
               /* A touch darker and cooler than the glow behind it, so the boss
                stays its own colour instead of being tinted by the forge. */
-            className="absolute bottom-0 right-[-3%] h-[76svh] w-auto object-contain brightness-[0.85] contrast-[1.08]"
+            className="absolute bottom-[9svh] right-[-3%] h-[76svh] w-auto object-contain brightness-[0.9] contrast-[1.05] [mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)] [-webkit-mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)]"
             />
           )}
         </AnimatePresence>

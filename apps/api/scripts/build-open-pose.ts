@@ -32,6 +32,27 @@ import { optimizeGlb } from "../src/generation/optimizeGlb.js";
  * the entire reason for editing rather than regenerating is that the rest must
  * not move.
  */
+/**
+ * A fighting stance, for the title screen face-off.
+ *
+ * The characters were generated in an A-pose because that is what a rig wants:
+ * arms out, weight even, nothing overlapping. It is the correct pose to build a
+ * skeleton from and the worst possible pose to sell a fight with, and the title
+ * screen puts two of them opposite each other where standing still reads as two
+ * catalogue photographs rather than an encounter.
+ *
+ * Editing rather than regenerating, for the same reason as the hands: the
+ * character has to survive the change.
+ */
+const COMBAT_STANCE = [
+  "Keep this exact character unchanged: same armour, same colours, same materials,",
+  "same proportions, same camera distance, same lighting, same background.",
+  "Change only the pose. The character is now in a low fighting stance,",
+  "turned about thirty degrees to its left, weight forward on a bent front leg,",
+  "shoulders squared and dropped, one arm raised and ready, braced to strike.",
+  "Full body still visible from head to feet. Both hands empty, holding nothing.",
+].join(" ");
+
 const OPEN_HAND = [
   "Keep this exact character completely unchanged: same armour, same colours,",
   "same proportions, same pose, same camera, same lighting, same background.",
@@ -72,6 +93,11 @@ async function main(): Promise<void> {
    */
   const imageOnly = process.argv.includes("--image-only");
 
+  /** --stance edits into a fighting pose instead of opening the hand. */
+  const stance = process.argv.includes("--stance");
+  const prompt = stance ? COMBAT_STANCE : OPEN_HAND;
+  const outputName = stance ? "concept-stance.png" : "concept-open.png";
+
   for (const slug of slugs) {
     const dir = path.join(env.storageDir, KIND[slug] ?? "champions", slug);
     const regen = path.join(env.storageDir, "regen", slug, "concept.png");
@@ -81,16 +107,16 @@ async function main(): Promise<void> {
       const dataUri = `data:image/png;base64,${source.toString("base64")}`;
 
       console.log(`edit  ${slug}`);
-      const editTaskId = await editConceptImage(OPEN_HAND, dataUri, {
+      const editTaskId = await editConceptImage(prompt, dataUri, {
         imageModel: cfg.imageModel,
       });
       const edited = await waitForTask("image-to-image", editTaskId);
       const url = edited.image_urls[0];
       if (!url) throw new Error("no edited image");
       await mkdir(dir, { recursive: true });
-      await writeFile(path.join(dir, "concept-open.png"), await fetchBuffer(url));
+      await writeFile(path.join(dir, outputName), await fetchBuffer(url));
       if (imageOnly) {
-        console.log(`  ok  ${slug} - concept-open.png\n`);
+        console.log(`  ok  ${slug} - ${outputName}\n`);
         continue;
       }
 
