@@ -254,7 +254,7 @@ export function TitleScreen() {
           cannot have one of them positioned against the viewport.
         */}
         <div className={bleed ? "relative lg:self-stretch" : "lg:self-start"}>
-          <div className={`${SECTION_HEADING} mb-2 justify-between`}>
+          <div className={`${SECTION_HEADING} mb-2 justify-between ${bleed ? "pl-6 pt-14" : ""}`}>
             {/*
               Named for the step it belongs to. On the enemy step the champion
               is no longer the thing being decided, it is who you are sending,
@@ -331,13 +331,14 @@ export function TitleScreen() {
             </p>
           )}
 
-          {/* Bleeding, the name sits over the figure rather than under a frame
-              that no longer exists. */}
-          {section !== 2 && bleed && (
-            <p className="pointer-events-none absolute bottom-[6svh] left-10 font-display text-4xl tracking-[0.26em] text-bone-200">
-              {championFor(affinity).name.toUpperCase()}
-            </p>
-          )}
+          {/*
+            No name over the figure.
+
+            It named the champion in the largest type on the screen while the
+            row beside it was already highlighted with that name in it. Two
+            answers to a question the player has just answered themselves, and
+            the louder one was competing with the figure it was labelling.
+          */}
         </div>
 
         {/* Right: element, then weapon, then who you fight, then descend. */}

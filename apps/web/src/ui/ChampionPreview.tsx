@@ -84,12 +84,21 @@ export function ChampionPreview({
       height={CHAMPION_HEIGHT}
       accent={theme.forge}
       weapon={weapon}
+      /*
+       * No caption when bleeding.
+       *
+       * It sits at the bottom of the view, and the view now ends at the bottom
+       * of the screen, so the line was cut in half by the edge of the page.
+       * Bleeding, the figure explains itself.
+       */
       caption={
-        weapon === undefined
-          ? "your champion · choose an armament below · drag to inspect"
-          : weapon.kind === "relic"
-            ? "your champion, holding your relic · drag to inspect"
-            : "your champion, holding the iron blade · drag to inspect"
+        bleed
+          ? undefined
+          : weapon === undefined
+            ? "your champion · choose an armament below · drag to inspect"
+            : weapon.kind === "relic"
+              ? "your champion, holding your relic · drag to inspect"
+              : "your champion, holding the iron blade · drag to inspect"
       }
       /*
        * Framed, deliberately.

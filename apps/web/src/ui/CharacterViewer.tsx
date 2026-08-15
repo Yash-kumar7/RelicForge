@@ -187,7 +187,7 @@ export function CharacterViewer({
   /** Selects which hand this character grips with. See game/handSockets.ts. */
   slug: string;
   className?: string;
-  caption?: string;
+  caption?: string | undefined;
   autoRotate?: boolean;
   /**
    * How much room to leave around the figure.
