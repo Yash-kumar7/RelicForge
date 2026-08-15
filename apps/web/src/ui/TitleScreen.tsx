@@ -41,24 +41,31 @@ const SECTION_HEADING = "flex h-4 items-baseline text-[11px] uppercase leading-4
 /** Character select, then loadout, then stage select. */
 const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
 
-const AFFINITIES: { id: Affinity; glyph: string; name: string; blurb: string; accent: string }[] = [
+const AFFINITIES: {
+  id: Affinity;
+  name: string;
+  blurb: string;
+  accent: string;
+  /** A rule in the element's colour, replacing the emoji glyph. */
+  bar: string;
+}[] = [
   {
     id: "fire",
-    glyph: "🔥",
+    bar: "bg-ember-500",
     name: "Ember",
     blurb: "Aggressive. Heavy swings, molten steel.",
     accent: "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
   },
   {
     id: "ice",
-    glyph: "❄️",
+    bar: "bg-frost-500",
     name: "Frost",
     blurb: "Defensive. Precise strikes, crystalline edges.",
     accent: "border-frost-500/60 text-frost-300 hover:bg-frost-500/10",
   },
   {
     id: "storm",
-    glyph: "⚡",
+    bar: "bg-amber-400",
     name: "Storm",
     blurb: "Fast. Balanced pressure, fractured alloy.",
     accent: "border-amber-400/50 text-amber-200 hover:bg-amber-400/10",
@@ -337,23 +344,43 @@ export function TitleScreen() {
                   */
                   onClick={() => chooseAffinity(a.id)}
                   className={[
-                    "flex items-start gap-5 border px-5 py-4 text-left transition",
+                    "flex items-center gap-5 overflow-hidden border px-5 py-4 text-left transition",
                     affinity === a.id
                       ? a.accent
                       : "border-ash-700 text-stone-500 hover:border-stone-500",
                   ].join(" ")}
                 >
+                  {/*
+                    The champion, not an emoji.
+
+                    The row identified each choice with a weather glyph, which
+                    is the element rather than the person and reads as clip art
+                    beside an inscriptional face. These are the same cut-out
+                    portraits the title screen uses, so the character you are
+                    picking is the thing you are looking at, and the one on the
+                    left is a larger version of the same figure.
+                  */}
+                  <span
+                    className={[
+                      "relative h-24 w-20 shrink-0 overflow-hidden transition",
+                      affinity === a.id ? "opacity-100" : "opacity-45 grayscale",
+                    ].join(" ")}
+                  >
+                    <img
+                      src={`/assets/champions/${a.id === "fire" ? "ember" : a.id === "ice" ? "frost" : "storm"}/concept-cut.png`}
+                      alt=""
+                      aria-hidden
+                      /* Framed from the chest up: at this size a full figure is
+                         a smudge, and a helm is recognisable. */
+                      className="absolute left-1/2 top-0 h-[19rem] w-auto max-w-none -translate-x-1/2 object-contain"
+                    />
+                  </span>
+
                   <span className="min-w-0 flex-1">
                   <div className="flex h-7 items-center gap-2">
-                    {/*
-                      Fixed box. The three glyphs are emoji with different
-                      intrinsic heights, and the fire one is the tallest, so a
-                      row sized by its content made the Ember card start lower
-                      than the other two.
-                    */}
-                    <span className="flex h-7 w-6 items-center justify-center text-xl leading-none">
-                      {a.glyph}
-                    </span>
+                    {/* A bar in the element's colour, doing the job the glyph
+                        was doing without pretending to be an illustration. */}
+                    <span className={`h-4 w-[3px] shrink-0 ${a.bar}`} />
                     <span className="font-display text-base leading-none tracking-[0.15em]">
                       {a.name}
                     </span>
