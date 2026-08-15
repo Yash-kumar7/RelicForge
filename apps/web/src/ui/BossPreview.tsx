@@ -1,5 +1,6 @@
 import { CharacterViewer, type HeldWeaponSpec } from "./CharacterViewer";
 import { bossSlug } from "./BossPortrait";
+import { bossWeaponHint } from "../game/orientationHints";
 import { bossAt } from "../game/bosses";
 
 /**
@@ -27,11 +28,21 @@ export function BossPreview({
 
   // Oversized relative to the wielder on purpose: a slab of scorched stone
   // should look like it takes a boss to lift.
+  /*
+   * The hint has to be applied here as well as in the arena.
+   *
+   * The ladder preview and the fight are two different render paths onto the
+   * same GLB, so a weapon fixed in one stayed upside down in the other. Anything
+   * that decides how an asset is oriented has to travel with the asset, not with
+   * the screen.
+   */
+  const hint = bossWeaponHint(slug);
   const weapon: HeldWeaponSpec = {
     kind: "relic",
     url: `/assets/bosses/${slug}/weapon.glb`,
     weaponClass: bossAt(level).weaponClass,
     scale: 1.35,
+    ...(hint ? { hint } : {}),
   };
 
   return (

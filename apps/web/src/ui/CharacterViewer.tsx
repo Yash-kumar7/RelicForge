@@ -4,7 +4,7 @@ import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import { Box3, Vector3, type Group } from "three";
 import { fitCharacter } from "../lib/characterFit";
 import { HeldWeapon } from "./HeldWeapon";
-import type { WeaponClass } from "@relic/core";
+import type { OrientationHint, WeaponClass } from "@relic/core";
 
 /**
  * Either the primitive starter blade or a generated relic. The iron sword has
@@ -12,7 +12,20 @@ import type { WeaponClass } from "@relic/core";
  */
 export type HeldWeaponSpec =
   | { kind: "iron" }
-  | { kind: "relic"; url: string; weaponClass: WeaponClass; scale?: number };
+  | {
+      kind: "relic";
+      url: string;
+      weaponClass: WeaponClass;
+      scale?: number;
+      /**
+       * Orientation override for a mesh whose ends the heuristic cannot resolve.
+       *
+       * Carried on the spec rather than looked up inside HeldWeapon, because the
+       * viewer is shared by champions and bosses and only the caller knows which
+       * asset it is showing.
+       */
+      hint?: OrientationHint;
+    };
 
 /**
  * Interactive viewer for a generated character.

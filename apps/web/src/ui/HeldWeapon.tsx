@@ -1,4 +1,4 @@
-import type { WeaponClass } from "@relic/core";
+import type { OrientationHint, WeaponClass } from "@relic/core";
 import { IronSwordMesh } from "../game/IronSwordMesh";
 import { IRON_SCALE } from "../game/weaponScale";
 import { HeldRelicMesh } from "../game/HeldRelicMesh";
@@ -83,6 +83,7 @@ export function HeldWeapon({
       hand={hand}
       tilt={tilt}
       scale={weapon.scale ?? 1}
+      {...(weapon.hint ? { hint: weapon.hint } : {})}
     />
   );
 }
@@ -93,16 +94,18 @@ function HeldRelic({
   hand,
   tilt,
   scale,
+  hint,
 }: {
   url: string;
   weaponClass: WeaponClass;
   hand: [number, number, number];
   tilt: [number, number, number];
   scale: number;
+  hint?: OrientationHint;
 }) {
   return (
     <group position={hand} rotation={tilt} scale={scale}>
-      <HeldRelicMesh url={url} weaponClass={weaponClass} />
+      <HeldRelicMesh url={url} weaponClass={weaponClass} {...(hint ? { hint } : {})} />
     </group>
   );
 }
