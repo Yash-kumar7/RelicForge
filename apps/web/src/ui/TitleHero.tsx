@@ -166,37 +166,53 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
         The champion is mirrored so they face inward. Both are held far back in
         the dark, because the relic between them is the subject.
       */}
-      <AnimatePresence>
-        {championSlug && (
-          <motion.img
-            key={`champion-${championSlug}`}
-            src={`/assets/champions/${championSlug}/concept-open.png`}
-            alt=""
-            aria-hidden
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 0.34, x: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.8, ease: "easeOut" }}
-            className="pointer-events-none absolute bottom-0 left-0 h-[86svh] w-auto -scale-x-100 object-contain"
-          />
-        )}
-      </AnimatePresence>
+      {/*
+        Turned toward each other in perspective, not stood side by side.
 
-      <AnimatePresence>
-        {art && (
-          <motion.img
-            key={art}
-            src={art}
-            alt=""
-            aria-hidden
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 0.34, x: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.8, ease: "easeOut" }}
-            className="pointer-events-none absolute bottom-0 right-0 h-[92svh] w-auto object-contain"
-          />
-        )}
-      </AnimatePresence>
+        Two portraits square to the camera read as a catalogue however close
+        together they are: nothing about them says the figures have anything to
+        do with each other. Rotating each inward puts them on the same stage
+        looking across it, which is what a versus screen has always done, and
+        the vanishing point between them is where the weapon hangs.
+      */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ perspective: "1400px", perspectiveOrigin: "50% 55%" }}
+      >
+        <AnimatePresence>
+          {championSlug && (
+            <motion.img
+              key={`champion-${championSlug}`}
+              src={`/assets/champions/${championSlug}/concept-open.png`}
+              alt=""
+              aria-hidden
+              initial={{ opacity: 0, x: -60, rotateY: 34 }}
+              animate={{ opacity: 0.36, x: 0, rotateY: 22 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 1.8, ease: "easeOut" }}
+              style={{ transformOrigin: "left bottom" }}
+              className="absolute bottom-0 left-[-4%] h-[84svh] w-auto -scale-x-100 object-contain"
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {art && (
+            <motion.img
+              key={art}
+              src={art}
+              alt=""
+              aria-hidden
+              initial={{ opacity: 0, x: 60, rotateY: -34 }}
+              animate={{ opacity: 0.36, x: 0, rotateY: -22 }}
+              exit={{ opacity: 0, x: 30 }}
+              transition={{ duration: 1.8, ease: "easeOut" }}
+              style={{ transformOrigin: "right bottom" }}
+              className="absolute bottom-0 right-[-4%] h-[92svh] w-auto object-contain"
+            />
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Ground the art into the page rather than letting it end at an edge. */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_18%,#0a0908_78%)]" />
