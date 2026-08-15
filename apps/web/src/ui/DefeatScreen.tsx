@@ -41,40 +41,46 @@ export function DefeatScreen() {
        as a distracting backdrop to a failure. */
     <div className="absolute inset-0 overflow-hidden bg-ash-950">
       {/*
-        The boss, still standing, which is the whole message.
+        The boss, still standing, on its own side of the frame.
 
-        Held at low opacity and behind everything: it is the subject of the
-        screen but not the thing to be read, and a figure at full strength would
-        fight the one line of type that matters.
+        Centred behind the type it was both unreadable and unlookable-at: the
+        headline ran across its chest, the bar cut its legs, and neither the
+        figure nor the sentence survived. The briefing had already solved this by
+        giving each of them half the screen, so this does the same, mirrored, and
+        the two screens that open and close a fight now bookend it.
       */}
       <motion.img
         src={`/assets/bosses/${bossSlug(boss.title)}/concept-cut.png`}
         alt=""
         aria-hidden
         initial={{ opacity: 0, scale: 1.08 }}
-        animate={{ opacity: 0.4, scale: 1 }}
+        animate={{ opacity: 0.92, scale: 1 }}
         transition={{ duration: 2.4, ease: "easeOut" }}
-        className="pointer-events-none absolute bottom-0 left-1/2 h-[86svh] -translate-x-1/2 object-contain object-bottom [mask-image:linear-gradient(to_top,transparent,black_28%)]"
+        className="pointer-events-none absolute bottom-0 left-[-6%] h-[84svh] max-w-[58vw] object-contain object-bottom [mask-image:linear-gradient(to_right,black_55%,transparent)] lg:left-[2%]"
       />
 
       {/* Its own colour, under its own feet, the way the arena lit it. */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse 44% 38% at 50% 88%, ${boss.accent}1f, transparent 70%)`,
+          background: `radial-gradient(ellipse 42% 38% at 26% 84%, ${boss.accent}24, transparent 70%)`,
         }}
       />
 
-      <div className="relative flex h-full flex-col items-center justify-end pb-[9svh]">
+      {/* Right half, so nothing is read through a figure. */}
+      <div className="relative flex h-full items-center justify-end">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.4 }}
-          className="w-full max-w-2xl px-8 text-center"
+          className="w-full max-w-xl px-8 lg:mr-[6vw] lg:px-14"
         >
           {/* Named, because four of the five bosses are not the Warden. */}
-          <h2 className="font-display text-5xl tracking-[0.16em] text-stone-400 lg:text-6xl">
-            {boss.title.toUpperCase()} STANDS
+          <p className="font-mono text-[10px] uppercase tracking-[0.45em] text-stone-600">
+            Still standing
+          </p>
+          <h2 className="mt-3 font-display text-5xl leading-[1.05] tracking-[0.06em] text-stone-400 lg:text-6xl">
+            {boss.title.toUpperCase()}
           </h2>
           <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.35em] text-stone-600">
             No victory, no relic
@@ -89,7 +95,7 @@ export function DefeatScreen() {
             losing: whether they were close. The bar answers that without being
             read at all, which a pair of numbers cannot.
           */}
-          <div className="mx-auto mt-10 w-[26rem] max-w-full">
+          <div className="mt-10 w-[26rem] max-w-full">
             <div className="flex items-baseline justify-between font-mono text-[11px] uppercase tracking-widest">
               <span className="text-stone-700">how close you got</span>
               <span className="tabular-nums text-stone-400">{cleared}%</span>
@@ -105,7 +111,7 @@ export function DefeatScreen() {
             </div>
           </div>
 
-          <dl className="mx-auto mt-7 flex max-w-md items-baseline justify-center gap-12 font-mono text-[11px] uppercase tracking-widest">
+          <dl className="mt-7 flex max-w-md items-baseline gap-12 font-mono text-[11px] uppercase tracking-widest">
             <div>
               <dt className="text-stone-700">damage dealt</dt>
               <dd className="mt-1 text-stone-400">{Math.round(telemetry.damageDealt)}</dd>
