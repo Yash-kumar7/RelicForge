@@ -8,6 +8,7 @@ import { equipped } from "./equipped";
 import { activeChampion } from "./champions";
 import { sfx } from "../audio/sfx";
 import { registerDodge } from "./feedback";
+import { BOSS_SPAWN } from "./bossState";
 
 /**
  * First-person player.
@@ -41,6 +42,20 @@ export const playerHandle: PlayerHandle = {
 export const SPAWN = { x: 0, y: 1.7, z: 8 } as const;
 
 /**
+ * The direction the player is looking when the fight opens: at the boss.
+ *
+ * This was the literal Math.PI, which points the camera down +z. The player
+ * spawns at z = +8 and the boss at z = -4, so the fight began with the player
+ * facing the empty end of the arena and the thing they had come to kill directly
+ * behind them.
+ *
+ * Derived rather than corrected to zero, so moving either spawn cannot break it
+ * again. camera.rotation.y = yaw makes the view direction (-sin y, 0, -cos y),
+ * which inverts to atan2 of the negated offset.
+ */
+export const SPAWN_YAW = Math.atan2(-(BOSS_SPAWN.x - SPAWN.x), -(BOSS_SPAWN.z - SPAWN.z));
+
+/**
  * Returns the player to the start of a fight.
  *
  * playerHandle is module-level because it is read every frame and must not go
@@ -65,7 +80,7 @@ interface PlayerProps {
 export function Player({ bossPosition, onHitBoss }: PlayerProps) {
   const { camera, gl } = useThree();
   const keys = useRef<Record<string, boolean>>({});
-  const yaw = useRef(Math.PI);
+  const yaw = useRef(SPAWN_YAW);
   const pitch = useRef(0);
   const velocity = useRef(new Vector3());
   const dodge = useRef({ until: 0, readyAt: 0, dir: new Vector3() });

@@ -45,14 +45,21 @@ export function LiveRelicPanel() {
 
   return (
     <div className="pointer-events-none absolute left-8 top-8 w-52 border border-ash-800 bg-black/40 p-4 backdrop-blur-sm">
-      <p className="text-[9px] uppercase tracking-[0.3em] text-stone-600">Relic forming</p>
+      <p className="text-[9px] uppercase tracking-[0.3em] text-stone-600">Your weapon so far</p>
 
       <dl className="mt-3 space-y-2 font-mono text-[10px] uppercase tracking-[0.15em]">
+        {/*
+          Labelled with what the line means, not with the field it came from.
+
+          "form", "style" and "state" are the names of the DNA fields, and a
+          player has no way to know that state is the wear on the weapon while
+          style is its silhouette. These say it.
+        */}
         {[
           ["element", projected.element],
-          ["form", projected.weaponClass],
-          ["style", projected.temperament],
-          ["state", projected.condition],
+          ["shape", projected.weaponClass],
+          ["silhouette", projected.temperament],
+          ["condition", projected.condition],
         ].map(([label, value]) => (
           <div key={label} className="flex items-baseline justify-between">
             <dt className="text-stone-700">{label}</dt>

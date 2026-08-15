@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useGameStore } from "../state/useGameStore";
-import { bossTitleFor } from "../game/bosses";
+import { bossAt } from "../game/bosses";
 import { accentFor, themeForBoss } from "../game/theme";
 import { useLoadout } from "../state/useLoadout";
-import { COMBAT } from "../game/combat";
+import { COMBAT, attackSpec } from "../game/combat";
+import { combinedTraits } from "../game/equipped";
 import { lastDodge } from "../game/feedback";
 
 /**
@@ -90,12 +91,30 @@ export function Hud() {
   // Still used for the bar width and for the condition band, which is a
   // threshold on a proportion rather than on a raw value.
   const playerPct = Math.round((playerHp / playerMaxHp) * 100);
-  const bossName = bossTitleFor(bossLevel ?? 1, affinity);
+  // The name the briefing gave it, without the epithet. Two screens naming the
+  // same boss differently reads as two different bosses.
+  const bossName = bossAt(bossLevel ?? 1).title;
 
-  // The thresholds the relic actually keys off, surfaced so the player can see
-  // which band they are about to fall into.
-  const conditionBand =
-    playerPct <= 20 ? "shattered" : playerPct <= 70 ? "battle-worn" : "pristine";
+  /*
+   * The damage the player is actually dealing.
+   *
+   * This quoted the base constants, 25 and 60, while the briefing next door
+   * quoted 30 and 72 for the same champion carrying the same blade, and the
+   * fight resolved the briefing's numbers. A readout that disagrees with the
+   * damage it is reporting is worse than no readout.
+   */
+  const traits = combinedTraits(carried?.dna, affinity);
+  const quick = attackSpec("light", traits).damage;
+  const strong = attackSpec("heavy", traits).damage;
+
+  /*
+   * The condition band is not repeated here.
+   *
+   * It read "relic → pristine" one line under the health bar while the panel in
+   * the opposite corner already had it under "state", so the same word appeared
+   * twice on screen with different labels, one of them borrowed from the code.
+   * The panel is the one that changes as you fight, so the panel keeps it.
+   */
 
   return (
     <div className="pointer-events-none absolute inset-0">
@@ -128,7 +147,7 @@ export function Hud() {
       <div className="absolute bottom-28 left-8 w-56">
         <div className="mb-1 flex items-baseline justify-between">
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-600">
-            Vitality
+            Health
           </span>
           <span
             className={
@@ -152,9 +171,6 @@ export function Hud() {
         </div>
         {fighting && (
           <>
-            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
-              relic → {conditionBand}
-            </p>
             {/* Dodge had no readout, so a player could not tell whether it had
                 registered at all, and it is one of the inputs that decides the
                 relic. */}
@@ -201,10 +217,10 @@ export function Hud() {
           {/* Numbers, not just bindings: the difference between the attacks is
               the point, and it decides the shape of the relic. */}
           <div>
-            LMB light {COMBAT.lightAttack.damage} · RMB heavy {COMBAT.heavyAttack.damage}
+            Left click {quick} · right click {strong}
           </div>
           <div>Space jump · Shift dodge · Q heal</div>
-          <div>V view</div>
+          <div>V view · P freeze for a screenshot</div>
         </div>
       )}
     </div>

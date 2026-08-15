@@ -18,6 +18,16 @@ export const bossState = {
   progress: 0,
 };
 
+/**
+ * Where the boss stands when a fight begins.
+ *
+ * Exported so the player's opening view can be derived from it rather than
+ * guessed. It was a literal inside Boss.tsx while the player's starting yaw was
+ * a separate literal in Player.tsx, and the two disagreed: the fight opened with
+ * the player facing the empty end of the arena.
+ */
+export const BOSS_SPAWN = { x: 0, y: 0, z: -4 } as const;
+
 /** Returns the boss to rest, so a new fight does not start mid-swing. */
 export function resetBossState(): void {
   bossState.action = "idle";

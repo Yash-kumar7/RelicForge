@@ -8,7 +8,7 @@ import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
 import { themeForBoss } from "./theme";
 import { registerPlayerHurt, registerTelegraph } from "./feedback";
-import { setBossAction } from "./bossState";
+import { setBossAction, BOSS_SPAWN } from "./bossState";
 import { bossAt } from "./bosses";
 import { BossModel } from "./BossModel";
 import { BossWeapon, BossHandWeapon } from "./BossWeapon";
@@ -42,7 +42,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   const plates = useRef<Group>(null);
   const coreMesh = useRef<Mesh>(null);
   const coreLight = useRef<PointLight>(null);
-  const position = useRef(new Vector3(0, 0, -4));
+  const position = useRef(new Vector3(BOSS_SPAWN.x, BOSS_SPAWN.y, BOSS_SPAWN.z));
   const state = useRef<BossState>("APPROACH");
   const stateUntil = useRef(0);
   const hitFlash = useRef(0);
