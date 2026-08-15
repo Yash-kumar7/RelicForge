@@ -30,12 +30,12 @@ export interface HandSocketRatios {
 export const HAND_SOCKETS: Record<string, HandSocketRatios> = {
   "ember": { x: 0.4191, y: 0.5739, z: 0.1366, bone: "LeftHand" },
   "frost": { x: -0.4309, y: 0.5747, z: 0.1845, bone: "RightHand" },
-  "storm": { x: -0.4387, y: 0.5714, z: 0.1813, bone: "RightHand" },
-  "ashen-warden": { x: -0.4266, y: 0.5315, z: 0.0872, bone: "RightHand" },
-  "drowned-choir": { x: -0.4138, y: 0.5728, z: 0.1368, bone: "RightHand" },
-  "gilded-husk": { x: -0.4103, y: 0.5963, z: 0.0141, bone: "RightHand" },
-  "hollow-sovereign": { x: -0.4188, y: 0.5972, z: 0.1374, bone: "RightHand" },
-  "rootbound-king": { x: -0.4092, y: 0.5814, z: 0.0762, bone: "RightHand" },
+  "storm": { x: -0.4386, y: 0.5715, z: 0.1807, bone: "RightHand" },
+  "ashen-warden": { x: -0.4254, y: 0.5311, z: 0.0875, bone: "RightHand" },
+  "drowned-choir": { x: -0.4155, y: 0.572, z: 0.1388, bone: "RightHand" },
+  "gilded-husk": { x: -0.4118, y: 0.5948, z: 0.0196, bone: "RightHand" },
+  "hollow-sovereign": { x: -0.4194, y: 0.5973, z: 0.138, bone: "RightHand" },
+  "rootbound-king": { x: -0.4125, y: 0.578, z: 0.0824, bone: "RightHand" },
 };
 
 /**
