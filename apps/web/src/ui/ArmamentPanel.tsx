@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { relicTraits, type RelicTraits } from "@relic/core";
-import { championFor } from "../game/champions";
+import { type RelicTraits } from "@relic/core";
+import { combinedTraits } from "../game/equipped";
 import { useGameStore } from "../state/useGameStore";
 import { attackSpec } from "../game/combat";
 
@@ -134,28 +134,10 @@ export function ArmamentPanel() {
    * the champion on top would be quietly wrong for every champion but one.
    */
   const affinity = useGameStore((s) => s.affinity);
-  const traits = useMemo(() => {
-    // The iron sword is genuinely neutral, so it goes through the same path
-    // rather than being special-cased into a second set of numbers.
-    const base = relicTraits(selected?.dna);
-    const champion = championFor(affinity).traits;
-    return {
-      ...base,
-      lightDamage: base.lightDamage * champion.damage,
-      heavyDamage: base.heavyDamage * champion.damage,
-    };
-  }, [selected, affinity]);
+  const traits = useMemo(() => combinedTraits(selected?.dna, affinity), [selected, affinity]);
 
   // The iron blade is neutral, so it differs only by the champion holding it.
-  const ironTraits = useMemo(() => {
-    const base = relicTraits(null);
-    const champion = championFor(affinity).traits;
-    return {
-      ...base,
-      lightDamage: base.lightDamage * champion.damage,
-      heavyDamage: base.heavyDamage * champion.damage,
-    };
-  }, [affinity]);
+  const ironTraits = useMemo(() => combinedTraits(null, affinity), [affinity]);
 
 
   return (

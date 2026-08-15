@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
 import { COMBAT, attackSpec } from "../game/combat";
-import { relicTraits } from "@relic/core";
+import { combinedTraits } from "../game/equipped";
 import { useLoadout } from "../state/useLoadout";
 import { bossTitleFor } from "../game/bosses";
 
@@ -34,7 +34,9 @@ export function PreFightBriefing() {
    * calibrates against it.
    */
   const carried = useLoadout((s) => s.equipped());
-  const traits = relicTraits(carried?.dna);
+  // The champion's strength included. Without it this promised a 60 damage
+  // strong attack while an Ember dealt 72 and a Frost 49.
+  const traits = combinedTraits(carried?.dna, affinity);
   const light = attackSpec("light", traits);
   const heavy = attackSpec("heavy", traits);
 

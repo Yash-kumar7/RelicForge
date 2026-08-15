@@ -1,7 +1,7 @@
 import { relicTraits, type RelicTraits } from "@relic/core";
 import type { OwnedRelic } from "../state/useLoadout";
 import { championFor } from "./champions";
-import type { Affinity } from "@relic/core";
+import type { Affinity, RelicDNA } from "@relic/core";
 
 /**
  * What the player is carrying, in a form the frame loop can read.
@@ -17,17 +17,25 @@ import type { Affinity } from "@relic/core";
 export const equipped: { traits: RelicTraits | undefined } = { traits: undefined };
 
 /**
- * Champion damage folds in here rather than being applied at the hit test.
+ * What the player actually swings: the relic, leaned by the champion holding it.
  *
- * The briefing, the swing curve and the damage popups all read attackSpec, so
- * anything applied outside it would show one number and deal another.
+ * Exported and shared, because it was previously inlined in three places and one
+ * of them was missing the champion half. The pre-fight briefing applied the
+ * relic's traits alone, so it promised a 60 damage strong attack while an Ember
+ * dealt 72 and a Frost 49. A briefing that misreports the fight is worse than no
+ * briefing, because the player calibrates against it.
  */
-export function setEquippedRelic(relic: OwnedRelic | null, affinity: Affinity): void {
-  const base = relic ? relicTraits(relic.dna) : relicTraits(null);
+export function combinedTraits(dna: RelicDNA | null | undefined, affinity: Affinity): RelicTraits {
+  const base = relicTraits(dna);
   const champion = championFor(affinity).traits;
-  equipped.traits = {
+  return {
     ...base,
     lightDamage: base.lightDamage * champion.damage,
     heavyDamage: base.heavyDamage * champion.damage,
   };
+}
+
+/** Read once when a fight starts, so nothing can change mid-swing. */
+export function setEquippedRelic(relic: OwnedRelic | null, affinity: Affinity): void {
+  equipped.traits = combinedTraits(relic?.dna, affinity);
 }

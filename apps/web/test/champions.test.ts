@@ -1,8 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { CHAMPIONS, championFor, championStats, describeChampion } from "../src/game/champions";
-import type { Affinity } from "@relic/core";
+import { relicTraits, type Affinity, type RelicDNA } from "@relic/core";
+import { combinedTraits } from "../src/game/equipped";
 
 const AFFINITIES: Affinity[] = ["fire", "ice", "storm"];
+
+const base: RelicDNA = {
+  weaponClass: "greatsword",
+  element: "fire",
+  temperament: "balanced",
+  condition: "battle-worn",
+  bossInfluence: "the Ashen Warden",
+  rarity: "legendary",
+};
 
 describe("champions", () => {
   it("gives every affinity a champion, since the arena reads one every fight", () => {
@@ -167,5 +177,26 @@ describe("champions", () => {
           .toBeGreaterThan(0.1 - 1e-6);
       }
     }
+  });
+});
+
+describe("combined traits", () => {
+  it("applies the champion's strength on top of the relic's", () => {
+    /*
+     * The bug this exists for: the pre-fight briefing built its numbers from the
+     * relic alone, so it promised a 60 damage strong attack while an Ember dealt
+     * 72 and a Frost 49. Three places computed this and one of them was missing
+     * half the calculation, which is why it is one function now.
+     */
+    const bare = combinedTraits(null, "fire");
+    const neutral = relicTraits(null);
+    expect(bare.heavyDamage).toBeGreaterThan(neutral.heavyDamage);
+    expect(combinedTraits(null, "ice").heavyDamage).toBeLessThan(neutral.heavyDamage);
+  });
+
+  it("keeps the relic's own trade intact underneath", () => {
+    const dna: RelicDNA = { ...base, temperament: "brutal", condition: "shattered" };
+    const withRelic = combinedTraits(dna, "fire");
+    expect(withRelic.heavyDamage).toBeGreaterThan(combinedTraits(null, "fire").heavyDamage);
   });
 });
