@@ -194,3 +194,72 @@ describe("measureRawAlignment", () => {
     expect(angleDeg).toBeLessThan(2);
   });
 });
+
+describe("grip offset lands the hand on the grip", () => {
+  /**
+   * Builds a blade of a given length whose centre sits at `centre` along Y, so
+   * the mesh origin can be put anywhere relative to the weapon. That is the
+   * whole point: a generated mesh arrives centred on whatever Meshy chose, and
+   * the transform has to cope with an origin that is not the pommel.
+   */
+  function blade(length: number, centre: number): MeshSample {
+    const positions: number[] = [];
+    const indices: number[] = [];
+    const segments = 40;
+    for (let i = 0; i <= segments; i++) {
+      const y = centre - length / 2 + (i / segments) * length;
+      // Taper toward the top so end resolution has a tip to find.
+      const r = 0.04 + 0.06 * (1 - i / segments);
+      positions.push(-r, y, 0, r, y, 0);
+    }
+    for (let i = 0; i < segments; i++) {
+      const a = i * 2;
+      indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    }
+    return { positions: new Float32Array(positions), indices: new Uint32Array(indices) };
+  }
+
+  /** Where the grip ends up once the returned transform is applied. */
+  function gripWorldY(sample: MeshSample, t: ReturnType<typeof normalizeRelic>): number {
+    let min = Infinity;
+    let max = -Infinity;
+    for (let i = 1; i < sample.positions.length; i += 3) {
+      const y = sample.positions[i]!;
+      if (y < min) min = y;
+      if (y > max) max = y;
+    }
+    // The blade is already axis-aligned, so the quaternion is identity or a flip
+    // and the grip's model-space height is a straight interpolation.
+    const pommel = t.gripT === 0 ? min : min;
+    const gripModelY = pommel + t.gripT * (max - min);
+    return gripModelY * t.scale + t.gripOffset[1];
+  }
+
+  it("puts the grip at the socket origin when the mesh is centred on itself", () => {
+    // This is the real case. Offsetting by gripT alone assumed the pommel sat
+    // at the origin, which hung every relic about half its own length too low,
+    // and is why relics appeared at the champion's leg.
+    const sample = blade(2, 0);
+    const transform = normalizeRelic(sample, "greatsword");
+    expect(Math.abs(gripWorldY(sample, transform))).toBeLessThan(0.05);
+  });
+
+  it("puts the grip at the socket origin wherever the mesh origin happens to be", () => {
+    for (const centre of [-3, -1, 0, 1, 4]) {
+      const sample = blade(2, centre);
+      const transform = normalizeRelic(sample, "greatsword");
+      expect(Math.abs(gripWorldY(sample, transform))).toBeLessThan(0.05);
+    }
+  });
+
+  it("keeps most of the blade above the hand, not below it", () => {
+    // A weapon whose grip is correct but whose blade hangs downward is the same
+    // failure wearing a different number.
+    const sample = blade(2, 0);
+    const t = normalizeRelic(sample, "greatsword");
+    const top = 1 * t.scale + t.gripOffset[1];
+    const bottom = -1 * t.scale + t.gripOffset[1];
+    expect(top).toBeGreaterThan(0);
+    expect(Math.abs(top)).toBeGreaterThan(Math.abs(bottom));
+  });
+});

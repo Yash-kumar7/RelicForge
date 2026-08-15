@@ -34,9 +34,17 @@ export function HeldRelicMesh({
 
   const gripOffset = useMemo(() => new Vector3(...canonical.gripOffset), [canonical]);
 
-  // A spear at canonical length towers over a wielder, so held weapons scale to
-  // the holder rather than to the world.
-  const wieldScale = weaponClass === "spear" ? 0.72 : 0.85;
+  /*
+   * Held weapons scale to the wielder, not to the world.
+   *
+   * CANONICAL_LENGTH exists so the normalizer compares like with like; it is
+   * not a size anyone should be carrying. At 0.85 a greatsword came out 1.53
+   * units against a 1.8 unit champion, which is 85 percent of their height and
+   * reads as a prop rather than a weapon. A greatsword is now roughly 1.1 units,
+   * about 60 percent of the champion, and a spear stays longer than its wielder
+   * is tall because that is what a spear is.
+   */
+  const wieldScale = weaponClass === "spear" ? 0.75 : 0.6;
 
   return (
     <group scale={wieldScale}>

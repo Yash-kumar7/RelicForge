@@ -153,13 +153,9 @@ function HandFollower({
     group.position.x += outward * clearance;
     group.position.z += clearance * 0.8;
 
-    /*
-     * Mirrored with the hand, so the blade leans away from the body on either
-     * side. The sign is negated because a rotation about z maps the blade's +Y
-     * toward +x when the angle is negative: a hand on negative x needs a
-     * positive roll to lean outward, not a negative one.
-     */
-    group.rotation.set(REST_PITCH, 0, -outward * REST_ROLL);
+    // Mirrored with the hand, so the blade leans away from the body on either
+    // side. This is the part a fixed rotation cannot get right.
+    group.rotation.set(REST_PITCH, 0, outward * REST_ROLL);
   });
 
   return (

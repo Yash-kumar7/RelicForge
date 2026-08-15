@@ -342,10 +342,22 @@ export function normalizeRelic(
   const extent = profile.max - profile.min;
   const scale = extent < EPS ? 1 : CANONICAL_LENGTH[weaponClass] / extent;
 
-  // Grip offset along the canonical axis, measured from the pommel end, in
-  // post-scale world units. Negated so attaching at the socket origin puts the
-  // hand on the grip rather than at the mesh's arbitrary centre.
-  const gripOffsetY = -(gripT * extent * scale);
+  /*
+   * Grip offset along the canonical axis, in post-scale world units.
+   *
+   * The grip is gripT of the way from the pommel, but the pommel is not at the
+   * model's origin: a generated mesh arrives centred on whatever Meshy chose,
+   * so the pommel sits at the axis projection of the far end. Offsetting by
+   * gripT alone silently assumed the pommel was at zero, which hung every relic
+   * about half its own length too low. On a greatsword that is roughly 0.77
+   * world units, which is why relics appeared at the champion's leg while the
+   * hand-authored iron sword, whose grip really is at its origin, looked right.
+   *
+   * The projections are taken along the pre-flip axis, so when the axis was
+   * reversed to stand the weapon upright the pommel is at -max rather than min.
+   */
+  const pommelProjection = tipEnd === 1 ? profile.min : -profile.max;
+  const gripOffsetY = -((pommelProjection + gripT * extent) * scale);
 
   return {
     quaternion,
