@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Affinity } from "@relic/core";
 import { championFor, championStats, describeChampion } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
-import { useLoadout } from "../state/useLoadout";
+import { IRON, useLoadout } from "../state/useLoadout";
 import { BOSSES, bossAt, describeBoss, isCleared } from "../game/bosses";
 import { ChampionPreview } from "./ChampionPreview";
 import { TitleBackdrop } from "./TitleBackdrop";
@@ -39,7 +39,7 @@ import { useProgress } from "../state/useProgress";
 const SECTION_HEADING = "flex h-4 items-baseline text-[11px] uppercase leading-4 tracking-[0.4em] text-stone-600";
 
 /** Character select, then loadout, then stage select. */
-const STEPS = ["Element", "Weapon", "Enemy"] as const;
+const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
 
 const AFFINITIES: { id: Affinity; glyph: string; name: string; blurb: string; accent: string }[] = [
   {
@@ -69,6 +69,30 @@ export function TitleScreen() {
   const phase = useGameStore((s) => s.phase);
   const setPhase = useGameStore((s) => s.setPhase);
   const [step, setStep] = useState(0);
+  const owned = useLoadout((s) => s.owned);
+  const selectArmament = useLoadout((s) => s.select);
+
+  /*
+   * The weapon step only exists once there is a weapon to choose between.
+   *
+   * A player who has not forged anything owns the iron sword and nothing else,
+   * so the step offered one option and asked them to pick it. That is a click
+   * with no decision in it, and it sits between the two choices that do matter.
+   *
+   * The step appears the moment a relic is claimed, because from then on it is a
+   * real question.
+   */
+  const hasChoice = owned.length > 0;
+  const steps = hasChoice ? ALL_STEPS : ([ALL_STEPS[0], ALL_STEPS[2]] as const);
+
+  useEffect(() => {
+    // In hand rather than merely owned, so the champion is holding it on the
+    // screen where you are deciding who to be.
+    if (!hasChoice) selectArmament(IRON);
+  }, [hasChoice, selectArmament]);
+
+  /** Which section a step index shows, once the weapon step may be absent. */
+  const section = hasChoice ? step : step === 0 ? 0 : 2;
   const affinity = useGameStore((s) => s.affinity);
   const bossLevel = useGameStore((s) => s.bossLevel);
   const chooseAffinity = useGameStore((s) => s.chooseAffinity);
@@ -184,7 +208,7 @@ export function TitleScreen() {
               is no longer the thing being decided, it is who you are sending,
               and saying so keeps the left column from looking like a leftover.
             */}
-            <p>{step === 2 ? "Your enemy" : "Your champion"}</p>
+            <p>{section === 2 ? "Your enemy" : "Your champion"}</p>
             <p className="font-mono text-[10px] leading-4 tracking-[0.25em] text-stone-700">
               {/*
                 Labelled, because unlabelled it reads as the champion's name.
@@ -206,7 +230,7 @@ export function TitleScreen() {
             Falls back to the champion until one is picked, because an empty
             frame says less than the character who is about to walk into it.
           */}
-          {step === 2 && bossLevel !== null ? (
+          {section === 2 && bossLevel !== null ? (
             <BossPreview
               level={bossLevel}
               title={bossAt(bossLevel).title}
@@ -245,7 +269,7 @@ export function TitleScreen() {
           <PendingForgePanel />
 
           <ol className="mb-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em]">
-            {STEPS.map((label, index) => {
+            {steps.map((label, index) => {
               const reached = index <= step;
               return (
                 <li key={label} className="flex items-center gap-2">
@@ -265,13 +289,13 @@ export function TitleScreen() {
                   >
                     {index + 1}. {label}
                   </button>
-                  {index < STEPS.length - 1 && <span className="text-stone-800">/</span>}
+                  {index < steps.length - 1 && <span className="text-stone-800">/</span>}
                 </li>
               );
             })}
           </ol>
 
-          {step === 0 && (
+          {section === 0 && (
           <section>
             {/*
               Affinity is the field name and the fiction, but on a first-run
@@ -371,14 +395,14 @@ export function TitleScreen() {
           {/* No top margin. These were spaced to sit under the section above
               them on a single scrolling page; each one is now the only thing on
               its step and was starting lower than the element list it replaces. */}
-          {step === 1 && (
+          {section === 1 && (
           <div>
             <ArmamentPanel />
           </div>
 
           )}
 
-          {step === 2 && (
+          {section === 2 && (
           <section>
             {/*
               "Quarry" is a hunting word most players will not have met, and it
@@ -469,19 +493,19 @@ export function TitleScreen() {
 
 
           <div className="mt-8 border-t border-ash-800 pt-5">
-            {step < 2 && (
+            {step < steps.length - 1 && (
               <button
                 type="button"
-                disabled={step === 1 && armament === null}
+                disabled={section === 1 && armament === null}
                 onClick={() => setStep(step + 1)}
                 className={[
                   "mb-4 w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
-                  step === 1 && armament === null
+                  section === 1 && armament === null
                     ? "cursor-not-allowed border-ash-800 text-stone-700"
                     : "border-stone-600 text-stone-300 hover:border-stone-400",
                 ].join(" ")}
               >
-                {step === 1 && armament === null ? "Choose your weapon" : "Continue"}
+                {section === 1 && armament === null ? "Choose your weapon" : "Continue"}
               </button>
             )}
             {/*
@@ -492,7 +516,7 @@ export function TitleScreen() {
               thing read before the fight starts, which is when it means
               something.
             */}
-            {step === 2 && (
+            {section === 2 && (
               <p className="text-[11px] leading-relaxed text-stone-600">
                 How hard you swing, how often you dodge, and how close to death you finish all
                 shape the weapon the forge makes for you.
@@ -507,7 +531,7 @@ export function TitleScreen() {
               something two steps away. Each step now offers exactly one way
               forward.
             */}
-            {step === 2 && (
+            {section === 2 && (
               <button
                 type="button"
                 onClick={startFight}
