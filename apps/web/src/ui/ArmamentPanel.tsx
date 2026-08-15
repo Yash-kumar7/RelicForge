@@ -104,6 +104,16 @@ export function ArmamentPanel() {
   const ironChosen = armament === IRON;
 
   /*
+   * Newest first.
+   *
+   * The relic just forged is the one the player came back for, and it was
+   * arriving at the bottom of a list that only grows. Sorted rather than
+   * reversed, because earnedAt is what actually orders them and insertion order
+   * is only incidentally the same.
+   */
+  const byNewest = useMemo(() => [...owned].sort((a, b) => b.earnedAt - a.earnedAt), [owned]);
+
+  /*
    * What the relic card displays, which is not the same as what is equipped.
    *
    * It used to render from `selected`, which is only set when that relic is in
@@ -114,7 +124,7 @@ export function ArmamentPanel() {
    * It now shows the relic you would pick up, and the placeholder only when
    * there genuinely is not one.
    */
-  const shown = selected ?? owned[0] ?? null;
+  const shown = selected ?? byNewest[0] ?? null;
 
   // Derived from the same function the fight uses, so the panel cannot promise
   // a number the swing does not deliver.
@@ -236,22 +246,40 @@ export function ArmamentPanel() {
       {/* Only worth showing when there is a choice to make. With one relic it
           repeated the card directly above it. */}
       {owned.length > 1 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {owned.map((relic) => (
-            <button
-              key={relic.relicId}
-              type="button"
-              onClick={() => select(relic.relicId)}
-              className={[
-                "border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] transition",
-                selected?.relicId === relic.relicId
-                  ? "border-ember-500/60 text-ember-300"
-                  : "border-ash-800 text-stone-600 hover:border-stone-600",
-              ].join(" ")}
-            >
-              {relic.name}
-            </button>
-          ))}
+        <div className="mt-3">
+          {/*
+            A collection that grows without bound.
+
+            One relic per boss cleared, and nothing is ever spent or discarded,
+            so a player who keeps playing ends up with dozens. A wrapping row of
+            every name was fine at two and would have been a wall at fifty.
+
+            Newest first, because the relic you just forged is the one you came
+            here to use, and the list is capped in height and scrolls rather than
+            pushing the descend button off the screen.
+          */}
+          <div className="mb-2 flex items-baseline justify-between font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
+            <span>your relics</span>
+            <span>{owned.length}</span>
+          </div>
+          <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto pr-1">
+            {byNewest.map((relic) => (
+              <button
+                key={relic.relicId}
+                type="button"
+                onClick={() => select(relic.relicId)}
+                title={`${relic.dna.element} · ${relic.dna.temperament} · ${relic.dna.condition}`}
+                className={[
+                  "border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] transition",
+                  selected?.relicId === relic.relicId
+                    ? "border-ember-500/60 text-ember-300"
+                    : "border-ash-800 text-stone-600 hover:border-stone-600",
+                ].join(" ")}
+              >
+                {relic.name}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </section>
