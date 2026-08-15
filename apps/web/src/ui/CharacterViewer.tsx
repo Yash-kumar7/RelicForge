@@ -3,7 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import { Box3, Vector3, type Group } from "three";
 import { fitCharacter } from "../lib/characterFit";
-import { handSocketFor } from "../game/handSockets";
+import { handSocketFor, type HandSocketRatios } from "../game/handSockets";
 import { HeldWeapon } from "./HeldWeapon";
 import type { OrientationHint, WeaponClass } from "@relic/core";
 
@@ -52,6 +52,63 @@ function fitDistance(height: number, margin = 0.45): number {
   return (height / 2 + margin) / Math.tan((FOV / 2) * (Math.PI / 180));
 }
 
+/**
+ * Lets the socket be nudged live, with ?socket in the URL.
+ *
+ * The socket for a static mesh cannot be derived, only judged against the
+ * screen, and the loop of me guessing a number and someone else looking at it
+ * is slow and was not converging. Arrow keys move the hand, the current value
+ * prints to the console in the exact shape handSockets.ts wants, and whoever is
+ * looking at the character can settle it in a few seconds.
+ *
+ * Off unless asked for, so it costs a player nothing.
+ */
+function useSocketNudge(slug: string, authored: HandSocketRatios): HandSocketRatios {
+  const enabled =
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).has("socket");
+  const [ratios, setRatios] = useState(authored);
+
+  useEffect(() => setRatios(authored), [authored]);
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+
+    const STEP = 0.01;
+    const onKey = (e: KeyboardEvent) => {
+      const moves: Record<string, [number, number, number]> = {
+        ArrowUp: [0, STEP, 0],
+        ArrowDown: [0, -STEP, 0],
+        ArrowLeft: [-STEP, 0, 0],
+        ArrowRight: [STEP, 0, 0],
+        // Depth, since a keyboard has no third axis.
+        BracketRight: [0, 0, STEP],
+        BracketLeft: [0, 0, -STEP],
+      };
+      const move = moves[e.code];
+      if (!move) return;
+      e.preventDefault();
+
+      setRatios((current) => {
+        const next = {
+          ...current,
+          x: Number((current.x + move[0]).toFixed(3)),
+          y: Number((current.y + move[1]).toFixed(3)),
+          z: Number((current.z + move[2]).toFixed(3)),
+        };
+        console.log(
+          `  "${slug}": { x: ${next.x}, y: ${next.y}, z: ${next.z}, bone: "${next.bone}" },`,
+        );
+        return next;
+      });
+    };
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [enabled, slug]);
+
+  return enabled ? ratios : authored;
+}
+
 function Model({
   url,
   height,
@@ -85,7 +142,8 @@ function Model({
     return { width: size.x * fit.scale, depth: size.z * fit.scale };
   }, [model, fit.scale]);
 
-  const ratios = handSocketFor(slug);
+  const authored = handSocketFor(slug);
+  const ratios = useSocketNudge(slug, authored);
 
   return (
     <group position={[0, -height / 2, 0]}>
