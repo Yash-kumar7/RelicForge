@@ -103,6 +103,19 @@ export function ArmamentPanel() {
   );
   const ironChosen = armament === IRON;
 
+  /*
+   * What the relic card displays, which is not the same as what is equipped.
+   *
+   * It used to render from `selected`, which is only set when that relic is in
+   * hand. So a player holding the iron sword saw the unearned placeholder,
+   * question marks and "won by fighting", while the relic they had already won
+   * sat in the switcher below it. The card claimed they owned nothing.
+   *
+   * It now shows the relic you would pick up, and the placeholder only when
+   * there genuinely is not one.
+   */
+  const shown = selected ?? owned[0] ?? null;
+
   // Derived from the same function the fight uses, so the panel cannot promise
   // a number the swing does not deliver.
   /*
@@ -189,17 +202,17 @@ export function ArmamentPanel() {
           ].join(" ")}
         >
           <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
-            {selected ? "in hand" : "relic"}
+            {selected ? "in hand" : shown ? "relic" : "relic"}
           </p>
-          {selected ? (
+          {shown ? (
             <>
               <p className="mt-1 font-display text-base tracking-[0.12em] text-ember-300">
-                {selected.name}
+                {shown.name}
               </p>
               <p className="mt-1 text-[11px] leading-relaxed text-stone-600">
-                {selected.dna.element} · {selected.dna.temperament} · {selected.dna.condition}
+                {shown.dna.element} · {shown.dna.temperament} · {shown.dna.condition}
               </p>
-              <AttackBreakdown traits={traits} />
+              {selected && <AttackBreakdown traits={traits} />}
             </>
           ) : (
             <>
@@ -220,7 +233,9 @@ export function ArmamentPanel() {
       */}
 
       {/* Switching between relics you have kept. */}
-      {owned.length > 0 && (
+      {/* Only worth showing when there is a choice to make. With one relic it
+          repeated the card directly above it. */}
+      {owned.length > 1 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {owned.map((relic) => (
             <button
