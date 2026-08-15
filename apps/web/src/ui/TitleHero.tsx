@@ -120,6 +120,19 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
           return true;
         });
         /* Up the ladder, so it opens on the first fight rather than mid-list. */
+        /*
+         * Greatswords first, where two are available for a boss.
+         *
+         * A spear in the centre of the face-off is a thin vertical line between
+         * two armoured figures and it loses to both of them. A greatsword has
+         * the silhouette to hold that space. Spears are still shown further down
+         * the page, alone, where their length reads as reach rather than as
+         * thinness.
+         */
+        perBoss.sort((a, b) => {
+          const weight = (w: string) => (w === "greatsword" ? 0 : 1);
+          return weight(a.dna.weaponClass) - weight(b.dna.weaponClass);
+        });
         const ordered = perBoss.sort(
           (a, b) => (bossFor(a.dna.bossInfluence)?.level ?? 99) - (bossFor(b.dna.bossInfluence)?.level ?? 99),
         );
@@ -255,7 +268,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
                * keeps the edges from turning into cutout jaggies. Free, exact,
                * and it works on any page colour.
                */
-              className="absolute bottom-[13svh] left-[-3%] h-[68svh] w-auto object-contain"
+              className="absolute bottom-[13svh] left-[-3%] h-[74svh] w-auto object-contain"
             />
           )}
         </AnimatePresence>
@@ -287,7 +300,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               style={{ transformOrigin: "right bottom" }}
               /* A touch darker and cooler than the glow behind it, so the boss
                stays its own colour instead of being tinted by the forge. */
-            className="absolute bottom-[13svh] left-[-3%] h-[72svh] w-auto object-contain brightness-[0.92] contrast-[1.04]"
+            className="absolute bottom-[13svh] left-[-3%] h-[78svh] w-auto object-contain brightness-[0.92] contrast-[1.04]"
             />
           )}
         </AnimatePresence>
