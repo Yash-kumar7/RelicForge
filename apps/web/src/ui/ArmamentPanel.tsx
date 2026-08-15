@@ -150,7 +150,7 @@ export function ArmamentPanel() {
         those descriptions are the only thing on this screen that explains why a
         player would use one attack over the other.
       */}
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="mt-5 flex flex-col gap-5">
         {/* The blade you always have. Selecting it unequips the relic. */}
         <button
           type="button"

@@ -290,7 +290,7 @@ export function TitleScreen() {
               numbers, instead of forcing three columns of wrapped text to be
               compared vertically.
             */}
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="mt-5 flex flex-col gap-5">
               {AFFINITIES.map((a) => (
                 <button
                   key={a.id}
