@@ -51,6 +51,14 @@ const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
 /**
  * The three champions measured against each other.
  *
+ * Health and dodges only. Damage was here and kept raising the same question:
+ * this screen says the weapon decides what a hit does, so a damage figure on a
+ * champion invites a reader to work out which of the two is telling the truth.
+ * The answer is both, and explaining that costs more than the bar was worth.
+ *
+ * What survives is what a champion is on its own, before anything is picked up:
+ * how much it can take, and how often it can get out of the way.
+ *
  * Character select screens compare rather than report, because a number only
  * means something next to the numbers it is competing with: 80 health says
  * nothing until you have read 130 and 85 and done the arithmetic yourself. Bars
@@ -65,7 +73,6 @@ const COMPARISONS: Record<Affinity, { label: string; value: string; fill: number
   const stats = all.map((id) => championStats(championFor(id)));
   const peak = {
     health: Math.max(...stats.map((s) => s.health)),
-    hit: Math.max(...stats.map((s) => s.heavyDamage)),
     dodge: Math.max(...stats.map((s) => s.dodgesPerTenSeconds)),
   };
 
@@ -84,16 +91,6 @@ const COMPARISONS: Record<Affinity, { label: string; value: string; fill: number
            * is counting instead of naming an ability.
            */
           { label: "health", value: `${s.health}`, fill: s.health / peak.health },
-          /*
-           * Damage, plainly.
-           *
-           * This was briefly called strength, to avoid contradicting a line
-           * saying damage comes from the weapon. Inventing a noun to protect a
-           * simplification is the wrong way round: both the champion and the
-           * weapon decide what a hit does, so the label is damage and the
-           * caption says the figure is bare-handed.
-           */
-          { label: "damage", value: `${s.heavyDamage}`, fill: s.heavyDamage / peak.hit },
           {
             label: "dodges",
             value: `${s.dodgesPerTenSeconds} / 10s`,
