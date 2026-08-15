@@ -421,7 +421,16 @@ export function TitleScreen() {
               the top of the ladder there is nothing left to aim at, and the bar
               is replaced by saying so.
             */}
-            <span className="flex shrink-0 items-center gap-3">
+            {/*
+              One line, and it does not wrap.
+
+              The cluster was a label, two figures, a bar and a sigil in a
+              flexible row, so on a narrow column the sigil dropped below the
+              text and the bar stretched across whatever width was left. Fixed
+              widths and no wrapping keep it a single readable unit however much
+              room the steps beside it take.
+            */}
+            <span className="flex shrink-0 flex-nowrap items-center gap-3 whitespace-nowrap">
 
               {/*
                 The current rank is not named here.
@@ -431,8 +440,8 @@ export function TitleScreen() {
                 of the same fact. It lives on the sigil's title, where a player
                 who wants the word can find it without it taking a line.
               */}
-              <span className="min-w-[9rem]">
-                <span className="flex items-baseline justify-between gap-3">
+              <span className="w-[11rem]">
+                <span className="flex items-baseline justify-between gap-2">
                   <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
                     rank
                     {/*
@@ -444,7 +453,7 @@ export function TitleScreen() {
                 label, then how far along, then the mark that stands for it, and
                 the mark lands on the edge of the screen where a badge belongs.
               */}
-              <RankSigil index={rank.index} title={rank.name} />
+              <RankSigil index={rank.index} title={rank.name} size={22} />
             </span>
                   <span className="font-mono text-[9px] tabular-nums text-bone-400">
                     {rank.next === null ? "max" : `${rank.next - xp} to ${RANKS[rank.index + 1]?.name ?? ""}`}
