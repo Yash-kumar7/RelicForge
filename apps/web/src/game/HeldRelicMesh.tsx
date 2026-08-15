@@ -3,6 +3,7 @@ import { useGLTF } from "@react-three/drei";
 import { Quaternion, Vector3 } from "three";
 import { normalizeRelic, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
+import { relicScale } from "./weaponScale";
 
 /**
  * A generated relic in canonical held form, geometry only.
@@ -34,17 +35,8 @@ export function HeldRelicMesh({
 
   const gripOffset = useMemo(() => new Vector3(...canonical.gripOffset), [canonical]);
 
-  /*
-   * Held weapons scale to the wielder, not to the world.
-   *
-   * CANONICAL_LENGTH exists so the normalizer compares like with like; it is
-   * not a size anyone should be carrying. At 0.85 a greatsword came out 1.53
-   * units against a 1.8 unit champion, which is 85 percent of their height and
-   * reads as a prop rather than a weapon. A greatsword is now roughly 1.1 units,
-   * about 60 percent of the champion, and a spear stays longer than its wielder
-   * is tall because that is what a spear is.
-   */
-  const wieldScale = weaponClass === "spear" ? 0.75 : 0.6;
+  // One scale for every carried weapon, relic or otherwise. See weaponScale.ts.
+  const wieldScale = relicScale(weaponClass);
 
   return (
     <group scale={wieldScale}>

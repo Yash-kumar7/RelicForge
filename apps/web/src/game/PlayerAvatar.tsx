@@ -11,6 +11,7 @@ import { themeFor } from "./theme";
 import { playerHandle } from "./Player";
 import { swingProgress } from "./swing";
 import { IronSwordMesh } from "./IronSwordMesh";
+import { IRON_SCALE } from "./weaponScale";
 import { HeldRelicMesh } from "./HeldRelicMesh";
 import { PlayerHandWeapon } from "./HandWeapon";
 
@@ -171,7 +172,9 @@ function AvatarBody({
           {held ? (
             <HeldRelicMesh url={held.url} weaponClass={held.weaponClass} />
           ) : (
-            <IronSwordMesh accent={accent} />
+            <group scale={IRON_SCALE}>
+              <IronSwordMesh accent={accent} />
+            </group>
           )}
         </group>
       </group>

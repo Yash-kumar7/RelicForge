@@ -5,6 +5,7 @@ import type { WeaponClass } from "@relic/core";
 import type { AttackKind } from "./combat";
 import { HeldRelicMesh } from "./HeldRelicMesh";
 import { IronSwordMesh } from "./IronSwordMesh";
+import { IRON_SCALE } from "./weaponScale";
 import { playerHandle } from "./Player";
 import { swingProgress } from "./swing";
 import { bossState, bossSwing } from "./bossState";
@@ -93,7 +94,9 @@ export function PlayerHandWeapon({
       {held ? (
         <HeldRelicMesh url={held.url} weaponClass={held.weaponClass} />
       ) : (
-        <IronSwordMesh accent={accent} />
+        <group scale={IRON_SCALE}>
+          <IronSwordMesh accent={accent} />
+        </group>
       )}
     </group>
   );

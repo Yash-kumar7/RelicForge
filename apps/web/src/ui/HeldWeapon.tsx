@@ -1,5 +1,6 @@
 import type { WeaponClass } from "@relic/core";
 import { IronSwordMesh } from "../game/IronSwordMesh";
+import { IRON_SCALE } from "../game/weaponScale";
 import { HeldRelicMesh } from "../game/HeldRelicMesh";
 import type { HeldWeaponSpec } from "./CharacterViewer";
 
@@ -60,7 +61,7 @@ export function HeldWeapon({
 
   if (weapon.kind === "iron") {
     return (
-      <group position={hand} rotation={tilt} scale={1.15}>
+      <group position={hand} rotation={tilt} scale={IRON_SCALE}>
         <IronSwordMesh accent={accent} />
       </group>
     );

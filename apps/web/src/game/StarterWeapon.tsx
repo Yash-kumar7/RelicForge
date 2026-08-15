@@ -7,6 +7,7 @@ import { swingProgress } from "./swing";
 import { useGameStore } from "../state/useGameStore";
 import { themeFor } from "./theme";
 import { IronSwordMesh } from "./IronSwordMesh";
+import { IRON_SCALE } from "./weaponScale";
 
 /**
  * The blade you start with.
@@ -50,7 +51,9 @@ export function StarterWeapon() {
 
   return (
     <group ref={socket}>
-      <IronSwordMesh accent={theme.forge} />
+      <group scale={IRON_SCALE}>
+        <IronSwordMesh accent={theme.forge} />
+      </group>
     </group>
   );
 }
