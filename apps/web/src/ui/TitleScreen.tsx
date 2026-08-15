@@ -48,60 +48,6 @@ const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
  * screen, not so much that it becomes a coloured page. The figure is lit by its
  * own art already, so this is the room rather than the key light.
  */
-/**
- * The three champions measured against each other.
- *
- * Health and dodges only. Damage was here and kept raising the same question:
- * this screen says the weapon decides what a hit does, so a damage figure on a
- * champion invites a reader to work out which of the two is telling the truth.
- * The answer is both, and explaining that costs more than the bar was worth.
- *
- * What survives is what a champion is on its own, before anything is picked up:
- * how much it can take, and how often it can get out of the way.
- *
- * Character select screens compare rather than report, because a number only
- * means something next to the numbers it is competing with: 80 health says
- * nothing until you have read 130 and 85 and done the arithmetic yourself. Bars
- * do that arithmetic, so the trade is visible before anything is read.
- *
- * Scaled against the highest value rather than from zero, because the question
- * is which champion is toughest and by how much, not what fraction of some
- * absolute ceiling each one reaches.
- */
-const COMPARISONS: Record<Affinity, { label: string; value: string; fill: number }[]> = (() => {
-  const all: Affinity[] = ["fire", "ice", "storm"];
-  const stats = all.map((id) => championStats(championFor(id)));
-  const peak = {
-    health: Math.max(...stats.map((s) => s.health)),
-    dodge: Math.max(...stats.map((s) => s.dodgesPerTenSeconds)),
-  };
-
-  return Object.fromEntries(
-    all.map((id, i) => {
-      const s = stats[i]!;
-      return [
-        id,
-        [
-          /*
-           * Nouns a player already owns.
-           *
-           * These were tough, hit and evade, which are shorthand invented for
-           * three narrow columns rather than words anyone arrives with. Health
-           * and damage need no explanation, and dodges says what the third one
-           * is counting instead of naming an ability.
-           */
-          { label: "health", value: `${s.health}`, fill: s.health / peak.health },
-          {
-            label: "dodges",
-            value: `${s.dodgesPerTenSeconds} / 10s`,
-            fill: s.dodgesPerTenSeconds / peak.dodge,
-          },
-        ],
-      ];
-    }),
-  ) as Record<Affinity, { label: string; value: string; fill: number }[]>;
-})();
-
 const ELEMENT_GLOW: Record<Affinity, string> = {
   fire: "rgba(255,107,26,0.3)",
   ice: "rgba(74,168,216,0.28)",
@@ -571,40 +517,22 @@ export function TitleScreen() {
                   </p>
 
                   {/*
-                    Three bars, measured against the other two.
+                    One figure, and no bars.
 
-                    This was one number parked on the far side of the row. A
-                    lone figure has to be carried to the next champion and back
-                    to mean anything, and the two stats that were not health
-                    were not shown at all, so the only visible difference between
-                    the three was the one the rows happened to list.
+                    The bars compared health and dodges, and dodges was measured
+                    per ten seconds, which nobody thinks in and which printed as
+                    "11 / 10s" for Storm, reading as eleven out of ten. Worse,
+                    they were answering the wrong question: they compared which
+                    champion is stronger, and the line above them already gives
+                    the reason to choose, which is what each one tends to earn.
+
+                    Health stays because it is the one number a player feels in
+                    the first thirty seconds of a fight. Dodging survives in
+                    Storm's own line, in words.
                   */}
-                  <span className="mt-4 flex max-w-sm gap-5">
-                    {COMPARISONS[a.id].map((stat) => (
-                      <span key={stat.label} className="flex-1">
-                        {/*
-                          The bar answers which champion is toughest; the figure
-                          answers by how much. A bar alone hides whether 130 is a
-                          little more than 80 or twice it.
-                        */}
-                        <span className="flex items-baseline justify-between gap-2">
-                          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-brass-700">
-                            {stat.label}
-                          </span>
-                          <span className="font-mono text-[10px] tabular-nums text-bone-400">
-                            {stat.value}
-                          </span>
-                        </span>
-                        <span className="mt-1 block h-[3px] w-full bg-ash-800">
-                          <span
-                            className={`block h-[3px] transition-all duration-500 ${
-                              affinity === a.id ? a.bar : "bg-stone-600"
-                            }`}
-                            style={{ width: `${Math.round(stat.fill * 100)}%` }}
-                          />
-                        </span>
-                      </span>
-                    ))}
+                  <span className="mt-4 block font-mono text-[10px] uppercase tracking-[0.22em] text-brass-700">
+                    {championStats(championFor(a.id)).health}{" "}
+                    <span className="text-stone-600">health</span>
                   </span>
                   </span>
                 </button>
