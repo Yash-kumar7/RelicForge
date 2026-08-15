@@ -505,20 +505,6 @@ export function TitleScreen() {
             </p>
 
             {/*
-              The rule behind the forging lines.
-
-              Without it, cracked and flawless read as flavour text rather than
-              as something the player controls, and the whole reason to choose a
-              fragile champion disappears. It is one sentence and it is the
-              mechanic: what is left of you when the boss falls is what the
-              weapon is made of.
-            */}
-            <p className="mt-3 max-w-lg text-[13px] leading-relaxed text-bone-400">
-              How much health you have left when the boss falls decides the
-              weapon. Finish comfortably and it comes out flawless; finish nearly
-              dead and it comes out cracked, and hits harder for it.
-            </p>
-            {/*
               Full-width rows rather than three columns.
 
               Three narrow cards were a compromise with a page that had to hold

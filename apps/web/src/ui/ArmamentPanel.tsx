@@ -149,6 +149,21 @@ export function ArmamentPanel() {
       <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Your weapon</p>
 
       {/*
+        Where relics come from, stated where relics are the subject.
+
+        This lived on the element step, two screens before anything it described,
+        explaining the condition of weapons a player had not been shown yet. Here
+        it sits above the slot those weapons occupy, next to an empty one, which
+        is the moment it means something.
+      */}
+      <p className="mt-3 max-w-lg text-[12px] leading-relaxed text-bone-400">
+        Relics are forged from the fight that earns them. How much health you have
+        left when the boss falls decides what you get: finish comfortably and it
+        comes out flawless, finish nearly dead and it comes out cracked, and hits
+        harder for it.
+      </p>
+
+      {/*
         Full-width rows, matching the element step.
 
         Two columns squeezed each attack description into a narrow strip, and
