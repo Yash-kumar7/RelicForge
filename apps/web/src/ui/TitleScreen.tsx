@@ -406,20 +406,47 @@ export function TitleScreen() {
               filled says there is somewhere to get to, which "Unproven" alone
               does not.
             */}
-            <span className="flex shrink-0 items-center gap-2">
-                <span
-                  className="flex h-6 w-6 shrink-0 items-center justify-center border border-ember-500/50 font-display text-[11px] leading-none text-ember-300"
-                  aria-hidden
-                >
-                  {NUMERALS[rank.index] ?? "I"}
+            {/*
+              A rank worth looking at is one with somewhere to go.
+
+              This has been a bare word, six dashes, and a numeral with "of VI"
+              beside it, and all three said where the player stands and nothing
+              about what is next. Rank displays motivate by showing progress
+              toward the following rank, not by stating the current one, which
+              is why every version so far read as inert.
+
+              So: the numeral for standing, the bar for how far into this rank
+              the player is, and the name of the rank being climbed toward. At
+              the top of the ladder there is nothing left to aim at, and the bar
+              is replaced by saying so.
+            */}
+            <span className="flex shrink-0 items-center gap-3">
+              <span
+                className="flex h-7 w-7 shrink-0 items-center justify-center border border-ember-500/50 font-display text-[12px] leading-none text-ember-300"
+                aria-hidden
+              >
+                {NUMERALS[rank.index] ?? "I"}
+              </span>
+
+              <span className="min-w-[9rem]">
+                <span className="flex items-baseline justify-between gap-3">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone-300">
+                    {rank.name}
+                  </span>
+                  <span className="font-mono text-[9px] tabular-nums text-brass-800">
+                    {rank.next === null ? "max" : `${rank.next - xp} to ${RANKS[rank.index + 1]?.name ?? ""}`}
+                  </span>
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone-400">
-                  {rank.name}
+
+                <span className="mt-1.5 block h-[2px] w-full bg-ash-800">
+                  <span
+                    className="block h-[2px] bg-ember-500/80 transition-all duration-500"
+                    style={{
+                      width: `${rank.next === null ? 100 : Math.round((rank.into / rank.span) * 100)}%`,
+                    }}
+                  />
                 </span>
-                <span className="font-mono text-[10px] tabular-nums text-brass-800">
-                  of {NUMERALS[RANKS.length - 1]}
-                </span>
-              <span className="font-mono text-[10px] tabular-nums text-brass-800">{xp} xp</span>
+              </span>
             </span>
           </div>
 
