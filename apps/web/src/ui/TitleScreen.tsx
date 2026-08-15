@@ -254,7 +254,18 @@ export function TitleScreen() {
           cannot have one of them positioned against the viewport.
         */}
         <div className={bleed ? "relative lg:self-stretch" : "lg:self-start"}>
-          <div className={`${SECTION_HEADING} mb-2 justify-between ${bleed ? "pl-6 pt-14" : ""}`}>
+          {/*
+            Hidden when the champion fills the screen.
+
+            Framed, this labels the plate beside it. Bleeding, there is no plate,
+            so it was a line of small type floating over a knight with nothing to
+            attach to, and "your champion" is not news when a champion is taking
+            up half the window. The rank moves in beside the steps, where the rest
+            of the page's chrome already lives.
+          */}
+          <div
+            className={`${SECTION_HEADING} mb-2 justify-between ${bleed ? "hidden" : ""}`}
+          >
             {/*
               Named for the step it belongs to. On the enemy step the champion
               is no longer the thing being decided, it is who you are sending,
@@ -363,6 +374,12 @@ export function TitleScreen() {
             them.
           */}
           <PendingForgePanel />
+
+          {bleed && (
+            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.25em] text-brass-700">
+              rank {rank.name} · {xp} xp
+            </p>
+          )}
 
           <ol className="mb-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em]">
             {steps.map((label, index) => {

@@ -112,7 +112,14 @@ export function ChampionPreview({
        * In the page's own brass rather than the old grey, and with only a breath
        * of fill, so it reads as a plate around a portrait instead of a widget.
        */
-      framing={bleed ? 0.06 : 0.45}
+      /*
+       * Enough room for feet.
+       *
+       * 0.06 cropped the champion at the shins. A figure meant to fill the
+       * screen still has to stand on something, and a knight cut off at the
+       * ankles reads as a rendering error rather than as a composition.
+       */
+      framing={bleed ? 0.22 : 0.45}
       className={
         bleed
           ? "h-[100svh] w-full"
