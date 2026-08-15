@@ -247,10 +247,10 @@ function Overgrowth({ theme }: { theme: ArenaTheme }) {
 /**
  * Hollow Sovereign: nothing around the floor at all.
  *
- * The wall is removed for this rung, the largest single change any of them
- * makes: the boundary that has been there for four fights is gone and the disc
- * reads as floating. One pool under the fight and almost nothing beyond it, so
- * the dark past the edge has no depth to it.
+ * One pool under the fight and almost nothing beyond it, so the dark past the
+ * edge has no depth to it. Every rung lost its wall in the end, but this is the
+ * one built around not having one: the spires stand further out and fewer, to
+ * give the emptiness a scale rather than to fill it.
  */
 function VoidField({ theme }: { theme: ArenaTheme }) {
   return (
@@ -262,11 +262,6 @@ function VoidField({ theme }: { theme: ArenaTheme }) {
       colour={theme.rune}
     />
   );
-}
-
-/** Whether this rung stands in a walled room at all. */
-export function hasWall(level: number): boolean {
-  return level !== 5;
 }
 
 export function ArenaFeatures({ level, theme }: { level: number; theme: ArenaTheme }) {

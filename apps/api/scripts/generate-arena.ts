@@ -83,8 +83,16 @@ const PIECES: ArenaPiece[] = [
   {
     slug: "husk-screen",
     metres: 8.5,
+    /*
+     * Rewritten after the first attempt came back East-Asian: dragons, coin
+     * strings, lotus scrollwork and a Noh mask. A lovely object, and a prop from
+     * a different game. The other four rungs are an arch, a ship, a tree and a
+     * spire, and all eight characters wear Western plate, so the vocabulary has
+     * to be named explicitly rather than left to "ornate", which an image model
+     * will happily resolve any way it likes.
+     */
     subject:
-      "A tall ornate ceremonial altar screen of dark lacquered wood and gold filigree, carved panels and gilded scrollwork, hanging chains of gold coins, immaculate and symmetrical, a cracked porcelain mask set at its top",
+      "A tall gothic cathedral altarpiece of dark stone and gold leaf, pointed lancet arches and carved stone tracery, rows of empty statue niches, a cracked white porcelain mask set into the centre panel, strings of gold coins hanging from its edges, guttered candle stubs along its base, European medieval, immaculate and symmetrical",
   },
   {
     slug: "king-tree",

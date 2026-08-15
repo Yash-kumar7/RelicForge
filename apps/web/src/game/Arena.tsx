@@ -4,9 +4,10 @@ import type { PointLight } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { themeForBoss } from "./theme";
 import { ARENA_RADIUS } from "./arenaGeometry";
-import { ArenaFeatures, hasWall } from "./arenaFeatures";
+import { ArenaFeatures } from "./arenaFeatures";
 import { Forge } from "./Forge";
 import { Backdrop } from "./Backdrop";
+import { ArenaScenery } from "./ArenaScenery";
 
 export { ARENA_RADIUS } from "./arenaGeometry";
 
@@ -90,18 +91,18 @@ export function Arena() {
       */}
 
       {/*
-        Not every rung stands in a room.
+        No cylinder wall on any rung now.
 
-        Dropping the wall is the largest single change any level makes, because
-        the boundary has been there for four fights by then, and its absence is
-        felt before it is noticed.
+        It was a six-metre tube of flat colour standing where the horizon should
+        be, and it had to go for two reasons. It looked like what it was, and it
+        would have hidden every piece of scenery behind it: the set pieces stand
+        outside the old wall line, which is the only place they can stand without
+        being something a player walks into.
+
+        What bounds the arena instead is what bounds a real place: the ground runs
+        out, the fog closes, and there are large things standing in the distance.
       */}
-      {hasWall(bossLevel) && (
-        <mesh position={[0, 3, 0]}>
-          <cylinderGeometry args={[ARENA_RADIUS, ARENA_RADIUS, 6, 64, 1, true]} />
-          <meshStandardMaterial color={theme.wall} roughness={1} side={2} />
-        </mesh>
-      )}
+      <ArenaScenery level={bossLevel} />
 
       {/*
         What actually makes this rung a different place.
