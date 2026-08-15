@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
-import { CAMERA_LIMIT, PLAYER_LIMIT } from "./arenaGeometry";
+import { CAMERA_LIMIT, FORGE_POSITION, FORGE_RADIUS, PLAYER_LIMIT } from "./arenaGeometry";
 import { COMBAT, attackSpec, isWithinArc, type AttackKind } from "./combat";
 import { equipped } from "./equipped";
 import { activeChampion } from "./champions";
@@ -276,6 +276,27 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
         const scale = PLAYER_LIMIT / radial;
         playerHandle.position.x *= scale;
         playerHandle.position.z *= scale;
+      }
+
+      /*
+       * The forge is solid, and it is the only thing in here that is.
+       *
+       * Walking through the furnace the whole game is built around is what made
+       * the old pillars worthless: an object a body passes through is scenery,
+       * however good the mesh is. Pushed out along the line from its centre,
+       * which is the cheapest correct answer for a round obstacle and keeps a
+       * player sliding around it rather than sticking to it.
+       */
+      const fromForge = Math.hypot(
+        playerHandle.position.x - FORGE_POSITION.x,
+        playerHandle.position.z - FORGE_POSITION.z,
+      );
+      if (fromForge < FORGE_RADIUS && fromForge > 0.0001) {
+        const push = FORGE_RADIUS / fromForge;
+        playerHandle.position.x =
+          FORGE_POSITION.x + (playerHandle.position.x - FORGE_POSITION.x) * push;
+        playerHandle.position.z =
+          FORGE_POSITION.z + (playerHandle.position.z - FORGE_POSITION.z) * push;
       }
       /**
        * Vertical motion is integrated separately from the ground plane so a

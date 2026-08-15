@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PointLight, Vector3 } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { COMBAT, isWithinArc } from "./combat";
-import { BOSS_LIMIT } from "./arenaGeometry";
+import { BOSS_LIMIT, FORGE_POSITION, FORGE_RADIUS } from "./arenaGeometry";
 import { glowTexture } from "./arenaFeatures";
 import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
@@ -159,6 +159,26 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
       position.current.z *= scale;
       // Kill the outward component too, or it presses against the wall every
       // frame and slides along it.
+      knockback.current.multiplyScalar(0.2);
+    }
+
+    /*
+     * The forge stops the boss too.
+     *
+     * Only the player was pushed out of it at first, which is worse than nobody
+     * being: a solid object one body respects and the other stands inside reads
+     * as a bug rather than as scenery. The boss is the wider figure, so it keeps
+     * a little more clearance.
+     */
+    const fromForge = Math.hypot(
+      position.current.x - FORGE_POSITION.x,
+      position.current.z - FORGE_POSITION.z,
+    );
+    const bossClearance = FORGE_RADIUS + 0.9;
+    if (fromForge < bossClearance && fromForge > 0.0001) {
+      const push = bossClearance / fromForge;
+      position.current.x = FORGE_POSITION.x + (position.current.x - FORGE_POSITION.x) * push;
+      position.current.z = FORGE_POSITION.z + (position.current.z - FORGE_POSITION.z) * push;
       knockback.current.multiplyScalar(0.2);
     }
 

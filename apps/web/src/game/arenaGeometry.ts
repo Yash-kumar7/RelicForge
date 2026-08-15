@@ -29,3 +29,26 @@ export const BOSS_LIMIT = ARENA_RADIUS - 1.8;
 
 /** The third-person camera may sit outside the player, but not outside the wall. */
 export const CAMERA_LIMIT = ARENA_RADIUS - 0.6;
+
+/**
+ * The forge, which is solid.
+ *
+ * It is the only object inside the arena a body can meet, and until now it was
+ * not one: the player walked straight through the furnace the entire game is
+ * built around, which is the same thing that made the old pillars worthless. A
+ * thing you pass through is scenery no matter how good the mesh is.
+ *
+ * Kept here rather than in Arena.tsx because the position is now load-bearing:
+ * the renderer draws it there and the player is pushed out of it there, and those
+ * two agreeing is the whole point of this file.
+ */
+export const FORGE_POSITION = { x: 0, z: -ARENA_RADIUS + 2.5 } as const;
+
+/**
+ * A little wider than the mesh, as a collision radius should be.
+ *
+ * The forge is roughly 2 units across at the base. Standing flush against a
+ * generated model looks like clipping into it, because the silhouette is uneven
+ * and the eye reads the widest part as the surface.
+ */
+export const FORGE_RADIUS = 1.9;

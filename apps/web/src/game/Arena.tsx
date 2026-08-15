@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import type { PointLight } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { themeForBoss } from "./theme";
-import { ARENA_RADIUS } from "./arenaGeometry";
+import { ARENA_RADIUS, FORGE_POSITION } from "./arenaGeometry";
 import { ArenaFeatures } from "./arenaFeatures";
 import { Forge } from "./Forge";
 import { Backdrop } from "./Backdrop";
@@ -114,7 +114,7 @@ export function Arena() {
       <ArenaFeatures level={bossLevel} theme={theme} />
 
       {/* The forge. Dormant during the fight, the focal point afterwards. */}
-      <group position={[0, 0, -ARENA_RADIUS + 2.5]}>
+      <group position={[FORGE_POSITION.x, 0, FORGE_POSITION.z]}>
         <Forge active={forgeActive} stone={theme.pillar} glow={theme.forge} />
         <pointLight
           ref={forgeLight}
