@@ -422,41 +422,28 @@ export function TitleScreen() {
               is replaced by saying so.
             */}
             {/*
-              One line, and it does not wrap.
+              Rank, as one line that does not wrap.
 
-              The cluster was a label, two figures, a bar and a sigil in a
-              flexible row, so on a narrow column the sigil dropped below the
-              text and the bar stretched across whatever width was left. Fixed
-              widths and no wrapping keep it a single readable unit however much
-              room the steps beside it take.
+              Rebuilt, because successive edits had nested the sigil inside the
+              label's own span: the shield rendered under the copy, the
+              experience figure disappeared into a tag that was never closed
+              where it looked, and no amount of adjusting widths was going to fix
+              markup that was wrong.
+
+              Reads left to right: what is held, what is owed, and the mark that
+              stands for the standing, with the bar under them showing how far
+              into this rank the player is.
             */}
             <span className="flex shrink-0 flex-nowrap items-center gap-3 whitespace-nowrap">
-
-              {/*
-                The current rank is not named here.
-
-                The sigil says which rank this is and the line says which one is
-                next, so printing "Unproven" between them was a third statement
-                of the same fact. It lives on the sigil's title, where a player
-                who wants the word can find it without it taking a line.
-              */}
-              <span className="w-[11rem]">
-                <span className="flex items-baseline justify-between gap-2">
-                  <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
-                    rank
-                    {/*
-                The sigil last, at the outer edge.
-
-                Leading with the emblem meant the eye met a shield before it had
-                any reason to care about one, and the words explaining it were
-                downstream of the thing they explained. Reading order is now the
-                label, then how far along, then the mark that stands for it, and
-                the mark lands on the edge of the screen where a badge belongs.
-              */}
-              <RankSigil index={rank.index} title={rank.name} size={22} />
-            </span>
-                  <span className="font-mono text-[9px] tabular-nums text-bone-400">
-                    {rank.next === null ? "max" : `${rank.next - xp} to ${RANKS[rank.index + 1]?.name ?? ""}`}
+              <span className="w-[12rem]">
+                <span className="flex items-baseline justify-between gap-3">
+                  <span className="font-mono text-[10px] tabular-nums text-bone-300">
+                    {xp} xp
+                  </span>
+                  <span className="font-mono text-[9px] tabular-nums text-brass-700">
+                    {rank.next === null
+                      ? "max rank"
+                      : `${rank.next - xp} to ${RANKS[rank.index + 1]?.name ?? ""}`}
                   </span>
                 </span>
 
@@ -469,6 +456,8 @@ export function TitleScreen() {
                   />
                 </span>
               </span>
+
+              <RankSigil index={rank.index} title={rank.name} size={22} />
             </span>
           </div>
 
