@@ -68,17 +68,23 @@ export function handSocketFor(slug: string): HandSocketRatios {
  * the static one, because a closed fist is the whole point of regenerating these
  * characters, so its socket has to be authored rather than measured.
  *
- * Read off each character's concept image as a fraction of its silhouette. These
- * are estimates and expected to need nudging against the screen, which is the
- * honest state of anything derived from looking at a picture.
+ * First read off each character's concept image, then corrected against a
+ * screenshot of Ember holding the iron sword. The blade gives a scale reference,
+ * 0.765 world units across about 310 pixels, and the fist sat one pommel low and
+ * roughly 0.15 units inboard of the hilt. The same correction is applied to all
+ * eight, because they were all estimated the same way and therefore carry the
+ * same bias.
+ *
+ * Still estimates. ?socket in the URL nudges them live and prints the corrected
+ * line, which is faster than another round of this.
  */
 const FIST_SOCKETS: Record<string, HandSocketRatios> = {
-  ember: { x: -0.37, y: 0.75, z: 0.2, bone: "RightHand" },
-  frost: { x: -0.4, y: 0.66, z: 0.2, bone: "RightHand" },
-  storm: { x: -0.4, y: 0.64, z: 0.2, bone: "RightHand" },
-  "ashen-warden": { x: -0.4, y: 0.62, z: 0.18, bone: "RightHand" },
-  "drowned-choir": { x: -0.4, y: 0.63, z: 0.18, bone: "RightHand" },
-  "gilded-husk": { x: -0.4, y: 0.5, z: 0.14, bone: "RightHand" },
-  "rootbound-king": { x: -0.42, y: 0.5, z: 0.14, bone: "RightHand" },
-  "hollow-sovereign": { x: -0.4, y: 0.54, z: 0.14, bone: "RightHand" },
+  ember: { x: -0.24, y: 0.68, z: 0.2, bone: "RightHand" },
+  frost: { x: -0.27, y: 0.59, z: 0.2, bone: "RightHand" },
+  storm: { x: -0.27, y: 0.57, z: 0.2, bone: "RightHand" },
+  "ashen-warden": { x: -0.27, y: 0.55, z: 0.18, bone: "RightHand" },
+  "drowned-choir": { x: -0.27, y: 0.56, z: 0.18, bone: "RightHand" },
+  "gilded-husk": { x: -0.27, y: 0.43, z: 0.14, bone: "RightHand" },
+  "rootbound-king": { x: -0.29, y: 0.43, z: 0.14, bone: "RightHand" },
+  "hollow-sovereign": { x: -0.27, y: 0.47, z: 0.14, bone: "RightHand" },
 };
