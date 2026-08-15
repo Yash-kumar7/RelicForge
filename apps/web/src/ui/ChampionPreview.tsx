@@ -91,9 +91,18 @@ export function ChampionPreview({
        * of the screen, so the line was cut in half by the edge of the page.
        * Bleeding, the figure explains itself.
        */
+      /*
+       * The only thing that says the figure can be turned.
+       *
+       * Bleeding, this was dropped because it ran off the bottom of the screen,
+       * which also removed the sole affordance: a champion that can be dragged
+       * looks identical to one that cannot until somebody tries. There is room
+       * for it again now, and it says less, because the long version was
+       * explaining a panel that no longer exists.
+       */
       caption={
         bleed
-          ? undefined
+          ? "drag to inspect"
           : weapon === undefined
             ? "your champion · choose an armament below · drag to inspect"
             : weapon.kind === "relic"
