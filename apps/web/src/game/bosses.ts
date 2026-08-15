@@ -1,3 +1,4 @@
+import { COMBAT } from "./combat";
 /**
  * The boss ladder.
  *
@@ -172,38 +173,20 @@ export function isCleared(level: number): boolean {
  * cannot leave this screen quoting a boss that no longer exists.
  */
 export function describeBoss(level: number): { label: string; value: string }[] {
-
   /*
-   * One number, not three.
+   * How much of it there is to get through.
    *
-   * Health and attack damage were both true and neither was usable: 1000 health
-   * means nothing without knowing what you hit for, and "its attack: 22 damage"
-   * means nothing without knowing what you have. A player was being asked to do
-   * the arithmetic that decides whether to take the fight.
-   *
-   * This is that arithmetic already done, and it is the only question the enemy
-   * step actually asks. It needs the champion's health because the same boss
-   * kills Ember in three hits and Frost in six.
+   * This said how many blows a champion survives, which is a warning, and a
+   * warning on every rung of an ordered ladder carries no information: the fifth
+   * is obviously worse than the first. Health is the number the fight is
+   * actually spent against, and it is the one the player watches drain, so it is
+   * the honest measure of how long a rung takes.
    */
-  /*
-   * What clearing this rung is worth, not what it costs.
-   *
-   * The row said how many blows a champion survives, which is a warning, and a
-   * warning on every option in a list is noise: the ladder is ordered, so the
-   * fifth is obviously harder than the first. Experience is the thing that
-   * actually differs in a way worth reading, it is the same figure the rank on
-   * the setup screen is climbing toward, and it says what a fight is for.
-   *
-   * The floor, so it is honest: a clean, unhurried win with no relic bonus.
-   * Anything harder pays more, which is stated where the fight is briefed.
-   */
-  /*
-   * The base award, which is the figure the game actually pays.
-   *
-   * "at least" was a hedge covering the bonuses a good fight adds on top, and a
-   * hedge on a reward reads as the game being unsure what it owes you. This is
-   * the number every win of this boss pays, whatever else the fight earns.
-   */
-  return [{ label: "reward", value: `${600 * bossAt(level).level} XP` }];
-
+  const boss = bossAt(level);
+  return [
+    { label: "health", value: `${Math.round(COMBAT.boss.maxHp * boss.hp)}` },
+    // The base award. A good fight adds to it, so the card never overstates what
+    // the win is worth.
+    { label: "you earn", value: `${60 * boss.level} XP` },
+  ];
 }

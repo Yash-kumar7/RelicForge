@@ -1,7 +1,7 @@
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
-import { Box3, Vector3, type Group } from "three";
+import { Box3, PerspectiveCamera, Vector3, type Group } from "three";
 import { fitCharacter } from "../lib/characterFit";
 import { type HandSocketRatios } from "../game/handSockets";
 import { fistSocketFor } from "../game/fistSockets";
@@ -51,6 +51,80 @@ const FOV = 38;
  */
 function fitDistance(height: number, margin = 0.45): number {
   return (height / 2 + margin) / Math.tan((FOV / 2) * (Math.PI / 180));
+}
+
+/**
+ * Frames whatever is actually on screen, rather than what was asked for.
+ *
+ * The distance above is computed from the character's height, which is the
+ * whole subject right up until the character is holding something. A sword is
+ * carried point-up above the head, so it added most of a metre the camera had
+ * never been told about, and the blade was cut off by the top of the frame.
+ *
+ * Nothing here is estimated. The bounding box of the mounted group is the real
+ * extent of the real meshes, weapon included, so a spear-carrying boss and an
+ * empty-handed champion each get the framing their own silhouette needs.
+ *
+ * It measures across several frames because the weapon loads behind its own
+ * suspense boundary and arrives after the body: a single measurement on mount
+ * would fit the figure and miss the thing this exists to catch. It settles once
+ * the box stops growing.
+ */
+function FrameSubject({
+  margin,
+  onFit,
+  children,
+}: {
+  margin: number;
+  onFit: (fit: { distance: number; centerY: number }) => void;
+  children: React.ReactNode;
+}) {
+  const subject = useRef<Group>(null);
+  const camera = useThree((state) => state.camera);
+  const controls = useThree((state) => state.controls) as unknown as
+    | { target: Vector3; update: () => void }
+    | undefined;
+
+  const lastHeight = useRef(-1);
+  const stableFrames = useRef(0);
+  const settled = useRef(false);
+
+  useFrame(() => {
+    if (settled.current || !subject.current) return;
+
+    const box = new Box3().setFromObject(subject.current);
+    if (box.isEmpty()) return;
+
+    const size = box.getSize(new Vector3());
+    const center = box.getCenter(new Vector3());
+
+    // Two frames at the same height means everything that is going to load has
+    // loaded. Anything less and a weapon arriving one frame late settles the
+    // camera at the body's height and never corrects.
+    if (Math.abs(size.y - lastHeight.current) < 1e-4) stableFrames.current += 1;
+    else stableFrames.current = 0;
+    lastHeight.current = size.y;
+
+    const vertical = (size.y / 2 + margin) / Math.tan((FOV / 2) * (Math.PI / 180));
+    // Width matters on a spear held across the body, where the tall dimension
+    // is not the one that runs out of frame first.
+    const aspect = camera instanceof PerspectiveCamera ? camera.aspect : 1;
+    const halfHorizontal = Math.atan(Math.tan((FOV / 2) * (Math.PI / 180)) * aspect);
+    const horizontal = (size.x / 2 + margin) / Math.tan(halfHorizontal);
+    const distance = Math.max(vertical, horizontal);
+
+    camera.position.set(0, center.y, distance);
+    camera.lookAt(0, center.y, 0);
+    controls?.target.set(0, center.y, 0);
+    controls?.update();
+
+    if (stableFrames.current >= 2) {
+      settled.current = true;
+      onFit({ distance, centerY: center.y });
+    }
+  });
+
+  return <group ref={subject}>{children}</group>;
 }
 
 /**
@@ -200,6 +274,7 @@ export function CharacterViewer({
   weapon?: HeldWeaponSpec | undefined;
 }) {
   const [available, setAvailable] = useState<boolean | null>(null);
+  const [fit, setFit] = useState<{ distance: number; centerY: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -222,13 +297,21 @@ export function CharacterViewer({
           <directionalLight position={[3, 5, 4]} intensity={2.1} />
           <directionalLight position={[-3, 2, -2]} intensity={0.9} color={accent} />
           <Suspense fallback={null}>
-            <Model
-              url={url}
-              height={height}
-              weapon={weapon}
-              accent={accent}
-              slug={slug}
-            />
+            <FrameSubject
+              /* Re-measures when the subject changes, since a champion swapping
+                 an iron sword for a relic changes the silhouette it needs. */
+              key={`${url}:${weapon?.kind ?? "none"}:${weapon?.kind === "relic" ? weapon.url : ""}`}
+              margin={framing}
+              onFit={setFit}
+            >
+              <Model
+                url={url}
+                height={height}
+                weapon={weapon}
+                accent={accent}
+                slug={slug}
+              />
+            </FrameSubject>
             <Environment preset="night" />
           </Suspense>
           {/*
@@ -260,8 +343,8 @@ export function CharacterViewer({
               far enough to see the whole silhouette.
             */
             zoomSpeed={0.8}
-            minDistance={fitDistance(height, framing) * 0.42}
-            maxDistance={fitDistance(height, framing) * 1.7}
+            minDistance={(fit?.distance ?? fitDistance(height, framing)) * 0.42}
+            maxDistance={(fit?.distance ?? fitDistance(height, framing)) * 1.7}
             minPolarAngle={0.25}
             maxPolarAngle={Math.PI - 0.25}
           />

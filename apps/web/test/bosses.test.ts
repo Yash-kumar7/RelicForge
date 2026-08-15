@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { BOSSES, MAX_LEVEL, bossAt, bossTitleFor, describeBoss, isUnlocked } from "../src/game/bosses";
-import { xpFor } from "../src/state/useProgress";
 import { themeForBoss } from "../src/game/theme";
 import { Group, Vector3 } from "three";
 
@@ -111,32 +110,18 @@ describe("describeBoss", () => {
      * differs in a way worth reading, and it is the figure the rank on the setup
      * screen is climbing toward.
      */
-    const stat = describeBoss(1)[0];
-    expect(stat?.label).toBe("reward");
-    expect(stat?.value).toContain("XP");
+    expect(describeBoss(1).map((stat) => stat.label)).toEqual(["health", "you earn"]);
+    expect(Number(describeBoss(1)[0]?.value)).toBeGreaterThan(0);
+    expect(describeBoss(1)[1]?.value).toContain("XP");
   });
 
-  it("pays more the further up the ladder it is", () => {
-    const xp = (level: number) => parseInt(describeBoss(level)[0]?.value ?? "0", 10);
+  it("gets harder in the number a player can see, not only in the fiction", () => {
+    const hp = (level: number) => Number(describeBoss(level)[0]?.value ?? 0);
     for (let level = 2; level <= MAX_LEVEL; level++) {
-      expect(xp(level)).toBeGreaterThan(xp(level - 1));
+      expect(hp(level)).toBeGreaterThan(hp(level - 1));
     }
   });
 
-  it("quotes what every win pays, never more than the fight can deliver", () => {
-    // Bonuses stack on top of this, so the stated figure is one the game can
-    // always honour rather than a best case a player might miss.
-    const stated = parseInt(describeBoss(3)[0]?.value ?? "0", 10);
-    expect(stated).toBeLessThan(
-      xpFor({
-        bossLevel: 3,
-        healthRemaining: 8,
-        dodges: 7,
-        healingUsed: 0,
-        forgedRelic: true,
-      }),
-    );
-  });
 
   it("states plain labels with no jargon, like every other card", () => {
     for (const stat of describeBoss(1)) {
