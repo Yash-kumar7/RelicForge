@@ -434,34 +434,42 @@ export function TitleScreen() {
               stands for the standing, with the bar under them showing how far
               into this rank the player is.
             */}
-            <span className="block w-[13rem] shrink-0 whitespace-nowrap">
-              <span className="flex items-baseline justify-between gap-3">
-                <span className="font-mono text-[10px] tabular-nums text-bone-300">{xp} xp</span>
-                <span className="font-mono text-[9px] tabular-nums text-brass-700">
-                  {rank.next === null
-                    ? "max rank"
-                    : `${rank.next - xp} to ${RANKS[rank.index + 1]?.name ?? ""}`}
-                </span>
+            {/*
+              Labelled first, then everything that describes it.
+
+              Without the word on top the block was two numbers and a shield with
+              nothing saying what they were about, which is how a rank ends up
+              being read as a score or a timer. The label names it, and the sigil,
+              the figures and the bar sit under it as one group.
+            */}
+            <span className="block w-[14rem] shrink-0 whitespace-nowrap">
+              <span className="block font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
+                rank
               </span>
 
-              {/*
-                The sigil sits under the figures, not beside them.
+              <span className="mt-1.5 flex items-center gap-2.5">
+                <RankSigil index={rank.index} title={rank.name} size={24} />
 
-                It ended up there by accident when the markup was broken, and it
-                is better: on one line the shield competes with the numbers for
-                the same horizontal run and pushes the bar into whatever is left,
-                while stacked it anchors the block and the bar gets the full
-                width to show progress across.
-              */}
-              <span className="mt-1.5 flex items-center gap-2">
-                <RankSigil index={rank.index} title={rank.name} size={22} />
-                <span className="block h-[2px] flex-1 bg-ash-800">
-                  <span
-                    className="block h-[2px] bg-ember-500/80 transition-all duration-500"
-                    style={{
-                      width: `${rank.next === null ? 100 : Math.round((rank.into / rank.span) * 100)}%`,
-                    }}
-                  />
+                <span className="flex-1">
+                  <span className="flex items-baseline justify-between gap-3">
+                    <span className="font-mono text-[10px] tabular-nums text-bone-300">
+                      {xp} xp
+                    </span>
+                    <span className="font-mono text-[9px] tabular-nums text-brass-700">
+                      {rank.next === null
+                        ? "max rank"
+                        : `${rank.next - xp} to ${RANKS[rank.index + 1]?.name ?? ""}`}
+                    </span>
+                  </span>
+
+                  <span className="mt-1 block h-[2px] w-full bg-ash-800">
+                    <span
+                      className="block h-[2px] bg-ember-500/80 transition-all duration-500"
+                      style={{
+                        width: `${rank.next === null ? 100 : Math.round((rank.into / rank.span) * 100)}%`,
+                      }}
+                    />
+                  </span>
                 </span>
               </span>
             </span>
