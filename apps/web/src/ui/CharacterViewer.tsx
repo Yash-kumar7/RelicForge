@@ -258,7 +258,10 @@ export function CharacterViewer({
       )}
 
       {caption && (
-        <p className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-stone-600">
+        /* Clear of the feet. At bottom-3 it sat directly under the boots, close
+           enough to read as something attached to the figure rather than a note
+           about the view. */
+        <p className="pointer-events-none absolute -bottom-7 left-1/2 -translate-x-1/2 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-stone-600">
           {caption}
         </p>
       )}
