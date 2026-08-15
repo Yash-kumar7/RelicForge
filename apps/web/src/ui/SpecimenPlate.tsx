@@ -134,6 +134,16 @@ export function SpecimenPlate({ onEnter }: { onEnter: () => void }) {
 
   const current = relics[index];
 
+  /*
+   * The page must say something with no data.
+   *
+   * It rendered as a title, a rule and a button on an empty field when the
+   * relic list came back empty, which it did for months because the endpoint
+   * did not return asset paths. A landing page whose entire content is
+   * conditional on a fetch has no floor.
+   */
+  const loading = relics.length === 0;
+
   return (
     <section className="relative grid min-h-[100svh] w-full max-w-6xl grid-cols-1 gap-8 px-8 py-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
       {/* Plate header. The number is the relic's real place in the archive, not
@@ -146,6 +156,23 @@ export function SpecimenPlate({ onEnter }: { onEnter: () => void }) {
       </div>
 
       <div className="order-2 mt-6 lg:order-1 lg:mt-0">
+        {loading && (
+          <div className="space-y-6 border-l border-brass-800 pl-2">
+            {["condition", "temperament", "element"].map((field) => (
+              <div key={field} className="relative pl-6">
+                <span className="absolute left-0 top-[0.6rem] h-px w-4 bg-brass-800" />
+                <span className="block font-mono text-[9px] uppercase tracking-[0.3em] text-brass-800">
+                  {field}
+                </span>
+                <span className="mt-1 block h-5 w-40 bg-ash-800" />
+              </div>
+            ))}
+            <p className="pt-6 font-mono text-[11px] leading-relaxed text-bone-400">
+              Reading the archive.
+            </p>
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           {current && (
             <motion.div
@@ -182,7 +209,12 @@ export function SpecimenPlate({ onEnter }: { onEnter: () => void }) {
       </div>
 
       {/* The specimen. */}
-      <div className="order-1 h-[42svh] w-full lg:order-2 lg:h-[68svh]">
+      <div
+        className={[
+          "order-1 w-full lg:order-2",
+          current?.modelUrl ? "h-[42svh] lg:h-[68svh]" : "h-0",
+        ].join(" ")}
+      >
         {current?.modelUrl && (
           <Canvas camera={{ position: [2.4, 0.2, 2.4], fov: 42 }} gl={{ antialias: true }}>
             <ambientLight intensity={0.5} />

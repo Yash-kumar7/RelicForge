@@ -231,6 +231,16 @@ export async function relicRoutes(app: FastifyInstance): Promise<void> {
         relicId: r.relicId,
         name: r.name,
         status: r.status,
+        /*
+         * The asset paths, which this endpoint never returned.
+         *
+         * The title screen filters on modelUrl before showing a relic, so with
+         * the field absent every relic was dropped and the homepage rendered no
+         * weapon at all. It went unnoticed because the page around it was full
+         * of text; strip that away and the page is empty.
+         */
+        modelUrl: r.modelUrl ?? null,
+        conceptUrl: r.conceptUrl ?? null,
         mode: r.generationMode,
         cacheKey: r.cacheKey,
         dna: r.dna,
