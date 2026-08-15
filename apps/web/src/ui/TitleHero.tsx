@@ -234,7 +234,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
                * its own border is reached leaves the figure and loses the sheet
                * it was painted on.
                */
-              className="absolute bottom-[9svh] left-[-3%] h-[70svh] w-auto object-contain [mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)] [-webkit-mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)]"
+              className="absolute bottom-[17svh] left-[-3%] h-[70svh] w-auto object-contain [mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)] [-webkit-mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)]"
             />
           )}
         </AnimatePresence>
@@ -253,7 +253,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               style={{ transformOrigin: "right bottom" }}
               /* A touch darker and cooler than the glow behind it, so the boss
                stays its own colour instead of being tinted by the forge. */
-            className="absolute bottom-[9svh] right-[-3%] h-[76svh] w-auto object-contain brightness-[0.9] contrast-[1.05] [mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)] [-webkit-mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)]"
+            className="absolute bottom-[17svh] right-[-3%] h-[76svh] w-auto object-contain brightness-[0.9] contrast-[1.05] [mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)] [-webkit-mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)]"
             />
           )}
         </AnimatePresence>
