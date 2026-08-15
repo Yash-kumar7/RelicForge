@@ -98,10 +98,25 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
          * the bosses to differ.
          */
         const usable = data.relics.filter((r) => r.status === "COMPLETE" && r.modelUrl);
-        const seen = new Set<string>();
+        /*
+         * One per boss, and as many different elements as possible.
+         *
+         * Picking only by boss gave five relics that all happened to be
+         * lightning, so the same champion stood on the left every time and the
+         * left half of the face-off never changed. The element decides which
+         * champion is shown, so it has to vary too.
+         */
+        const seenBoss = new Set<string>();
+        const seenElement = new Set<string>();
         const perBoss = usable.filter((r) => {
-          if (seen.has(r.dna.bossInfluence)) return false;
-          seen.add(r.dna.bossInfluence);
+          if (seenBoss.has(r.dna.bossInfluence)) return false;
+          // Prefer an unseen element, but never drop a boss for it.
+          const others = usable.filter(
+            (o) => o.dna.bossInfluence === r.dna.bossInfluence && !seenElement.has(o.dna.element),
+          );
+          if (others.length > 0 && seenElement.has(r.dna.element)) return false;
+          seenBoss.add(r.dna.bossInfluence);
+          seenElement.add(r.dna.element);
           return true;
         });
         /* Up the ladder, so it opens on the first fight rather than mid-list. */
@@ -239,6 +254,19 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
           )}
         </AnimatePresence>
 
+        {/*
+          Mirrored, so the boss faces the champion.
+
+          The stance prompt asked for a figure turned to its own left, which is
+          inward for whoever stands on the left and outward for whoever stands on
+          the right. Both were generated the same way, so the boss came out
+          looking off the edge of the page.
+
+          The flip lives on a wrapper rather than on the image, because scaleX
+          and rotateY on the same element invert each other and that is what
+          turned the champion away from the camera and made it vanish earlier.
+        */}
+        <div className="absolute inset-0 -scale-x-100">
         <AnimatePresence>
           {art && (
             <motion.img
@@ -253,10 +281,11 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               style={{ transformOrigin: "right bottom" }}
               /* A touch darker and cooler than the glow behind it, so the boss
                stays its own colour instead of being tinted by the forge. */
-            className="absolute bottom-[17svh] right-[-3%] h-[76svh] w-auto object-contain brightness-[0.9] contrast-[1.05] [mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)] [-webkit-mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)]"
+            className="absolute bottom-[17svh] left-[-3%] h-[76svh] w-auto object-contain brightness-[0.9] contrast-[1.05] [mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)] [-webkit-mask-image:radial-gradient(ellipse_58%_62%_at_50%_46%,#000_42%,transparent_86%)]"
             />
           )}
         </AnimatePresence>
+        </div>
       </div>
 
       {/*
