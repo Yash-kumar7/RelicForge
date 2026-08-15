@@ -240,22 +240,38 @@ async function meshes(): Promise<void> {
 }
 
 /**
- * Copies the new models over the live ones, keeping the previous file beside it.
+ * Copies the new models over the live ones, keeping the previous one as an asset
+ * rather than as a backup.
  *
- * The backup matters: these are the characters in every screenshot, and a pose
- * fix that turned out worse would otherwise be unrecoverable without spending
- * the credits again.
+ * The open-hand mesh is not dead weight, it is the other half of the feature. A
+ * fist clenched around nothing looks as wrong as an open hand wrapped around a
+ * sword, so the setup screen shows the relaxed character until a weapon is
+ * chosen and the closed one once it is. Keeping it as model-open.glb means it is
+ * served like any other asset instead of sitting beside the live file with an
+ * extension nothing can load.
  */
 async function promote(): Promise<void> {
+  /*
+   * --only ember,frost promotes a subset.
+   *
+   * The run is sequential and takes a quarter of an hour, and the setup screen
+   * renders the unrigged model.glb directly, so a finished character can be seen
+   * in game without waiting for the rest of the batch or for any rigging.
+   */
+  const onlyArg = process.argv.indexOf("--only");
+  const only =
+    onlyArg === -1 ? null : new Set((process.argv[onlyArg + 1] ?? "").split(",").filter(Boolean));
+
   let moved = 0;
   for (const character of CHARACTERS) {
+    if (only && !only.has(character.slug)) continue;
     const from = path.join(regenRoot(), character.slug, "model.glb");
     const liveDir = path.join(env.storageDir, character.kind, character.slug);
     const to = path.join(liveDir, "model.glb");
 
     try {
       await mkdir(liveDir, { recursive: true });
-      await copyFile(to, `${to}.before-grip-pose`).catch(() => undefined);
+      await copyFile(to, path.join(liveDir, "model-open.glb")).catch(() => undefined);
       await copyFile(from, to);
       await copyFile(
         path.join(regenRoot(), character.slug, "concept.png"),
@@ -267,7 +283,7 @@ async function promote(): Promise<void> {
       console.error(`  !!  ${character.slug}: ${(err as Error).message}`);
     }
   }
-  console.log(`\nPromoted ${moved}. Previous models kept as model.glb.before-grip-pose.`);
+  console.log(`\nPromoted ${moved}. Open-hand versions kept as model-open.glb.`);
   console.log("Rigs are now stale: re-run rig-characters.ts, then optimize-rigs.ts.");
 }
 

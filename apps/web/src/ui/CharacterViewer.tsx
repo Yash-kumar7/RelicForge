@@ -104,31 +104,48 @@ export function CharacterViewer({
   autoRotate = true,
   weapon,
   slug,
+  fallbackUrl,
 }: {
   url: string;
   height: number;
   accent: string;
   /** Selects this character's measured hand socket. See game/handSockets.ts. */
   slug: string;
+  /**
+   * Used when `url` is absent.
+   *
+   * The champions have two meshes, one with the weapon hand open and one with it
+   * closed, but only the ones that have been regenerated do. A character still
+   * on its original mesh has no open-hand variant to ask for, and falling back
+   * beats rendering nothing.
+   */
+  fallbackUrl?: string;
   className?: string;
   caption?: string;
   autoRotate?: boolean;
   weapon?: HeldWeaponSpec | undefined;
 }) {
-  const [available, setAvailable] = useState<boolean | null>(null);
+  const [resolved, setResolved] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
-    setAvailable(null);
+    setResolved(undefined);
     fetch(url, { method: "HEAD" })
-      .then((res) => !cancelled && setAvailable(res.ok))
-      .catch(() => !cancelled && setAvailable(false));
+      .then(async (res) => {
+        if (res.ok) return url;
+        if (!fallbackUrl) return null;
+        const alt = await fetch(fallbackUrl, { method: "HEAD" });
+        return alt.ok ? fallbackUrl : null;
+      })
+      .then((found) => !cancelled && setResolved(found))
+      .catch(() => !cancelled && setResolved(null));
     return () => {
       cancelled = true;
     };
-  }, [url]);
+  }, [url, fallbackUrl]);
 
-  if (available === false) return null;
+  if (resolved === null) return null;
+  const available = resolved !== undefined;
 
   return (
     <div className={`relative cursor-grab active:cursor-grabbing ${className}`}>
@@ -138,7 +155,7 @@ export function CharacterViewer({
           <directionalLight position={[3, 5, 4]} intensity={2.1} />
           <directionalLight position={[-3, 2, -2]} intensity={0.9} color={accent} />
           <Suspense fallback={null}>
-            <Model url={url} height={height} weapon={weapon} accent={accent} slug={slug} />
+            <Model url={resolved ?? url} height={height} weapon={weapon} accent={accent} slug={slug} />
             <Environment preset="night" />
           </Suspense>
           {/*

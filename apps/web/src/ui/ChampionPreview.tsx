@@ -38,7 +38,22 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
   return (
     <CharacterViewer
       slug={slug}
-      url={`/assets/champions/${slug}/model.glb`}
+      /*
+        Two meshes, chosen by whether anything is in hand.
+
+        The champions are generated with one fist closed, which is what makes a
+        weapon read as gripped rather than passing through spread fingers. A fist
+        clenched around nothing looks just as wrong the other way, so the relaxed
+        mesh stands in until a weapon is actually chosen. The fallback covers
+        champions that have not been regenerated and therefore have no open-hand
+        variant to ask for.
+      */
+      url={
+        weapon === undefined
+          ? `/assets/champions/${slug}/model-open.glb`
+          : `/assets/champions/${slug}/model.glb`
+      }
+      fallbackUrl={`/assets/champions/${slug}/model.glb`}
       height={CHAMPION_HEIGHT}
       accent={theme.forge}
       weapon={weapon}
