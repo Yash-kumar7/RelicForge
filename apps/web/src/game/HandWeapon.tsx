@@ -131,7 +131,14 @@ export function BossHandWeaponSwing({
   useFrame(() => {
     const swing = bossSwing();
     // The boss only has one attack, and it is a heavy one.
-    if (arm.current) applySwing(arm.current, swing, 1.15, "heavy");
+    /*
+     * A wider arc than the player's.
+     *
+     * A boss is two and a half times a champion's height and is watched from
+     * further away, so the same rotation covers less of the screen and reads as
+     * a twitch rather than a blow coming at you.
+     */
+    if (arm.current) applySwing(arm.current, swing, 1.35, "heavy");
 
     /**
      * A slash that appears only as the blow lands.

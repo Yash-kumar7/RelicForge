@@ -29,9 +29,21 @@ export function setBossAction(action: BossAction, progress: number): void {
   bossState.progress = progress;
 }
 
-/** Where the arm sits at the end of the wind-up, and at the end of the strike. */
-const WOUND = -1.3;
-const EXTENDED = 2.4;
+/**
+ * Where the arm sits at the end of the wind-up, and at the end of the strike.
+ *
+ * The wind-up was as large as it was because a telegraph has to be unmissable.
+ * It went too far: at -1.3 the weapon travelled about 74 degrees backwards over
+ * a full second, then covered the strike in 260ms, so almost everything a player
+ * saw was the sword going away from them and the blow itself was a flicker. The
+ * attack read as the boss winding up and never hitting.
+ *
+ * The wind-up is smaller and the strike reaches further, so the down-swing is
+ * now the larger and slower-to-miss half of the motion. The telegraph is still
+ * a full second, which is what makes the attack dodgeable.
+ */
+const WOUND = -0.8;
+const EXTENDED = 3.1;
 
 /**
  * Swing offset for the boss's weapon, as one continuous motion.

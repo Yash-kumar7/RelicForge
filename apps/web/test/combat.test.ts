@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { COMBAT, attackSpec, isWithinArc } from "../src/game/combat";
+import { bossSwing, setBossAction } from "../src/game/bossState";
 import {
   ARENA_RADIUS,
   BOSS_LIMIT,
@@ -114,5 +115,36 @@ describe("attack input", () => {
     // A 400ms buffer window has to outlast a light attack, or the buffered press
     // goes stale before the attack it was waiting on has finished.
     expect(total).toBeLessThan(500);
+  });
+});
+
+describe("boss swing shape", () => {
+  it("spends more of its travel striking than winding up", () => {
+    /*
+     * The wind-up used to be 1.3 against a 2.4 strike and lasted a full second
+     * where the strike lasted 260ms, so almost everything a player saw was the
+     * sword travelling away from them and the blow was a flicker. The attack
+     * read as the boss winding up and never hitting.
+     */
+    setBossAction("telegraph", 1);
+    const wound = Math.abs(bossSwing());
+
+    setBossAction("strike", 1);
+    const struck = bossSwing();
+
+    expect(struck).toBeGreaterThan(0);
+    expect(struck).toBeGreaterThan(wound * 3);
+  });
+
+  it("has the weapon past rest by the time damage lands", () => {
+    // Damage is applied when the wind-up ends, so a weapon still behind the boss
+    // at mid-strike means the hit arrives before the swing visibly happens.
+    setBossAction("strike", 0.5);
+    expect(bossSwing()).toBeGreaterThan(0);
+  });
+
+  it("returns to rest once the attack is over", () => {
+    setBossAction("recover", 1);
+    expect(Math.abs(bossSwing())).toBeLessThan(0.01);
   });
 });
