@@ -23,35 +23,16 @@ export function Arena() {
   const theme = themeForBoss(bossLevel);
   const forgeLight = useRef<PointLight>(null);
 
-  // Pillar count and jitter vary per affinity: fire is a tight brawling ring,
-  // ice is open and colonnaded, storm is broken and irregular.
-  const pillars = useMemo(() => {
-    const config = {
-      1: { count: 10, inset: 1.2, base: 4.8, jitter: 1.0 },
-      2: { count: 16, inset: 0.9, base: 6.4, jitter: 0.4 },
-      3: { count: 12, inset: 1.0, base: 7.2, jitter: 0.6 },
-      4: { count: 8, inset: 1.6, base: 5.4, jitter: 2.2 },
-      5: { count: 6, inset: 2.0, base: 3.4, jitter: 2.8 },
-    }[bossLevel] ?? { count: 10, inset: 1.2, base: 4.8, jitter: 1.0 };
-
-    return Array.from({ length: config.count }, (_, i) => {
-      const angle = (i / config.count) * Math.PI * 2;
-      // Deterministic pseudo-jitter: same affinity always builds the same
-      // arena, so a re-recorded run matches the previous take.
-      const wobble = ((i * 37) % 11) / 11;
-      return {
-        key: i,
-        position: [
-          Math.cos(angle) * (ARENA_RADIUS - config.inset),
-          2.4,
-          Math.sin(angle) * (ARENA_RADIUS - config.inset),
-        ] as [number, number, number],
-        height: config.base + wobble * config.jitter,
-        tilt: bossLevel >= 4 ? (wobble - 0.5) * 0.28 : 0,
-      };
-    });
-  }, [bossLevel]);
-
+  /*
+   * No pillars.
+   *
+   * A ring of them stood at the edge of every arena and nothing ever touched
+   * one: they could not be hidden behind, they did not block the boss's line,
+   * and they did not stop a swing. Ten boxes of scenery per fight, varied by
+   * count and height per rung, doing the work of a background image. The rungs
+   * are told apart by their floors and their light now, which the player is
+   * actually looking at.
+   */
   /*
    * One floor pattern per rung, in the same spirit as the pillars above.
    *
@@ -202,13 +183,6 @@ export function Arena() {
         flood, a laid-out hall, roots and a canopy, or no walls at all.
       */}
       <ArenaFeatures level={bossLevel} theme={theme} />
-
-      {pillars.map((p) => (
-        <mesh key={p.key} position={p.position} rotation={[p.tilt, 0, p.tilt]}>
-          <boxGeometry args={[0.9, p.height, 0.9]} />
-          <meshStandardMaterial color={theme.pillar} roughness={0.9} />
-        </mesh>
-      ))}
 
       {/* The forge. Dormant during the fight, the focal point afterwards. */}
       <group position={[0, 0, -ARENA_RADIUS + 2.5]}>
