@@ -73,26 +73,24 @@ export function TitleScreen() {
   const selectArmament = useLoadout((s) => s.select);
 
   /*
-   * The weapon step only exists once there is a weapon to choose between.
+   * All three steps, always.
    *
-   * A player who has not forged anything owns the iron sword and nothing else,
-   * so the step offered one option and asked them to pick it. That is a click
-   * with no decision in it, and it sits between the two choices that do matter.
+   * The weapon step was briefly hidden for a player who owns nothing, on the
+   * grounds that one option is not a choice. That was wrong for two reasons: it
+   * takes away the only screen that says what you are carrying into the fight,
+   * and it hides the empty relic slot, which is the thing that makes forging one
+   * feel like the point rather than a feature you have not found.
    *
-   * The step appears the moment a relic is claimed, because from then on it is a
-   * real question.
+   * The iron sword is in hand from the start instead, so the step is somewhere
+   * to look rather than something to get past.
    */
-  const hasChoice = owned.length > 0;
-  const steps = hasChoice ? ALL_STEPS : ([ALL_STEPS[0], ALL_STEPS[2]] as const);
+  const steps = ALL_STEPS;
+  const section = step;
 
   useEffect(() => {
-    // In hand rather than merely owned, so the champion is holding it on the
-    // screen where you are deciding who to be.
-    if (!hasChoice) selectArmament(IRON);
-  }, [hasChoice, selectArmament]);
-
-  /** Which section a step index shows, once the weapon step may be absent. */
-  const section = hasChoice ? step : step === 0 ? 0 : 2;
+    // Only as a starting position. Selecting a relic later replaces it.
+    if (owned.length === 0) selectArmament(IRON);
+  }, [owned.length, selectArmament]);
   const affinity = useGameStore((s) => s.affinity);
   const bossLevel = useGameStore((s) => s.bossLevel);
   const chooseAffinity = useGameStore((s) => s.chooseAffinity);
