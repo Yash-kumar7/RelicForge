@@ -31,11 +31,11 @@ export const HAND_SOCKETS: Record<string, HandSocketRatios> = {
   "ember": { x: -0.4213, y: 0.5716, z: 0.1412, bone: "RightHand" },
   "frost": { x: -0.4309, y: 0.5747, z: 0.1845, bone: "RightHand" },
   "storm": { x: -0.4413, y: 0.5697, z: 0.1916, bone: "RightHand" },
-  "ashen-warden": { x: -0.4254, y: 0.5311, z: 0.0875, bone: "RightHand" },
-  "drowned-choir": { x: -0.4155, y: 0.572, z: 0.1388, bone: "RightHand" },
-  "gilded-husk": { x: -0.4118, y: 0.5948, z: 0.0196, bone: "RightHand" },
-  "hollow-sovereign": { x: -0.4194, y: 0.5973, z: 0.138, bone: "RightHand" },
-  "rootbound-king": { x: -0.4125, y: 0.578, z: 0.0824, bone: "RightHand" },
+  "ashen-warden": { x: -0.4254, y: 0.571, z: 0.0875, bone: "RightHand" },
+  "drowned-choir": { x: -0.4155, y: 0.612, z: 0.1388, bone: "RightHand" },
+  "gilded-husk": { x: -0.4118, y: 0.635, z: 0.0196, bone: "RightHand" },
+  "hollow-sovereign": { x: -0.4194, y: 0.637, z: 0.138, bone: "RightHand" },
+  "rootbound-king": { x: -0.4125, y: 0.618, z: 0.0824, bone: "RightHand" },
 };
 
 /**
