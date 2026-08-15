@@ -88,9 +88,23 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
     fetch("/api/debug/relics")
       .then((r) => r.json())
       .then((data: { relics: ShowcaseRelic[] }) => {
-        setRelics(
-          data.relics.filter((r) => r.status === "COMPLETE" && r.modelUrl).slice(0, 5),
-        );
+        /*
+         * One relic per boss, not the first five in the archive.
+         *
+         * The cache is filled a boss at a time, so taking the first five gave
+         * five weapons from the same one or two rungs and the backdrop barely
+         * changed. The point of cycling is to show that a different fight
+         * against a different thing produces a different weapon, which needs
+         * the bosses to differ.
+         */
+        const usable = data.relics.filter((r) => r.status === "COMPLETE" && r.modelUrl);
+        const seen = new Set<string>();
+        const perBoss = usable.filter((r) => {
+          if (seen.has(r.dna.bossInfluence)) return false;
+          seen.add(r.dna.bossInfluence);
+          return true;
+        });
+        setRelics(perBoss.length > 1 ? perBoss : usable.slice(0, 5));
       })
       .catch(() => {
         /* The title screen must still stand with the API down. */
