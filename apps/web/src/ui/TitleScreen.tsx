@@ -530,9 +530,28 @@ export function TitleScreen() {
                     the first thirty seconds of a fight. Dodging survives in
                     Storm's own line, in words.
                   */}
-                  <span className="mt-4 block font-mono text-[10px] uppercase tracking-[0.22em] text-brass-700">
-                    {championStats(championFor(a.id)).health}{" "}
-                    <span className="text-stone-600">health</span>
+                  {/*
+                    Health, and what it buys.
+
+                    Eighty means nothing until you know what is hitting you. The
+                    first boss deals a fixed amount, so the same figure can be
+                    stated as the number of blows a champion survives, which is
+                    the form a player actually thinks in while deciding whether
+                    to take a fight.
+                  */}
+                  <span className="mt-4 flex items-baseline gap-3">
+                    <span className="font-display text-2xl tabular-nums text-bone-200">
+                      {championStats(championFor(a.id)).health}
+                    </span>
+                    <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
+                      health
+                    </span>
+                    <span className="font-mono text-[10px] text-bone-400">
+                      {describeBoss(1, championStats(championFor(a.id)).health).find(
+                        (s) => s.label === "kills you in",
+                      )?.value ?? ""}{" "}
+                      from the first boss
+                    </span>
                   </span>
                   </span>
                 </button>
