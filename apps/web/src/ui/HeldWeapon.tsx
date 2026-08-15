@@ -44,17 +44,22 @@ export function HeldWeapon({
    * Sitting it dead centre in the hand ran the blade through the forearm.
    */
   /*
-   * The forward offset is measured, the other two are not.
+   * Measured off the rigged twins of these same champions, not estimated.
    *
-   * 0.42 of body depth put the weapon well in front of the arm, so it read as
-   * floating past the fingers rather than sitting in the palm. The rigged twins
-   * of these champions place RightHand at 0.065 against a body 0.459 deep,
-   * which is 0.14, and that is what this is now. Width and height are left as
-   * they were because the iron sword hangs correctly from them.
+   * Reading RightHand out of ember/rig/walking.glb, fitted to a 1.8 unit
+   * champion, gives [-0.484, 1.029, 0.065] against a body 1.142 wide, 1.8 tall
+   * and 0.459 deep. As fractions: -0.42 of width, 0.572 of height, 0.14 of
+   * depth.
+   *
+   * The estimate was wrong on two axes and both were visible. 0.46 of height is
+   * mid-thigh, so the grip hung about a third of a world unit below the hand and
+   * the fingers closed on the blade above the guard. The width was positive,
+   * which on these rigs is the left hand, so the champion carried the weapon in
+   * the wrong one.
    */
   const hand: [number, number, number] = [
-    socket.width * 0.44,
-    socket.height * 0.46,
+    socket.width * -0.42,
+    socket.height * 0.572,
     socket.depth * 0.14,
   ];
   /*
@@ -66,7 +71,12 @@ export function HeldWeapon({
    * the hand. It also reads as a fighter resting a blade rather than presenting
    * it.
    */
-  const tilt: [number, number, number] = [20 * DEG, 0, -30 * DEG];
+  /*
+   * Positive roll, because the hand is on negative x. A rotation about z maps
+   * the blade's +Y toward +x when the angle is negative, so a negative roll on
+   * that side leans the weapon across the body instead of away from it.
+   */
+  const tilt: [number, number, number] = [20 * DEG, 0, 30 * DEG];
 
   if (weapon.kind === "iron") {
     return (
