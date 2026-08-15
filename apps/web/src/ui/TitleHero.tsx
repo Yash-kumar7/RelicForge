@@ -181,16 +181,15 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(7,6,5,0.85)_92%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ash-950 to-transparent" />
       {/*
-        The forge, under the floor.
+        The forge, under the floor, barely.
 
-        The page was a black void with figures cut out of it, which is the one
-        atmosphere a game about a forge should not have. A warm source low and
-        centred gives the figures something to be lit from and stand on, and it
-        sits directly beneath the weapon, so the glow reads as the thing that
-        made it.
+        This was two gradients and much brighter, from when the figures were
+        washed out and needed something to stand on. Now that they are cut out
+        and carry their own lighting, a strong glow has nothing to justify it and
+        reads as a smudge behind the button. What is left is only enough to keep
+        the bottom edge from ending in flat black.
       */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_100%,rgba(255,107,26,0.16),transparent_70%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_30%_20%_at_50%_98%,rgba(255,140,66,0.22),transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_46%_26%_at_50%_104%,rgba(255,107,26,0.09),transparent_72%)]" />
 
       {/*
         The face-off.
