@@ -13,7 +13,7 @@ import { PendingForgePanel } from "./PendingForgePanel";
 import { SpecimenPlate } from "./SpecimenPlate";
 import { TitleHero } from "./TitleHero";
 import { HowItWorks } from "./HowItWorks";
-import { rankFor } from "../state/useProgress";
+import { RANKS, rankFor } from "../state/useProgress";
 import { useProgress } from "../state/useProgress";
 
 /**
@@ -48,6 +48,11 @@ const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
  * screen, not so much that it becomes a coloured page. The figure is lit by its
  * own art already, so this is the room rather than the key light.
  */
+/** The most health any champion has, so the bars measure against each other. */
+const TOUGHEST = Math.max(
+  ...(["fire", "ice", "storm"] as Affinity[]).map((id) => championStats(championFor(id)).health),
+);
+
 const ELEMENT_GLOW: Record<Affinity, string> = {
   fire: "rgba(255,107,26,0.3)",
   ice: "rgba(74,168,216,0.28)",
@@ -376,9 +381,34 @@ export function TitleScreen() {
             })}
           </ol>
 
-            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.22em] text-brass-800">
-              rank {rank.name} · {xp} xp
-            </span>
+            {/*
+              Shown once it means something.
+
+              At zero experience this read "rank Unproven · 0 xp", which is a
+              label for having done nothing yet, printed on the first screen a
+              new player sees. Nobody reads it because there is nothing in it to
+              read.
+
+              Once there is progress it becomes worth showing, and it gets pips
+              rather than a bare word: a rank is a position in a series, and a
+              series is easier to see than to name.
+            */}
+            {xp > 0 && (
+              <span className="flex shrink-0 items-center gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone-400">
+                  {rank.name}
+                </span>
+                <span className="flex gap-[3px]" aria-hidden>
+                  {RANKS.map((tier, i) => (
+                    <span
+                      key={tier.name}
+                      className={`h-[3px] w-3 ${i <= rank.index ? "bg-ember-500" : "bg-ash-800"}`}
+                    />
+                  ))}
+                </span>
+                <span className="font-mono text-[10px] tabular-nums text-brass-800">{xp} xp</span>
+              </span>
+            )}
           </div>
 
           {section === 0 && (
@@ -539,18 +569,39 @@ export function TitleScreen() {
                     the form a player actually thinks in while deciding whether
                     to take a fight.
                   */}
-                  <span className="mt-4 flex items-baseline gap-3">
-                    <span className="font-display text-2xl tabular-nums text-bone-200">
-                      {championStats(championFor(a.id)).health}
+                  {/*
+                    One bar, for the one stat.
+
+                    Three bars asked which champion won three separate contests,
+                    two of which nobody had asked about, and one of them was
+                    measured per ten seconds and printed as eleven out of ten.
+                    A single bar answers the question a player does have: how
+                    much punishment does this one take compared to the others.
+
+                    Scaled against the toughest rather than from zero, so the
+                    gap between 80 and 130 is the length of the difference
+                    rather than a fraction of some invisible ceiling.
+                  */}
+                  <span className="mt-4 block max-w-[15rem]">
+                    <span className="flex items-baseline justify-between">
+                      <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
+                        health
+                      </span>
+                      <span className="font-display text-xl tabular-nums text-bone-200">
+                        {championStats(championFor(a.id)).health}
+                      </span>
                     </span>
-                    <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
-                      health
-                    </span>
-                    <span className="font-mono text-[10px] text-bone-400">
-                      {describeBoss(1, championStats(championFor(a.id)).health).find(
-                        (s) => s.label === "kills you in",
-                      )?.value ?? ""}{" "}
-                      from the first boss
+                    <span className="mt-1.5 block h-[3px] w-full bg-ash-800">
+                      <span
+                        className={`block h-[3px] transition-all duration-500 ${
+                          affinity === a.id ? a.bar : "bg-stone-600"
+                        }`}
+                        style={{
+                          width: `${Math.round(
+                            (championStats(championFor(a.id)).health / TOUGHEST) * 100,
+                          )}%`,
+                        }}
+                      />
                     </span>
                   </span>
                   </span>
