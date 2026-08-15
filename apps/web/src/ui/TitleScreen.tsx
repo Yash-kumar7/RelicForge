@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import type { Affinity } from "@relic/core";
-import { championFor, describeChampion } from "../game/champions";
+import { championFor, championStats, describeChampion } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
-import { BOSSES, bossAt, highestCleared, isCleared } from "../game/bosses";
+import { BOSSES, bossAt, describeBoss, highestCleared, isCleared } from "../game/bosses";
 import { TitleShowcase } from "./TitleShowcase";
 import { ChampionPreview } from "./ChampionPreview";
 import { TitleBackdrop } from "./TitleBackdrop";
@@ -451,11 +451,29 @@ export function TitleScreen() {
                           {boss.blurb}
                         </span>
                       </span>
-                      {cleared && (
-                        <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-600">
-                          cleared
-                        </span>
-                      )}
+                      {/*
+                        Stats on the row, in the same shape the element cards
+                        use. Picking a champion is choosing how to play; picking
+                        a boss is choosing what you can survive, and that was the
+                        one choice on this screen with nothing to judge it by.
+                      */}
+                      <span className="flex shrink-0 flex-col items-end gap-1">
+                        {cleared && (
+                          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-600">
+                            cleared
+                          </span>
+                        )}
+                        <dl className="w-32 space-y-1 font-mono text-[9px] uppercase tracking-[0.12em]">
+                          {describeBoss(boss.level, championStats(championFor(affinity)).health).map(
+                            (stat) => (
+                              <div key={stat.label} className="flex justify-between gap-2">
+                                <dt className="text-stone-700">{stat.label}</dt>
+                                <dd className="tabular-nums text-stone-300">{stat.value}</dd>
+                              </div>
+                            ),
+                          )}
+                        </dl>
+                      </span>
                     </span>
                   </button>
                 );

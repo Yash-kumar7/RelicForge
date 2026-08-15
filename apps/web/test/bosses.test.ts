@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BOSSES, MAX_LEVEL, bossAt, bossTitleFor, isUnlocked } from "../src/game/bosses";
+import { BOSSES, MAX_LEVEL, bossAt, bossTitleFor, describeBoss, isUnlocked } from "../src/game/bosses";
 import { themeForBoss } from "../src/game/theme";
 import { Group, Vector3 } from "three";
 
@@ -98,5 +98,35 @@ describe("facing convention", () => {
 
     const facing = new Vector3(0, 0, 1).applyQuaternion(group.quaternion);
     expect(facing.z).toBeLessThan(-0.9);
+  });
+});
+
+describe("describeBoss", () => {
+  it("gets harder in the numbers a player can see, not only in the fiction", () => {
+    const health = (level: number) =>
+      Number(describeBoss(level, 100).find((s) => s.label === "health")?.value);
+    for (let level = 2; level <= MAX_LEVEL; level++) {
+      expect(health(level)).toBeGreaterThan(health(level - 1));
+    }
+  });
+
+  it("answers the question that decides the fight", () => {
+    // Picking a champion is choosing how to play; picking a boss is choosing
+    // what you can survive. How many hits you can take is the number that
+    // settles it, and it needs the champion's health because the same boss
+    // kills Ember in three and Frost in six.
+    const embersOdds = describeBoss(1, 80).find((s) => s.label === "kills you in");
+    const frostsOdds = describeBoss(1, 130).find((s) => s.label === "kills you in");
+    expect(embersOdds?.value).not.toBe(frostsOdds?.value);
+    expect(parseInt(frostsOdds?.value ?? "0", 10)).toBeGreaterThan(
+      parseInt(embersOdds?.value ?? "0", 10),
+    );
+  });
+
+  it("states plain labels with no jargon, like every other card", () => {
+    for (const stat of describeBoss(1, 100)) {
+      expect(stat.label).toMatch(/^[a-z0-9 ]+$/);
+      expect(stat.value).not.toContain("%");
+    }
   });
 });

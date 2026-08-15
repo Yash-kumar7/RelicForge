@@ -1,3 +1,5 @@
+import { COMBAT } from "./combat";
+import { BOSS_MAX_HP } from "../state/useGameStore";
 /**
  * The boss ladder.
  *
@@ -151,4 +153,35 @@ export function isUnlocked(_level: number): boolean {
 /** Whether the player has actually beaten this rung, for display only. */
 export function isCleared(level: number): boolean {
   return highestCleared() >= level;
+}
+
+/**
+ * What a boss is, in the same shape the champion cards use.
+ *
+ * The enemy step was the only choice on the setup screen with no numbers, which
+ * is the wrong one to leave blank: a player picking a champion is choosing how
+ * to play, but a player picking a boss is choosing what they can survive.
+ *
+ * Derived from the same multipliers the fight applies, so a difficulty change
+ * cannot leave this screen quoting a boss that no longer exists.
+ */
+export function describeBoss(
+  level: number,
+  championHealth: number,
+): { label: string; value: string }[] {
+  const boss = bossAt(level);
+  const health = Math.round(BOSS_MAX_HP * boss.hp);
+  const damage = Math.round(COMBAT.boss.damage * boss.damage);
+
+  return [
+    { label: "health", value: `${health}` },
+    { label: "hits you for", value: `${damage}` },
+    /*
+     * The number that actually decides whether to take this fight, and the
+     * reason this takes the champion's health rather than a constant: the same
+     * boss kills Ember in three hits and Frost in six, and that difference is
+     * the whole point of choosing between them.
+     */
+    { label: "kills you in", value: `${Math.ceil(championHealth / damage)} hits` },
+  ];
 }
