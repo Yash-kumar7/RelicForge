@@ -10,6 +10,7 @@ import { BossPortrait } from "./BossPortrait";
 import { BossPreview } from "./BossPreview";
 import { ArmamentPanel } from "./ArmamentPanel";
 import { PendingForgePanel } from "./PendingForgePanel";
+import { RankSigil } from "./RankSigil";
 import { SpecimenPlate } from "./SpecimenPlate";
 import { TitleHero } from "./TitleHero";
 import { HowItWorks } from "./HowItWorks";
@@ -49,16 +50,6 @@ const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
  * own art already, so this is the room rather than the key light.
  */
 /** The most health any champion has, so the bars measure against each other. */
-/**
- * Rank as a numeral, cut the way the rest of the display type is.
- *
- * It was six dashes, which read as a progress bar rather than a standing, and
- * before that a bare word. An emoji or a badge asset would be clip art beside an
- * inscriptional face; a Roman numeral is the convention that face already
- * carries, and it says both which rank this is and that there are others.
- */
-const NUMERALS = ["I", "II", "III", "IV", "V", "VI"] as const;
-
 /** The most health any champion has, so the bars measure against each other. */
 const TOUGHEST = Math.max(
   ...(["fire", "ice", "storm"] as Affinity[]).map((id) => championStats(championFor(id)).health),
@@ -421,19 +412,22 @@ export function TitleScreen() {
               is replaced by saying so.
             */}
             <span className="flex shrink-0 items-center gap-3">
-              <span
-                className="flex h-7 w-7 shrink-0 items-center justify-center border border-ember-500/50 font-display text-[12px] leading-none text-ember-300"
-                aria-hidden
-              >
-                {NUMERALS[rank.index] ?? "I"}
-              </span>
+              <RankSigil index={rank.index} title={rank.name} />
 
+              {/*
+                The current rank is not named here.
+
+                The sigil says which rank this is and the line says which one is
+                next, so printing "Unproven" between them was a third statement
+                of the same fact. It lives on the sigil's title, where a player
+                who wants the word can find it without it taking a line.
+              */}
               <span className="min-w-[9rem]">
                 <span className="flex items-baseline justify-between gap-3">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone-300">
-                    {rank.name}
+                  <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
+                    rank
                   </span>
-                  <span className="font-mono text-[9px] tabular-nums text-brass-800">
+                  <span className="font-mono text-[9px] tabular-nums text-bone-400">
                     {rank.next === null ? "max" : `${rank.next - xp} to ${RANKS[rank.index + 1]?.name ?? ""}`}
                   </span>
                 </span>
@@ -580,49 +574,6 @@ export function TitleScreen() {
                     identically, which made the first decision in the game a
                     cosmetic one wearing the clothes of a real one.
                   */}
-                  <p className="mt-2 text-[11px] leading-relaxed text-stone-500">
-                    {championFor(a.id).blurb}
-                  </p>
-
-                  {/*
-                    What this champion tends to walk away with.
-
-                    Stats answer which champion is stronger, which is a question
-                    about winning. This answers what you end up holding, which is
-                    the question the game is actually about, and it is the only
-                    reason to pick one of these three over another that the
-                    screen was not stating.
-                  */}
-                  <p className="mt-3 max-w-lg text-[12px] leading-relaxed text-bone-400/90">
-                    <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
-                      forges{" "}
-                    </span>
-                    {championFor(a.id).forges}
-                  </p>
-
-                  {/*
-                    One figure, and no bars.
-
-                    The bars compared health and dodges, and dodges was measured
-                    per ten seconds, which nobody thinks in and which printed as
-                    "11 / 10s" for Storm, reading as eleven out of ten. Worse,
-                    they were answering the wrong question: they compared which
-                    champion is stronger, and the line above them already gives
-                    the reason to choose, which is what each one tends to earn.
-
-                    Health stays because it is the one number a player feels in
-                    the first thirty seconds of a fight. Dodging survives in
-                    Storm's own line, in words.
-                  */}
-                  {/*
-                    Health, and what it buys.
-
-                    Eighty means nothing until you know what is hitting you. The
-                    first boss deals a fixed amount, so the same figure can be
-                    stated as the number of blows a champion survives, which is
-                    the form a player actually thinks in while deciding whether
-                    to take a fight.
-                  */}
                   {/*
                     One bar, for the one stat.
 
@@ -661,6 +612,27 @@ export function TitleScreen() {
                   </span>
                 </button>
               ))}
+            </div>
+
+            {/*
+              Detail for the one champion being chosen.
+
+              Every row carried a trade line, a forging line and a stat, so
+              picking between three meant reading nine paragraphs before the
+              first click. A player compares by identity and by one number, then
+              wants the detail on whichever they are leaning toward, so the rows
+              keep the comparison and this carries the reasons.
+            */}
+            <div className="mt-6 border-t border-brass-800 pt-5">
+              <p className="max-w-lg text-[13px] leading-relaxed text-bone-200/80">
+                {championFor(affinity).blurb}
+              </p>
+              <p className="mt-3 max-w-lg text-[12px] leading-relaxed text-bone-400">
+                <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
+                  forges{" "}
+                </span>
+                {championFor(affinity).forges}
+              </p>
             </div>
           </section>
           )}
