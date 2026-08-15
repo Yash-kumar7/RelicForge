@@ -1,5 +1,5 @@
 /**
- * Generates the arena's built objects. Currently that is the forge.
+ * Generates the arena's built objects: the forge, and one set piece per rung.
  *
  * The arena is primitives, which was the right call while the question was
  * whether any of this worked. The forge is where that stops being acceptable: it
@@ -55,17 +55,49 @@ interface ArenaPiece {
   metres: number;
 }
 
-/*
- * One piece, because the arena needs one piece.
- *
- * This started as five standing stones, one per rung, to replace the grey boxes
- * around the edge. Then the boxes were deleted instead: nothing ever touched one,
- * so generating beautiful versions would have bought five pieces of prettier
- * scenery. The forge is the opposite case. It is where the reveal happens, it is
- * in every victory shot and every frame of the demo that matters, and right now
- * it is two boxes with a glowing panel between them.
- */
 const PIECES: ArenaPiece[] = [
+  /*
+   * One set piece per rung, standing around the edge of the arena.
+   *
+   * Not a ring of interchangeable pillars, which is what got deleted: those were
+   * the same object repeated ten times and nothing about them said which fight
+   * you were in. These are five different things. A player who has seen the
+   * Choir's wreck cannot mistake it for the King's tree even with the colour
+   * pulled out, which is the whole point.
+   *
+   * Each is placed a handful of times at different sizes and bearings, so a few
+   * copies build a skyline rather than a fence.
+   */
+  {
+    slug: "warden-arch",
+    metres: 9,
+    subject:
+      "A colossal ruined stone archway, one side collapsed into rubble, blackened and scorched, deep fissures across the stonework glowing with molten orange rock from within, ash caked along every ledge",
+  },
+  {
+    slug: "choir-wreck",
+    metres: 10,
+    subject:
+      "The broken bow of a sunken wooden ship standing on end, hull planks splintered and encrusted with barnacles and pale salt, corroded iron fittings, tattered waterlogged rigging hanging from it, drowned and rotted",
+  },
+  {
+    slug: "husk-screen",
+    metres: 8.5,
+    subject:
+      "A tall ornate ceremonial altar screen of dark lacquered wood and gold filigree, carved panels and gilded scrollwork, hanging chains of gold coins, immaculate and symmetrical, a cracked porcelain mask set at its top",
+  },
+  {
+    slug: "king-tree",
+    metres: 12,
+    subject:
+      "An enormous ancient dead tree, thick gnarled trunk splitting into bare twisted limbs, heavy roots buckling out of the ground at its base, bark cracked and mossy, stone rubble tangled in the roots",
+  },
+  {
+    slug: "sovereign-spire",
+    metres: 14,
+    subject:
+      "A tall shattered spire of black iron and dark stone, its upper half broken into floating fragments held suspended above the break, fine seams across the surface bleeding violet light, cold and monolithic",
+  },
   {
     /*
      * Not per boss: it is the one fixture that belongs to the game rather than to

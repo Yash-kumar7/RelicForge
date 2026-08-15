@@ -6,6 +6,7 @@ import { themeForBoss } from "./theme";
 import { ARENA_RADIUS } from "./arenaGeometry";
 import { ArenaFeatures, hasWall } from "./arenaFeatures";
 import { Forge } from "./Forge";
+import { Backdrop } from "./Backdrop";
 
 export { ARENA_RADIUS } from "./arenaGeometry";
 
@@ -53,6 +54,18 @@ export function Arena() {
   return (
     <group>
       <fog attach="fog" args={[theme.fog, 12, 44]} />
+
+      {/*
+        Something behind everything.
+
+        Past the wall the scene ended in flat clear colour, so the horizon was
+        wherever the wall stopped and every rung's background was one value of
+        near-black. A dome with the rung's own colour bleeding up from the
+        horizon gives the scenery something to stand against, which is what makes
+        a silhouette read as a silhouette. It costs nothing: one gradient built in
+        a canvas at load.
+      */}
+      <Backdrop level={bossLevel} theme={theme} />
       <ambientLight intensity={forgeActive ? 0.12 : 0.28} color={theme.ambient} />
       <hemisphereLight args={[theme.ambient, theme.fog, forgeActive ? 0.15 : 0.4]} />
       <directionalLight
