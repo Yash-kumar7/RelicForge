@@ -8,13 +8,15 @@ import {
 } from "./meshy.types.js";
 import { MeshyTaskFailed, MeshyTimeout } from "../../lib/errors.js";
 
-type TaskFor<K extends TaskKind> = K extends "text-to-image" ? ImageTask : MeshTask;
+type TaskFor<K extends TaskKind> = K extends "text-to-image" | "image-to-image"
+  ? ImageTask
+  : MeshTask;
 
 /** Kinds whose output is a mesh, and therefore parse as MeshTask. */
 export const MESH_KINDS = ["image-to-3d", "remesh", "retexture"] as const;
 
 function parseTask<K extends TaskKind>(kind: K, raw: unknown): TaskFor<K> {
-  return (kind === "text-to-image"
+  return (kind === "text-to-image" || kind === "image-to-image"
     ? ImageTaskSchema.parse(raw)
     : MeshTaskSchema.parse(raw)) as TaskFor<K>;
 }

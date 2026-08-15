@@ -39,21 +39,24 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
     <CharacterViewer
       slug={slug}
       /*
-        One mesh, always the closed-hand one.
+        Two poses of one character, chosen by whether anything is in hand.
 
-        This was briefly two: the relaxed model until a weapon was chosen, the
-        clenched one after. The idea was right and the execution cannot be. Both
-        poses have to be generated separately, and two Meshy runs from the same
-        prompt are not the same character, they differ in armour detail, in
-        proportion and in lighting. Swapping between them read as the champion
-        being replaced rather than relaxing.
+        A fist clenched around nothing is as wrong as an open hand wrapped
+        around a sword, so the champion stands relaxed until a weapon is chosen
+        and grips it afterwards.
 
-        A fist holding nothing is a smaller cost than a champion that changes
-        identity when you pick up a sword. Closing the hand on the existing mesh
-        is not an option: the rigs have a single bone per hand and no fingers, so
-        the pose is baked in at generation time.
+        The first attempt at this generated the second pose from the same prompt
+        and produced a different character, so switching read as the champion
+        being replaced. The open pose is now an image-to-image edit of the very
+        concept the closed one was built from: same armour, same proportions,
+        same lighting, one hand opened. That distinction is the whole reason the
+        feature works at all.
       */
-      url={`/assets/champions/${slug}/model.glb`}
+      url={
+        weapon === undefined
+          ? `/assets/champions/${slug}/model-open.glb`
+          : `/assets/champions/${slug}/model.glb`
+      }
       height={CHAMPION_HEIGHT}
       accent={theme.forge}
       weapon={weapon}
