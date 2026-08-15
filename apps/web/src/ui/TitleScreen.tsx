@@ -283,7 +283,9 @@ export function TitleScreen() {
               /* Same frame the champion gets. The two views sit in the same
                  place on consecutive steps, so a smaller one reads as the enemy
                  mattering less than the character choosing to fight it. */
-              className="h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full"
+              /* The same plate the champion gets, so the two views sit
+                 identically on consecutive steps. */
+              className="h-[calc(100svh-7rem)] max-h-[54rem] min-h-[30rem] w-full border border-brass-800 bg-white/[0.015]"
             />
           ) : (
             <ChampionPreview affinity={affinity} armed={section > 0} />

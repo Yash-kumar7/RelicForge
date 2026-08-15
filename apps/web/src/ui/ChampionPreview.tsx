@@ -81,10 +81,19 @@ export function ChampionPreview({
             ? "your champion, holding your relic · drag to inspect"
             : "your champion, holding the iron blade · drag to inspect"
       }
-      /* No frame and no fill. A bordered panel with a background reads as a
-         viewer embedded in a page; without it the champion is simply standing
-         in the room. Taller too, because the figure is the subject. */
-      className="h-[calc(100svh-7rem)] max-h-[54rem] min-h-[30rem] w-full"
+      /*
+       * Framed, deliberately.
+       *
+       * The border was removed on the theory that a panel reads as a viewer
+       * embedded in a page. It does the opposite here: the champion shares this
+       * screen with a column of choices, and the frame is what says where one
+       * ends and the other begins. Without it the figure floated against the
+       * same black as the text beside it.
+       *
+       * In the page's own brass rather than the old grey, and with only a breath
+       * of fill, so it reads as a plate around a portrait instead of a widget.
+       */
+      className="h-[calc(100svh-7rem)] max-h-[54rem] min-h-[30rem] w-full border border-brass-800 bg-white/[0.015]"
     />
   );
 }
