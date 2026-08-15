@@ -89,6 +89,15 @@ interface GameState {
    */
   view: "first" | "third";
   /**
+   * Combat frozen deliberately, with nothing drawn over the top of it.
+   *
+   * The fight owns the cursor, so a region screenshot cannot be dragged and
+   * releasing the pointer to get it back throws the pause card over the exact
+   * thing being photographed. This is a pause that stays out of the picture: the
+   * boss stops, the cursor comes back, and the screen is left as it was.
+   */
+  photoMode: boolean;
+  /**
    * Milliseconds spent paused. Subtracted from the elapsed clock so that
    * stepping away mid-fight does not read as a slow, cautious victory and
    * change which relic is forged.
@@ -107,6 +116,7 @@ interface GameState {
   startFight: () => void;
   armCombat: () => void;
   toggleView: () => void;
+  togglePhotoMode: () => void;
   pauseCombat: () => void;
   damageBoss: (amount: number, kind: "light" | "heavy" | "ability") => void;
   damagePlayer: (amount: number) => void;
@@ -153,6 +163,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   bossMaxHp: BOSS_MAX_HP,
   fightStartedAt: null,
   combatActive: false,
+  photoMode: false,
   view: "third",
   pausedTotalMs: 0,
   pausedAt: null,
@@ -183,6 +194,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       // briefing appears, or reading time would inflate fightDuration.
       fightStartedAt: null,
       combatActive: false,
+      photoMode: false,
       pausedTotalMs: 0,
       pausedAt: null,
       telemetry: { ...EMPTY_TELEMETRY },
@@ -195,6 +207,14 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (state.combatActive) return state;
       return {
         combatActive: true,
+        /*
+         * Whatever resumed the fight ends photo mode.
+         *
+         * Clicking the canvas takes pointer lock and arms combat directly, so
+         * without this the flag survived into a live fight and the next pause
+         * would freeze the screen with nothing on it saying why.
+         */
+        photoMode: false,
         // Preserved across a pause: only the very first arm starts the clock.
         fightStartedAt: state.fightStartedAt ?? Date.now(),
         pausedTotalMs:
@@ -206,6 +226,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     }),
 
   toggleView: () => set((state) => ({ view: state.view === "first" ? "third" : "first" })),
+
+  togglePhotoMode: () => set((state) => ({ photoMode: !state.photoMode })),
 
 
   pauseCombat: () =>
@@ -277,6 +299,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       bossMaxHp: BOSS_MAX_HP,
       fightStartedAt: null,
       combatActive: false,
+      photoMode: false,
       pausedTotalMs: 0,
       pausedAt: null,
       telemetry: { ...EMPTY_TELEMETRY },

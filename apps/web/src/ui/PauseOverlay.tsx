@@ -15,6 +15,7 @@ export function PauseOverlay() {
   const fightStartedAt = useGameStore((s) => s.fightStartedAt);
   const pauseCombat = useGameStore((s) => s.pauseCombat);
   const armCombat = useGameStore((s) => s.armCombat);
+  const photoMode = useGameStore((s) => s.photoMode);
 
   useEffect(() => {
     const onLockChange = () => {
@@ -33,7 +34,11 @@ export function PauseOverlay() {
 
   // Only a fight already under way can be paused, before the first arm the
   // briefing owns the screen instead.
-  const paused = phase === "FIGHTING" && !combatActive && fightStartedAt !== null;
+  //
+  // Photo mode is the same frozen state without the card, since the card would
+  // cover the thing being photographed.
+  const paused =
+    phase === "FIGHTING" && !combatActive && fightStartedAt !== null && !photoMode;
   if (!paused) return null;
 
   return (

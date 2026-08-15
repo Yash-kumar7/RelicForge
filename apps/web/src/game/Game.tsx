@@ -75,6 +75,43 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
     if (document.pointerLockElement) document.exitPointerLock?.();
   }, [phase]);
 
+  /**
+   * P freezes the fight without drawing anything over it.
+   *
+   * A screenshot of the fight could not be taken. The game holds pointer lock,
+   * so a region grab has no cursor to drag, and releasing the lock with Escape
+   * pauses the fight and puts the pause card over the exact frame worth
+   * photographing. Whole-screen capture works but catches the desktop with it.
+   *
+   * This gives back the cursor, stops the boss, and leaves the screen alone, so
+   * any capture tool can be used on what is actually there, HUD included. P
+   * again puts the cursor back in the fight.
+   */
+  useEffect(() => {
+    if (phase !== "FIGHTING") return undefined;
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.code !== "KeyP" || event.metaKey || event.ctrlKey || event.altKey) return;
+      event.preventDefault();
+
+      const state = useGameStore.getState();
+      if (state.photoMode) {
+        state.togglePhotoMode();
+        const canvas = document.querySelector("canvas");
+        if (canvas) void canvas.requestPointerLock();
+        state.armCombat();
+      } else {
+        state.togglePhotoMode();
+        // Releasing the lock is what pauses combat, through the listener
+        // PauseOverlay already owns, so the freeze has one implementation.
+        document.exitPointerLock?.();
+      }
+    };
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [phase]);
+
   /* Victory → a beat of silence → the forge wakes. */
   useEffect(() => {
     if (phase !== "VICTORY" || started.current) return undefined;

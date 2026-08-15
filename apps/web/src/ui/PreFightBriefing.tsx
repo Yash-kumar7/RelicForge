@@ -250,6 +250,9 @@ export function PreFightBriefing() {
                   ["Shift", "dodge"],
                   ["Q", "heal · 2 charges"],
                   ["V", "first or third person"],
+                  // Worth a line: without it there is no way to photograph the
+                  // fight, since the game is holding the cursor.
+                  ["P", "freeze for a screenshot"],
                 ].map(([key, action]) => (
                   <div key={key} className="flex items-baseline gap-2">
                     <dt className="text-stone-400">{key}</dt>
