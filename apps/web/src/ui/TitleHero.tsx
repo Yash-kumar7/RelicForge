@@ -298,10 +298,18 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
         transition={{ duration: 1.4, ease: "easeOut" }}
         className="relative z-10 mt-[7svh] px-6 text-center"
       >
-        <h1 className="font-display text-[clamp(2.75rem,9vw,7.5rem)] leading-none tracking-[0.16em] text-bone-200 drop-shadow-[0_0_60px_rgba(0,0,0,0.9)]">
+        {/*
+          Sized to be read, not to fill the width.
+
+          At 9vw it spanned the whole screen on a wide monitor and became the
+          subject of the page, which the relic is supposed to be. A title has to
+          be legible and confident; it does not have to be the largest thing in
+          the composition.
+        */}
+        <h1 className="font-display text-[clamp(2rem,4.6vw,4rem)] leading-none tracking-[0.22em] text-bone-200 drop-shadow-[0_0_60px_rgba(0,0,0,0.9)]">
           RELICFORGE
         </h1>
-        <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.5em] text-ember-400 sm:text-[11px]">
+        <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.42em] text-ember-400 sm:text-[10px]">
           Every legendary is actually legendary
         </p>
       </motion.header>
