@@ -456,6 +456,19 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               className="font-display text-xl tracking-[0.22em] text-ember-300 sm:text-2xl"
             >
               {/*
+                Labelled as an outcome, not as inventory.
+
+                A visitor reads a weapon floating between two fighters as the
+                one they are holding, and a new player holds the iron sword and
+                nothing else. It is the opposite: this is what that fight
+                produced, and it did not exist until the fight was over. One
+                line fixes the reading, and it is also the whole pitch.
+              */}
+              <span className="mb-3 block font-mono text-[9px] uppercase tracking-[0.35em] text-brass-700">
+                what this fight made
+              </span>
+
+              {/*
                 The name only.
 
                 It used to carry "shattered - elegant - forged from the Ashen
