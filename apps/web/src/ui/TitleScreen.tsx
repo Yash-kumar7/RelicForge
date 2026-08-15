@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Affinity } from "@relic/core";
-import { championFor, championStats, describeChampion } from "../game/champions";
+import { championFor, championStats } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { IRON, useLoadout } from "../state/useLoadout";
 import { BOSSES, bossAt, describeBoss, isCleared } from "../game/bosses";
@@ -505,20 +505,6 @@ export function TitleScreen() {
                     {championFor(a.id).blurb}
                   </p>
                   </span>
-
-                  {/*
-                    Stats to the side, so the three sets line up in a column and
-                    can be read against each other without moving your eye across
-                    a paragraph to reach the next number.
-                  */}
-                  <dl className="w-32 shrink-0 space-y-1 font-mono text-[9px] uppercase tracking-[0.12em]">
-                    {describeChampion(championFor(a.id)).map((stat) => (
-                      <div key={stat.label} className="flex justify-between gap-2">
-                        <dt className="text-stone-700">{stat.label}</dt>
-                        <dd className="tabular-nums text-stone-300">{stat.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
                 </button>
               ))}
             </div>
