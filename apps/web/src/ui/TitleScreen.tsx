@@ -91,7 +91,7 @@ export function TitleScreen() {
      * it can scroll and someone who wants to play can press one button.
      */
     return (
-      <div className="relative h-full overflow-y-auto bg-ash-950">
+      <div className="relative h-full overflow-y-auto bg-[#070605]">
         <div className="relative flex flex-col items-center">
           {/*
             Embers belong to the hero and stop at its edge.

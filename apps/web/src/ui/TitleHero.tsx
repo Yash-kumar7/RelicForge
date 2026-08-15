@@ -191,7 +191,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               exit={{ opacity: 0, x: -30 }}
               transition={{ duration: 1.8, ease: "easeOut" }}
               style={{ transformOrigin: "left bottom" }}
-              className="absolute bottom-0 left-[-4%] h-[84svh] w-auto -scale-x-100 object-contain"
+              className="absolute bottom-0 left-[-4%] h-[70svh] w-auto -scale-x-100 object-contain"
             />
           )}
         </AnimatePresence>
@@ -208,7 +208,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               exit={{ opacity: 0, x: 30 }}
               transition={{ duration: 1.8, ease: "easeOut" }}
               style={{ transformOrigin: "right bottom" }}
-              className="absolute bottom-0 right-[-4%] h-[92svh] w-auto object-contain"
+              className="absolute bottom-0 right-[-4%] h-[76svh] w-auto object-contain"
             />
           )}
         </AnimatePresence>
@@ -218,14 +218,26 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_18%,#0a0908_78%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ash-950 to-transparent" />
       {/*
+        The forge, under the floor.
+
+        The page was a black void with figures cut out of it, which is the one
+        atmosphere a game about a forge should not have. A warm source low and
+        centred gives the figures something to be lit from and stand on, and it
+        sits directly beneath the weapon, so the glow reads as the thing that
+        made it.
+      */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_100%,rgba(255,107,26,0.16),transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_30%_20%_at_50%_98%,rgba(255,140,66,0.22),transparent_70%)]" />
+
+      {/*
         A band of dark for the title to sit on.
 
-        The painting is a portrait, so its head lands exactly where the title
-        goes and the two fought. Rather than shrink the type or move it off
-        centre, the top of the image falls away so the words have something to
-        be read against.
+        The figures are portraits, so their heads reach the top of the frame and
+        collide with the title. They are shorter now, and the top of the screen
+        falls away into the ground colour as well, because a title should never
+        depend on what happens to be behind it.
       */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[38svh] bg-gradient-to-b from-ash-950 via-ash-950/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[42svh] bg-gradient-to-b from-ash-950 via-ash-950/90 to-transparent" />
 
       {/*
         Who this is.
