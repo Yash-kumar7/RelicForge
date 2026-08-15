@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, type ReactNode, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
-import { Group, LoopRepeat, Matrix4, Quaternion, Vector3, type Object3D } from "three";
+import { Euler, Group, LoopRepeat, Matrix4, Quaternion, Vector3, type Object3D } from "three";
 import { fitCharacter } from "../lib/characterFit";
 import type { HandSocketRatios } from "./handSockets";
 
@@ -130,12 +130,16 @@ const SHOW_SOCKET =
  * Scale is an artefact of the FBX export pipeline these rigs come through, and
  * inheriting it made the weapon microscopic.
  *
- * Rotation is discarded because a hand bone points down the forearm, so a blade
- * inheriting it hangs downward, and more importantly because rigging ships only
- * walking and running clips. There is no attack animation, so if the weapon took
- * its rotation from the skeleton it would have no way to swing at all. The
- * caller supplies rotation from the same swing curve the hit test uses, which is
- * what makes an attack visible.
+ * Rotation is inherited, with an offset. It was discarded at first, on the
+ * grounds that a hand bone points down the forearm so a blade taking its rotation
+ * hangs along the arm, and that rigging ships no attack clip for the weapon to
+ * take rotation from. Both are true and neither is a reason: the fix for a bone
+ * pointing the wrong way is a fixed offset from the bone, which is what a socket
+ * is in every engine that has one, and an attack is layered on top by the caller.
+ *
+ * Discarding it meant the weapon kept one angle in the character's frame while
+ * the hand turned through the entire walk cycle, so it visibly slid through the
+ * fist that was supposed to be holding it.
  */
 function HandFollower({
   root,
@@ -157,6 +161,27 @@ function HandFollower({
   const forearmWorld = useMemo(() => new Vector3(), []);
   const handWorld = useMemo(() => new Vector3(), []);
   const reach = useMemo(() => new Vector3(), []);
+
+  /*
+   * The offset from the hand bone to the carried pose, solved once.
+   *
+   * The weapon used to take the bone's position and a fixed rotation, which is
+   * why it slid through the hand while walking: the arm swings and the hand
+   * turns through the whole cycle, and a blade that keeps one angle in the
+   * character's frame has to pass through the fist that is supposedly holding
+   * it. Every engine does this the other way round. The socket inherits the
+   * hand's full transform and carries a fixed offset relative to it, so the
+   * weapon is welded to the hand and the animation moves both.
+   *
+   * The offset is derived rather than authored: on the first frame the hand's
+   * rotation is measured and the offset that takes it to the pose the blade
+   * should rest in is solved for. That keeps the carried pose exactly what it
+   * was, which was already tuned by eye, while making it hold through the
+   * animation instead of only at one frame of it.
+   */
+  const restOffset = useRef<Quaternion | null>(null);
+  const desired = useMemo(() => new Quaternion(), []);
+  const boneRest = useMemo(() => new Quaternion(), []);
 
   useFrame(() => {
     const group = socket.current;
@@ -201,9 +226,20 @@ function HandFollower({
       }
     }
 
-    // Mirrored with the hand, so the blade leans away from the body on either
-    // side. This is the part a fixed rotation cannot get right.
-    group.rotation.set(REST_PITCH, 0, outward * REST_ROLL);
+    /*
+     * Rotation inherited from the hand, plus the solved offset.
+     *
+     * The rest pose is still mirrored per side, so the blade leans away from the
+     * body whichever hand holds it, and it is still the pose that was tuned by
+     * eye. The difference is that it is now expressed relative to the hand
+     * rather than to the character, so the arm can move.
+     */
+    if (!restOffset.current) {
+      desired.setFromEuler(new Euler(REST_PITCH, 0, outward * REST_ROLL));
+      boneRest.copy(quaternion).invert();
+      restOffset.current = boneRest.multiply(desired);
+    }
+    group.quaternion.copy(quaternion).multiply(restOffset.current);
   });
 
   return (
