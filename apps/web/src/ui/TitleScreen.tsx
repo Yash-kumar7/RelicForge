@@ -422,7 +422,6 @@ export function TitleScreen() {
               is replaced by saying so.
             */}
             <span className="flex shrink-0 items-center gap-3">
-              <RankSigil index={rank.index} title={rank.name} />
 
               {/*
                 The current rank is not named here.
@@ -436,7 +435,17 @@ export function TitleScreen() {
                 <span className="flex items-baseline justify-between gap-3">
                   <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
                     rank
-                  </span>
+                    {/*
+                The sigil last, at the outer edge.
+
+                Leading with the emblem meant the eye met a shield before it had
+                any reason to care about one, and the words explaining it were
+                downstream of the thing they explained. Reading order is now the
+                label, then how far along, then the mark that stands for it, and
+                the mark lands on the edge of the screen where a badge belongs.
+              */}
+              <RankSigil index={rank.index} title={rank.name} />
+            </span>
                   <span className="font-mono text-[9px] tabular-nums text-bone-400">
                     {rank.next === null ? "max" : `${rank.next - xp} to ${RANKS[rank.index + 1]?.name ?? ""}`}
                   </span>
