@@ -37,10 +37,20 @@ function wobble(i: number, mod = 11): number {
 function EmberFissures({ theme }: { theme: ArenaTheme }) {
   const cracks = useMemo(
     () =>
-      Array.from({ length: 9 }, (_, i) => {
-        const angle = (i / 9) * Math.PI * 2 + wobble(i) * 0.4;
-        const length = 6 + wobble(i, 7) * 7;
-        const from = 2.2 + wobble(i, 5) * 1.6;
+      /*
+       * Short, thin and dim, which is the whole difference between a crack and a
+       * painted stripe.
+       *
+       * The first pass ran nine bars of length 6 to 13 out from the middle at
+       * half opacity, which crossed the entire floor, met at the centre, and read
+       * as a logo someone had stencilled on the arena. A fissure is a hairline
+       * with light at the bottom of it: it has to be narrow enough that the floor
+       * is mostly floor.
+       */
+      Array.from({ length: 7 }, (_, i) => {
+        const angle = (i / 7) * Math.PI * 2 + wobble(i) * 0.9;
+        const length = 1.8 + wobble(i, 7) * 2.6;
+        const from = 3.4 + wobble(i, 5) * 4.5;
         return {
           key: i,
           position: [
@@ -50,7 +60,7 @@ function EmberFissures({ theme }: { theme: ArenaTheme }) {
           ] as [number, number, number],
           rotation: [-Math.PI / 2, 0, -angle] as [number, number, number],
           length,
-          width: 0.1 + wobble(i, 3) * 0.16,
+          width: 0.045 + wobble(i, 3) * 0.05,
         };
       }),
     [],
@@ -61,7 +71,7 @@ function EmberFissures({ theme }: { theme: ArenaTheme }) {
       {cracks.map((crack) => (
         <mesh key={crack.key} position={crack.position} rotation={crack.rotation}>
           <planeGeometry args={[crack.length, crack.width]} />
-          <meshBasicMaterial color={theme.forge} transparent opacity={0.5} toneMapped={false} />
+          <meshBasicMaterial color={theme.forge} transparent opacity={0.34} toneMapped={false} />
         </mesh>
       ))}
     </group>
@@ -128,8 +138,8 @@ function GildedHall({ theme }: { theme: ArenaTheme }) {
             position={[Math.cos(angle) * mid, 0.02, Math.sin(angle) * mid]}
             rotation={[-Math.PI / 2, 0, -angle]}
           >
-            <planeGeometry args={[outer - inner, 0.07]} />
-            <meshBasicMaterial color={theme.rune} transparent opacity={0.3} toneMapped={false} />
+            <planeGeometry args={[outer - inner, 0.04]} />
+            <meshBasicMaterial color={theme.rune} transparent opacity={0.14} toneMapped={false} />
           </mesh>
         );
       })}
@@ -200,8 +210,8 @@ function VoidField({ theme }: { theme: ArenaTheme }) {
     <group>
       {/* A rim on the disc, so the edge of the world is a place and not a cut. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
-        <ringGeometry args={[ARENA_RADIUS - 0.35, ARENA_RADIUS, 96]} />
-        <meshBasicMaterial color={theme.rune} transparent opacity={0.4} toneMapped={false} />
+        <ringGeometry args={[ARENA_RADIUS - 0.18, ARENA_RADIUS, 96]} />
+        <meshBasicMaterial color={theme.rune} transparent opacity={0.22} toneMapped={false} />
       </mesh>
     </group>
   );

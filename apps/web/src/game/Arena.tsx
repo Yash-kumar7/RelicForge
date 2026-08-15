@@ -38,7 +38,9 @@ export function Arena() {
    * One floor pattern per rung, in the same spirit as the pillars above.
    *
    * Read as: how close the fight is drawn, how many marks, and whether the
-   * marking is whole. A pit tightens toward the Warden and opens out for the
+   * marking is whole. Drawn at the width of a chalk line, not a kerb: the first
+   * pass used 0.3 to 0.4 at a third opacity and the floor came out looking like a
+   * road marking, which is worse than the plain disc it replaced. A pit tightens toward the Warden and opens out for the
    * Sovereign, where the far ring is a horizon rather than a boundary.
    */
   const rings = useMemo<
@@ -49,31 +51,31 @@ export function Arena() {
       case 2:
         // Drowned Choir: three thin rings, the way water answers a stone.
         return [
-          { radius: ARENA_RADIUS - 9.5, width: 0.12, opacity: 0.16 },
-          { radius: ARENA_RADIUS - 6.6, width: 0.14, opacity: 0.2 },
-          { radius: ARENA_RADIUS - 3.6, width: 0.16, opacity: 0.24 },
+          { radius: ARENA_RADIUS - 9.5, width: 0.05, opacity: 0.1 },
+          { radius: ARENA_RADIUS - 6.6, width: 0.06, opacity: 0.12 },
+          { radius: ARENA_RADIUS - 3.6, width: 0.07, opacity: 0.14 },
         ];
       case 3:
         // Gilded Husk: two exact rings, close together. Ceremonial, laid out.
         return [
-          { radius: ARENA_RADIUS - 5.4, width: 0.1, opacity: 0.3 },
-          { radius: ARENA_RADIUS - 4.9, width: 0.3, opacity: 0.34 },
+          { radius: ARENA_RADIUS - 5.4, width: 0.04, opacity: 0.16 },
+          { radius: ARENA_RADIUS - 4.9, width: 0.1, opacity: 0.18 },
         ];
       case 4:
         // Rootbound King: the circle is broken, torn open in five places.
         return [
-          { radius: ARENA_RADIUS - 4.4, width: 0.32, opacity: 0.3, arcs: 5, fill: 0.62 },
-          { radius: ARENA_RADIUS - 8.2, width: 0.16, opacity: 0.14, arcs: 3, fill: 0.4 },
+          { radius: ARENA_RADIUS - 4.4, width: 0.1, opacity: 0.16, arcs: 5, fill: 0.62 },
+          { radius: ARENA_RADIUS - 8.2, width: 0.06, opacity: 0.09, arcs: 3, fill: 0.4 },
         ];
       case 5:
         // Hollow Sovereign: a tight ring underfoot and a faint one far out, so
         // the room reads as bigger than the fight in it.
         return [
-          { radius: ARENA_RADIUS - 11.2, width: 0.22, opacity: 0.34 },
-          { radius: ARENA_RADIUS - 1.6, width: 0.1, opacity: 0.12 },
+          { radius: ARENA_RADIUS - 11.2, width: 0.08, opacity: 0.18 },
+          { radius: ARENA_RADIUS - 1.6, width: 0.05, opacity: 0.08 },
         ];
       default:
-        return [{ radius: ARENA_RADIUS - 4.4, width: 0.42, opacity: 0.32 }];
+        return [{ radius: ARENA_RADIUS - 4.4, width: 0.12, opacity: 0.18 }];
     }
   }, [bossLevel]);
 
