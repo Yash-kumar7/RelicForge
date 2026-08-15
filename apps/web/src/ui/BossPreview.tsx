@@ -57,6 +57,9 @@ export function BossPreview({
       accent={accent}
       weapon={weapon}
       caption="drag to turn · scroll to zoom"
+      /* The same breathing room the bleeding champion gets. At the framed 0.45
+         the boss sat small in the middle of a half-screen of black. */
+      framing={0.22}
       className={className}
     />
   );

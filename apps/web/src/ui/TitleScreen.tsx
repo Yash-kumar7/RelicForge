@@ -61,6 +61,19 @@ const ELEMENT_GLOW: Record<Affinity, string> = {
   storm: "rgba(251,191,36,0.24)",
 };
 
+/**
+ * The same light, in whatever colour is standing in it.
+ *
+ * The glow belongs to whoever fills the left half of the screen, and on the
+ * enemy step that is no longer the champion, so it was switched off entirely
+ * and the boss stood in a black box while the two steps before it had a lit
+ * room. A boss lights the room in its own colour instead.
+ */
+function glowFrom(hex: string, alpha: number): string {
+  const value = parseInt(hex.replace("#", ""), 16);
+  return `rgba(${(value >> 16) & 255},${(value >> 8) & 255},${value & 255},${alpha})`;
+}
+
 const AFFINITIES: {
   id: Affinity;
   name: string;
@@ -276,10 +289,13 @@ export function TitleScreen() {
             <div
               className={[
                 "pointer-events-none absolute inset-0 -z-10 transition-opacity duration-700",
-                section === 2 ? "opacity-0" : "opacity-100",
               ].join(" ")}
               style={{
-                background: `radial-gradient(ellipse 62% 52% at 50% 58%, ${ELEMENT_GLOW[affinity]}, transparent 72%)`,
+                background: `radial-gradient(ellipse 62% 52% at 50% 58%, ${
+                  section === 2 && bossLevel !== null
+                    ? glowFrom(bossAt(bossLevel).accent, 0.26)
+                    : ELEMENT_GLOW[affinity]
+                }, transparent 72%)`,
               }}
             />
           {section === 2 && bossLevel !== null ? (
@@ -287,12 +303,16 @@ export function TitleScreen() {
               level={bossLevel}
               title={bossAt(bossLevel).title}
               accent={bossAt(bossLevel).accent}
-              /* Same frame the champion gets. The two views sit in the same
-                 place on consecutive steps, so a smaller one reads as the enemy
-                 mattering less than the character choosing to fight it. */
-              /* The same plate the champion gets, so the two views sit
-                 identically on consecutive steps. */
-              className="h-[calc(100svh-7rem)] max-h-[54rem] min-h-[30rem] w-full border border-brass-800 bg-white/[0.015]"
+              /*
+                Bleeds, exactly as the champion does.
+
+                The champion moved out of its bordered plate and onto the page
+                two steps ago; the boss never followed, so the last step of the
+                sequence still looked like the version of the screen the first
+                two had left behind. The enemy gets the same room the character
+                choosing to fight it gets.
+              */
+              className="h-[calc(100svh-7rem)] w-full"
             />
           ) : (
             <ChampionPreview affinity={affinity} armed={section > 0} bleed={bleed} />
