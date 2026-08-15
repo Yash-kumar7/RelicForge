@@ -442,16 +442,38 @@ export function TitleScreen() {
               screen it explains nothing. The choice is an element, so it says
               element, and the cards carry the flavour instead.
             */}
-            <p className={`${SECTION_HEADING} mb-2`}>Choose your element</p>
+            {/*
+              The question, at the size of a question.
+
+              It was set in the same small grey mono as the rank, the steps and
+              every label on the page, so nothing on this half of the screen was
+              louder than anything else while the champion beside it filled the
+              window.
+            */}
+            <h2 className="font-display text-[clamp(1.75rem,2.6vw,2.5rem)] leading-none tracking-[0.12em] text-bone-200">
+              Choose your element
+            </h2>
             {/*
               Stated once rather than repeated in all three cards.
               Without it the champion's damage and the armament panel's damage
               are two different numbers for the same swing, and nothing on
               screen explains which one the fight will actually use.
             */}
-            <p className="mt-2 text-[10px] leading-relaxed text-stone-600">
-              Your element decides who you are and what your weapon is made of.
-              Damage comes from the weapon, shown below.
+            {/*
+              The loop, which the forging lines alone do not explain.
+
+              Relics are portable: anything earned can be carried by any
+              champion. That reads as making this choice pointless and is the
+              opposite. A weapon cannot be bought or picked from a list, so the
+              only way to own a cracked one is to nearly die earning it, and only
+              Ember reliably takes you there. The champion is how a kind of relic
+              gets made; who carries it afterwards is a separate decision, and
+              the two together are the only build this game has.
+            */}
+            <p className="mt-3 max-w-lg text-[13px] leading-relaxed text-bone-400">
+              Each champion tends to earn a different kind of relic, and any of
+              them can carry any relic afterwards. Win it as Ember, wield it as
+              Frost.
             </p>
             {/*
               Full-width rows rather than three columns.
