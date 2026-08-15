@@ -13,7 +13,21 @@ import { IRON, useLoadout } from "../state/useLoadout";
  */
 const CHAMPION_HEIGHT = 2.6;
 
-export function ChampionPreview({ affinity }: { affinity: Affinity }) {
+export function ChampionPreview({
+  affinity,
+  armed = true,
+}: {
+  affinity: Affinity;
+  /**
+   * False while the player is still choosing who to be.
+   *
+   * The setup screen is a sequence, and the weapon appearing is the
+   * confirmation that the second choice landed. Handing the champion a sword on
+   * the screen where you pick an element shows the answer to a question that has
+   * not been asked yet.
+   */
+  armed?: boolean;
+}) {
   const theme = themeFor(affinity);
   const slug = affinity === "fire" ? "ember" : affinity === "ice" ? "frost" : "storm";
 
@@ -28,12 +42,12 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
    * the second choice landed.
    */
   const weapon = useMemo<HeldWeaponSpec | undefined>(() => {
-    if (armament === null) return undefined;
+    if (!armed || armament === null) return undefined;
     if (armament === IRON) return { kind: "iron" };
     const relic = owned.find((r) => r.relicId === armament);
     if (!relic) return { kind: "iron" };
     return { kind: "relic", url: relic.modelUrl, weaponClass: relic.dna.weaponClass };
-  }, [owned, armament]);
+  }, [owned, armament, armed]);
 
   return (
     <CharacterViewer

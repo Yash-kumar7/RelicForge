@@ -239,7 +239,7 @@ export function TitleScreen() {
               className="h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full border border-ash-800 bg-ash-900/40"
             />
           ) : (
-            <ChampionPreview affinity={affinity} />
+            <ChampionPreview affinity={affinity} armed={section > 0} />
           )}
         </div>
 
