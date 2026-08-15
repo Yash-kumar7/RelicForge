@@ -37,15 +37,23 @@ export function HeldWeapon({
   socket: HandSocket;
 }) {
   /*
-   * Right hand, from the character's own proportions rather than magic numbers,
-   * and pushed just clear of the arm: normalizeRelic puts the grip at the
-   * origin, so the shaft runs straight through whatever the socket sits inside.
-   * Sitting it dead centre in the hand ran the blade through the forearm.
+   * Right hand, measured off the rigged versions of these same champions rather
+   * than estimated.
+   *
+   * The estimate was wrong on all three axes, and the height was wrong enough to
+   * see: 0.46 of character height is mid-thigh, so the weapon hung at the leg.
+   * Reading the RightHand bone out of ember/rig/walking.glb, fitted to a 1.8
+   * unit champion, puts the hand at [-0.484, 1.029, 0.065] against a body 1.142
+   * wide and 0.459 deep. As fractions that is -0.42 of width, 0.572 of height
+   * and 0.14 of depth, which is what these are.
+   *
+   * The x is negative because these rigs put the right hand on negative x. The
+   * old estimate had it positive, which is the left hand.
    */
   const hand: [number, number, number] = [
-    socket.width * 0.44,
-    socket.height * 0.46,
-    socket.depth * 0.42,
+    socket.width * -0.42,
+    socket.height * 0.572,
+    socket.depth * 0.14,
   ];
   /*
    * Leaned out and forward rather than stood upright.
@@ -56,7 +64,14 @@ export function HeldWeapon({
    * the hand. It also reads as a fighter resting a blade rather than presenting
    * it.
    */
-  const tilt: [number, number, number] = [20 * DEG, 0, -30 * DEG];
+  /*
+   * Positive roll, because the hand is on negative x.
+   *
+   * A rotation about z maps the blade's +Y toward +x when the angle is
+   * negative, so a negative roll on a left-of-centre hand leans the weapon
+   * across the body instead of away from it.
+   */
+  const tilt: [number, number, number] = [20 * DEG, 0, 30 * DEG];
 
   if (weapon.kind === "iron") {
     return (
