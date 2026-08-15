@@ -120,6 +120,27 @@ export function TitleScreen() {
               its own data, so the claim is demonstrated by the thing it is a
               claim about.
             */}
+            {/*
+              The premise, stated once and large.
+
+              This was two small paragraphs among cards, and it is the only
+              thing on the page that frames everything after it: players arrive
+              with a lifetime of loot tables behind them and will assume the
+              weapon was picked from a list, which is the one thing this game
+              does not do. Said at reading size, before the walkthrough, it is
+              the question the four steps then answer.
+            */}
+            <section className="mx-auto w-full max-w-6xl px-8 py-24">
+              <p className="max-w-4xl font-display text-[clamp(1.5rem,3.2vw,2.6rem)] leading-[1.35] tracking-[0.02em] text-bone-200">
+                Most games hand you loot from a list. Kill the boss, roll the table, receive the
+                same sword eleven million other players received.
+              </p>
+              <p className="mt-8 max-w-2xl text-[15px] leading-relaxed text-bone-400">
+                Here the weapon does not exist until you earn it. When the boss falls, the forge
+                reads how you fought and generates a new 3D weapon, then puts it in your hands.
+              </p>
+            </section>
+
             <HowItWorks />
 
             {/* The evidence, for anyone who wants the detail. */}

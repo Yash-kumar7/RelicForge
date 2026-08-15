@@ -112,14 +112,14 @@ function Step({
       initial={{ opacity: 0, y: 24 }}
       animate={seen ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="grid grid-cols-1 items-center gap-8 border-t border-brass-800 py-14 lg:grid-cols-[1fr_1.15fr]"
+      className="grid grid-cols-1 items-center gap-12 border-t border-brass-800 py-16 lg:grid-cols-[0.85fr_1.15fr]"
     >
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-brass-700">
           {number}
         </p>
         <h3 className="mt-3 font-display text-2xl tracking-[0.14em] text-bone-200">{title}</h3>
-        <p className="mt-3 max-w-md text-[13px] leading-relaxed text-bone-400">{copy}</p>
+        <p className="mt-4 max-w-md text-[14px] leading-relaxed text-bone-400">{copy}</p>
       </div>
       <div className="min-h-[13rem]">{seen && children}</div>
     </motion.div>
@@ -172,7 +172,7 @@ export function HowItWorks() {
   const readings = readingsFor(relic.dna);
 
   return (
-    <section className="relative z-10 mx-auto w-full max-w-5xl bg-ash-950 px-8 pb-24">
+    <section className="relative z-10 mx-auto w-full max-w-6xl bg-ash-950 px-8 pb-24">
       <p className="pt-16 font-mono text-[10px] uppercase tracking-[0.35em] text-brass-700">
         how {relic.name.toLowerCase()} was made
       </p>
