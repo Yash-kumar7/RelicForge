@@ -84,12 +84,12 @@ export function handSocketFor(slug: string): HandSocketRatios {
  * Height came out of both readings agreeing, so y is trusted.
  */
 const FIST_SOCKETS: Record<string, HandSocketRatios> = {
-  ember: { x: -0.32, y: 0.68, z: 0.26, bone: "RightHand" },
-  frost: { x: -0.34, y: 0.59, z: 0.26, bone: "RightHand" },
-  storm: { x: -0.34, y: 0.57, z: 0.26, bone: "RightHand" },
-  "ashen-warden": { x: -0.34, y: 0.55, z: 0.24, bone: "RightHand" },
-  "drowned-choir": { x: -0.34, y: 0.56, z: 0.24, bone: "RightHand" },
-  "gilded-husk": { x: -0.34, y: 0.43, z: 0.2, bone: "RightHand" },
-  "rootbound-king": { x: -0.36, y: 0.43, z: 0.2, bone: "RightHand" },
-  "hollow-sovereign": { x: -0.34, y: 0.47, z: 0.2, bone: "RightHand" },
+  ember: { x: -0.36, y: 0.68, z: 0.26, bone: "RightHand" },
+  frost: { x: -0.38, y: 0.59, z: 0.26, bone: "RightHand" },
+  storm: { x: -0.38, y: 0.57, z: 0.26, bone: "RightHand" },
+  "ashen-warden": { x: -0.38, y: 0.55, z: 0.24, bone: "RightHand" },
+  "drowned-choir": { x: -0.38, y: 0.56, z: 0.24, bone: "RightHand" },
+  "gilded-husk": { x: -0.38, y: 0.43, z: 0.2, bone: "RightHand" },
+  "rootbound-king": { x: -0.4, y: 0.43, z: 0.2, bone: "RightHand" },
+  "hollow-sovereign": { x: -0.38, y: 0.47, z: 0.2, bone: "RightHand" },
 };
