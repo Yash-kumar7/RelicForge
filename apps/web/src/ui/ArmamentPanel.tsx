@@ -143,7 +143,14 @@ export function ArmamentPanel() {
       */}
       <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Your weapon</p>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      {/*
+        Full-width rows, matching the element step.
+
+        Two columns squeezed each attack description into a narrow strip, and
+        those descriptions are the only thing on this screen that explains why a
+        player would use one attack over the other.
+      */}
+      <div className="mt-4 flex flex-col gap-3">
         {/* The blade you always have. Selecting it unequips the relic. */}
         <button
           type="button"

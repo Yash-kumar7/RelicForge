@@ -273,7 +273,16 @@ export function TitleScreen() {
               Your element decides who you are and what your weapon is made of.
               Damage comes from the weapon, shown below.
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {/*
+              Full-width rows rather than three columns.
+
+              Three narrow cards were a compromise with a page that had to hold
+              every decision at once. A step that asks one question has the width
+              to spare, and a row reads left to right, identity then trade then
+              numbers, instead of forcing three columns of wrapped text to be
+              compared vertically.
+            */}
+            <div className="mt-4 flex flex-col gap-3">
               {AFFINITIES.map((a) => (
                 <button
                   key={a.id}
@@ -290,12 +299,13 @@ export function TitleScreen() {
                   */
                   onClick={() => chooseAffinity(a.id)}
                   className={[
-                    "border px-4 py-4 text-left transition",
+                    "flex items-start gap-5 border px-5 py-4 text-left transition",
                     affinity === a.id
                       ? a.accent
                       : "border-ash-700 text-stone-500 hover:border-stone-500",
                   ].join(" ")}
                 >
+                  <span className="min-w-0 flex-1">
                   <div className="flex h-7 items-center gap-2">
                     {/*
                       Fixed box. The three glyphs are emoji with different
@@ -318,21 +328,24 @@ export function TitleScreen() {
                     identically, which made the first decision in the game a
                     cosmetic one wearing the clothes of a real one.
                   */}
-                  <p className="mt-2 text-[10px] leading-relaxed text-stone-500">
+                  <p className="mt-2 text-[11px] leading-relaxed text-stone-500">
                     {championFor(a.id).blurb}
                   </p>
+                  </span>
 
-                  {/* Labelled, because "38/71 dmg" assumes the reader already
-                      knows which number is which. */}
-                  <dl className="mt-3 space-y-0.5 font-mono text-[9px] uppercase tracking-[0.12em]">
+                  {/*
+                    Stats to the side, so the three sets line up in a column and
+                    can be read against each other without moving your eye across
+                    a paragraph to reach the next number.
+                  */}
+                  <dl className="w-32 shrink-0 space-y-1 font-mono text-[9px] uppercase tracking-[0.12em]">
                     {describeChampion(championFor(a.id)).map((stat) => (
                       <div key={stat.label} className="flex justify-between gap-2">
                         <dt className="text-stone-700">{stat.label}</dt>
-                        <dd className="tabular-nums text-stone-400">{stat.value}</dd>
+                        <dd className="tabular-nums text-stone-300">{stat.value}</dd>
                       </div>
                     ))}
                   </dl>
-
                 </button>
               ))}
             </div>
