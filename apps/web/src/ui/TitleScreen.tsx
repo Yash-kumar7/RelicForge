@@ -234,7 +234,10 @@ export function TitleScreen() {
               level={bossLevel}
               title={bossAt(bossLevel).title}
               accent={bossAt(bossLevel).accent}
-              className="h-[26rem] w-full border border-ash-800 bg-ash-950"
+              /* Same frame the champion gets. The two views sit in the same
+                 place on consecutive steps, so a smaller one reads as the enemy
+                 mattering less than the character choosing to fight it. */
+              className="h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full border border-ash-800 bg-ash-900/40"
             />
           ) : (
             <ChampionPreview affinity={affinity} />
