@@ -28,8 +28,8 @@ export interface HandSocketRatios {
 }
 
 export const HAND_SOCKETS: Record<string, HandSocketRatios> = {
-  "ember": { x: 0.4186, y: 0.5745, z: 0.1353, bone: "LeftHand" },
-  "frost": { x: -0.4307, y: 0.5766, z: 0.1789, bone: "RightHand" },
+  "ember": { x: 0.4191, y: 0.5739, z: 0.1366, bone: "LeftHand" },
+  "frost": { x: -0.4309, y: 0.5747, z: 0.1845, bone: "RightHand" },
   "storm": { x: -0.4387, y: 0.5714, z: 0.1813, bone: "RightHand" },
   "ashen-warden": { x: -0.4266, y: 0.5315, z: 0.0872, bone: "RightHand" },
   "drowned-choir": { x: -0.4138, y: 0.5728, z: 0.1368, bone: "RightHand" },
