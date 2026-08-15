@@ -134,8 +134,16 @@ export function PreFightBriefing() {
         <div className="relative flex flex-1 items-start overflow-y-auto pt-[5svh] pb-8">
           <div className="mx-auto w-full max-w-7xl px-8 py-10 lg:px-14">
             <div className="max-w-xl">
-              <p className="font-mono text-[10px] uppercase tracking-[0.45em] text-stone-600">
-                Your objective
+              {/*
+                The verb, not the word for the category the verb is in.
+
+                "Your objective" over a name states that there is an objective
+                without saying what it is, and leaves the heading as a noun with
+                nothing asked of it. One word does the whole job: the line reads
+                defeat, then the thing to defeat.
+              */}
+              <p className="font-mono text-[10px] uppercase tracking-[0.45em] text-stone-500">
+                Defeat
               </p>
               {/*
                 The name alone, at size.
