@@ -47,7 +47,7 @@ export const FIST_SOCKETS: Record<string, HandSocketRatios> = {
   "drowned-choir": { x: -0.42, y: 0.67, z: 0.24, bone: "RightHand" },
   "gilded-husk": { x: -0.42, y: 0.54, z: 0.2, bone: "RightHand" },
   "rootbound-king": { x: -0.44, y: 0.54, z: 0.2, bone: "RightHand" },
-  "hollow-sovereign": { x: -0.42, y: 0.62, z: 0.2, bone: "RightHand" },
+  "hollow-sovereign": { x: -0.42, y: 0.56, z: 0.2, bone: "RightHand" },
 };
 
 
