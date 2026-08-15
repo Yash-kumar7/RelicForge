@@ -382,19 +382,20 @@ export function TitleScreen() {
           </ol>
 
             {/*
-              Shown once it means something.
+              Always shown, including at zero.
 
-              At zero experience this read "rank Unproven · 0 xp", which is a
-              label for having done nothing yet, printed on the first screen a
-              new player sees. Nobody reads it because there is nothing in it to
-              read.
+              It was briefly hidden until the first experience was earned, on the
+              grounds that "Unproven · 0 xp" is a label for having done nothing.
+              That is exactly why it belongs there: a rank at the bottom of a
+              ladder is how a player learns there is a ladder, and every game
+              shows it from the first minute rather than revealing it after the
+              first win.
 
-              Once there is progress it becomes worth showing, and it gets pips
-              rather than a bare word: a rank is a position in a series, and a
-              series is easier to see than to name.
+              The pips do the work the bare word could not. Six marks with one
+              filled says there is somewhere to get to, which "Unproven" alone
+              does not.
             */}
-            {xp > 0 && (
-              <span className="flex shrink-0 items-center gap-2">
+            <span className="flex shrink-0 items-center gap-2">
                 <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone-400">
                   {rank.name}
                 </span>
@@ -406,9 +407,8 @@ export function TitleScreen() {
                     />
                   ))}
                 </span>
-                <span className="font-mono text-[10px] tabular-nums text-brass-800">{xp} xp</span>
-              </span>
-            )}
+              <span className="font-mono text-[10px] tabular-nums text-brass-800">{xp} xp</span>
+            </span>
           </div>
 
           {section === 0 && (
