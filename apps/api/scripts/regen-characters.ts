@@ -73,7 +73,10 @@ const CHARACTERS: Character[] = [
     slug: "ember",
     kind: "champions",
     subject:
-      "A battle-scarred human warrior in heavy blackened plate armour scorched by fire, glowing ember-orange cracks along the pauldrons and gauntlets, a torn crimson half-cape, close helm with a narrow visor slit, soot streaked across the breastplate",
+      // No cape. The first pass asked for a torn crimson half-cape and got one
+      // hanging down the front of the body, which reads as a skirt and hides the
+      // armour the character is otherwise made of.
+      "A battle-scarred human warrior in heavy blackened plate armour scorched by fire, glowing ember-orange cracks along the pauldrons and gauntlets, close helm with a narrow visor slit, soot streaked across the breastplate, bare armoured shoulders with no cape, no cloak and no fabric of any kind",
   },
   {
     slug: "frost",

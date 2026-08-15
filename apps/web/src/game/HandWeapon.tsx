@@ -9,6 +9,14 @@ import { IRON_SCALE } from "./weaponScale";
 import { playerHandle } from "./Player";
 import { swingProgress } from "./swing";
 import { bossState, bossSwing } from "./bossState";
+import { bossWeaponHint } from "./orientationHints";
+import type { OrientationHint } from "@relic/core";
+
+/** An empty object rather than `hint: undefined`, for exactOptionalPropertyTypes. */
+function hintProps(slug: string): { hint?: OrientationHint } {
+  const hint = bossWeaponHint(slug);
+  return hint ? { hint } : {};
+}
 
 /**
  * A weapon in a rigged character's hand, swinging under its own power.
@@ -105,9 +113,12 @@ export function PlayerHandWeapon({
 export function BossHandWeaponSwing({
   url,
   weaponClass,
+  slug,
 }: {
   url: string;
   weaponClass: WeaponClass;
+  /** Selects the orientation hint for weapons the heuristic cannot resolve. */
+  slug: string;
 }) {
   const arm = useRef<Group>(null);
 
@@ -139,7 +150,14 @@ export function BossHandWeaponSwing({
 
   return (
     <group ref={arm} scale={1.15}>
-      <HeldRelicMesh url={url} weaponClass={weaponClass} />
+      {/*
+        The hint applies here too.
+
+        This is the third place a boss weapon is drawn, after the ladder preview
+        and the unrigged fallback, and it is the one the player actually fights.
+        Fixing the other two left the weapon upright everywhere except in combat.
+      */}
+      <HeldRelicMesh url={url} weaponClass={weaponClass} {...hintProps(slug)} />
 
       {/* Sits along the blade, so the arc sweeps where the weapon sweeps. */}
       <mesh ref={slash} position={[0, 0.9, 0]} rotation={[0, 0, 0]} visible={false}>

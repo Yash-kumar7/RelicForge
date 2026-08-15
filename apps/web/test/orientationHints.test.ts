@@ -13,6 +13,9 @@ import { BOSS_WEAPON_HINTS, bossWeaponHint } from "../src/game/orientationHints"
 const RENDER_PATHS = [
   "apps/web/src/game/BossWeapon.tsx",
   "apps/web/src/ui/BossPreview.tsx",
+  // The rigged in-fight path, and the one that was missed. Fixing the ladder and
+  // the unrigged fallback left the weapon upright everywhere except in combat.
+  "apps/web/src/game/HandWeapon.tsx",
 ];
 
 describe("orientation hints", () => {

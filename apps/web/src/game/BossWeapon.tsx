@@ -131,7 +131,7 @@ export function BossHandWeapon({
 
   return (
     <Suspense fallback={null}>
-      <BossHandWeaponSwing url={url} weaponClass={weaponClass} />
+      <BossHandWeaponSwing url={url} weaponClass={weaponClass} slug={slug} />
     </Suspense>
   );
 }
