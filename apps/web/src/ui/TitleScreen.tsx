@@ -49,6 +49,17 @@ const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
  * own art already, so this is the room rather than the key light.
  */
 /** The most health any champion has, so the bars measure against each other. */
+/**
+ * Rank as a numeral, cut the way the rest of the display type is.
+ *
+ * It was six dashes, which read as a progress bar rather than a standing, and
+ * before that a bare word. An emoji or a badge asset would be clip art beside an
+ * inscriptional face; a Roman numeral is the convention that face already
+ * carries, and it says both which rank this is and that there are others.
+ */
+const NUMERALS = ["I", "II", "III", "IV", "V", "VI"] as const;
+
+/** The most health any champion has, so the bars measure against each other. */
 const TOUGHEST = Math.max(
   ...(["fire", "ice", "storm"] as Affinity[]).map((id) => championStats(championFor(id)).health),
 );
@@ -396,16 +407,17 @@ export function TitleScreen() {
               does not.
             */}
             <span className="flex shrink-0 items-center gap-2">
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center border border-ember-500/50 font-display text-[11px] leading-none text-ember-300"
+                  aria-hidden
+                >
+                  {NUMERALS[rank.index] ?? "I"}
+                </span>
                 <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone-400">
                   {rank.name}
                 </span>
-                <span className="flex gap-[3px]" aria-hidden>
-                  {RANKS.map((tier, i) => (
-                    <span
-                      key={tier.name}
-                      className={`h-[3px] w-3 ${i <= rank.index ? "bg-ember-500" : "bg-ash-800"}`}
-                    />
-                  ))}
+                <span className="font-mono text-[10px] tabular-nums text-brass-800">
+                  of {NUMERALS[RANKS.length - 1]}
                 </span>
               <span className="font-mono text-[10px] tabular-nums text-brass-800">{xp} xp</span>
             </span>
