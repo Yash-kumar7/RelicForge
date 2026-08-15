@@ -38,7 +38,6 @@ export function ChampionPreview({ affinity }: { affinity: Affinity }) {
   return (
     <CharacterViewer
       slug={slug}
-      riggedUrl={`/assets/champions/${slug}/rig/rigged.glb`}
       /*
         Two poses of one character, chosen by whether anything is in hand.
 

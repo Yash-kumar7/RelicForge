@@ -52,7 +52,6 @@ export function BossPreview({
   return (
     <CharacterViewer
       slug={slug}
-      riggedUrl={`/assets/bosses/${slug}/rig/rigged.glb`}
       url={`/assets/bosses/${slug}/model.glb`}
       height={BOSS_HEIGHT}
       accent={accent}

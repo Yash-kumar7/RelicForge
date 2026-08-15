@@ -51,5 +51,34 @@ export const DEFAULT_HAND_SOCKET: HandSocketRatios = {
 };
 
 export function handSocketFor(slug: string): HandSocketRatios {
-  return HAND_SOCKETS[slug] ?? DEFAULT_HAND_SOCKET;
+  return FIST_SOCKETS[slug] ?? HAND_SOCKETS[slug] ?? DEFAULT_HAND_SOCKET;
 }
+
+/**
+ * Where the closed fist is on the *static* mesh, authored by eye.
+ *
+ * The generated ratios above cannot answer this, and the reason is worth stating
+ * because it cost several rounds to find. Meshy's rigging re-poses a character
+ * into a neutral A-pose, arms lowered and hands opened. So the rig knows exactly
+ * where a hand is, and it is not the hand the concept drew: the static mesh
+ * keeps the raised, closed fist the character was generated with, and the rig
+ * has neither the raise nor the fist.
+ *
+ * That leaves two meshes, each holding half the answer. The setup screen shows
+ * the static one, because a closed fist is the whole point of regenerating these
+ * characters, so its socket has to be authored rather than measured.
+ *
+ * Read off each character's concept image as a fraction of its silhouette. These
+ * are estimates and expected to need nudging against the screen, which is the
+ * honest state of anything derived from looking at a picture.
+ */
+const FIST_SOCKETS: Record<string, HandSocketRatios> = {
+  ember: { x: -0.37, y: 0.75, z: 0.2, bone: "RightHand" },
+  frost: { x: -0.4, y: 0.66, z: 0.2, bone: "RightHand" },
+  storm: { x: -0.4, y: 0.64, z: 0.2, bone: "RightHand" },
+  "ashen-warden": { x: -0.4, y: 0.62, z: 0.18, bone: "RightHand" },
+  "drowned-choir": { x: -0.4, y: 0.63, z: 0.18, bone: "RightHand" },
+  "gilded-husk": { x: -0.4, y: 0.5, z: 0.14, bone: "RightHand" },
+  "rootbound-king": { x: -0.42, y: 0.5, z: 0.14, bone: "RightHand" },
+  "hollow-sovereign": { x: -0.4, y: 0.54, z: 0.14, bone: "RightHand" },
+};
