@@ -16,12 +16,28 @@ describe("swingProgress", () => {
     expect(swingProgress(null)).toBe(0);
   });
 
-  it("pulls back before committing", () => {
-    const spec = attackSpec("light");
-    const startedAt = 1000;
-    // Mid wind-up: the blade should be behind its rest position.
-    const midWindup = swingProgress({ kind: "light", startedAt }, startedAt + spec.windupMs / 2);
-    expect(midWindup).toBeLessThan(0);
+  it("never travels away from the target", () => {
+    /*
+     * The wind-up used to pull the blade back to -0.6 before driving it
+     * through, which is how a swing is animated and read wrong here: a light
+     * wind-up is 120ms, so the eye catches the reversal and little else and the
+     * weapon appeared to move backwards when the player pressed attack.
+     */
+    for (const kind of ["light", "heavy"] as const) {
+      const spec = attackSpec(kind);
+      const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
+      for (let ms = 0; ms <= total; ms += 10) {
+        expect(swingProgress({ kind, startedAt: 0 }, ms)).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it("still moves during the wind-up, so a heavy attack is not frozen", () => {
+    // 420ms of nothing before a heavy lands reads as the input being dropped.
+    const spec = attackSpec("heavy");
+    const mid = swingProgress({ kind: "heavy", startedAt: 0 }, spec.windupMs / 2);
+    expect(mid).toBeGreaterThan(0);
+    expect(mid).toBeLessThan(swingProgress({ kind: "heavy", startedAt: 0 }, spec.windupMs));
   });
 
   it("peaks during the active window, when the hit test can land", () => {
