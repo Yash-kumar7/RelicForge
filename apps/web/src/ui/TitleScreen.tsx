@@ -187,7 +187,15 @@ export function TitleScreen() {
    * "who am I" and deserves the space.
    */
   return (
-    <div className="h-full overflow-y-auto bg-ash-950 px-6 py-8">
+    /*
+      Room above the content.
+
+      py-8 put the champion heading and the step list hard against the top edge
+      of the viewport, which reads as the page having been cut off rather than
+      laid out. The extra height is affordable now that a step shows one section
+      instead of three stacked ones.
+    */
+    <div className="h-full overflow-y-auto bg-ash-950 px-6 pb-10 pt-14">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2">
         {/* Left: the champion, as large as the viewport allows. */}
         {/*
