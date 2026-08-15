@@ -464,11 +464,24 @@ export function TitleScreen() {
                     </span>
                   </span>
 
-                  <span className="mt-1 block h-[2px] w-full bg-ash-800">
+                  {/*
+                    A track that looks like one, even when empty.
+
+                    At zero experience there is no fill, so a thin dark bar on a
+                    dark page was a rule between two numbers rather than progress
+                    waiting to happen. The track is lighter and taller now, and
+                    the fill keeps a minimum sliver, so the thing always reads as
+                    a container with something in it rather than as a divider.
+                  */}
+                  <span className="mt-1.5 block h-[4px] w-full rounded-sm bg-brass-800/70">
                     <span
-                      className="block h-[2px] bg-ember-500/80 transition-all duration-500"
+                      className="block h-[4px] rounded-sm bg-ember-500 transition-all duration-500"
                       style={{
-                        width: `${rank.next === null ? 100 : Math.round((rank.into / rank.span) * 100)}%`,
+                        width: `${
+                          rank.next === null
+                            ? 100
+                            : Math.max(4, Math.round((rank.into / rank.span) * 100))
+                        }%`,
                       }}
                     />
                   </span>
