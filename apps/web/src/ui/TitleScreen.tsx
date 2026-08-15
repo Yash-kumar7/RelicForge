@@ -278,13 +278,17 @@ export function TitleScreen() {
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => {
-                    chooseAffinity(a.id);
-                    // Straight on, since picking is the only thing this step
-                    // asks for. A Continue button under a single choice is a
-                    // second click for no decision.
-                    setStep(1);
-                  }}
+                  /*
+                    Selecting does not advance.
+
+                    It did, on the reasoning that picking is the only thing this
+                    step asks for. That was wrong: it made the first click final,
+                    so a player could not try Frost after Ember, or read the
+                    third card at all. The champion beside these cards changes
+                    with the selection, which is the entire reason to sit on this
+                    step and compare.
+                  */
+                  onClick={() => chooseAffinity(a.id)}
                   className={[
                     "border px-4 py-4 text-left transition",
                     affinity === a.id
