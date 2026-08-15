@@ -1,6 +1,6 @@
 # RelicForge
 
-> **Kill it your way. Keep what that makes.**
+> **Your weapon is made from how you fight**
 
 **What if legendary loot was actually one-of-one?**
 

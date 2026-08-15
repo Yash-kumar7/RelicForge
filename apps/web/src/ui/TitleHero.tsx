@@ -412,7 +412,19 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
             choice, because the choice is the mechanic. How you kill it is the
             input; the weapon is what comes out.
           */}
-          Kill it your way. Keep what that makes.
+          {/*
+            The mechanic, stated flat.
+
+            Three attempts got here and each was cleverer than it was clear.
+            "Every legendary is actually legendary" was a joke about other games'
+            loot tiers. "The weapon does not exist until you win it" described
+            the weapon rather than the player. "Kill it your way, keep what that
+            makes" compressed the loop until it stopped saying it.
+
+            This one has no reading to work out: how you fight is the input, the
+            weapon is the output, and the sentence says so in that order.
+          */}
+          Your weapon is made from how you fight
         </p>
       </motion.header>
 
