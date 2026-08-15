@@ -175,7 +175,12 @@ export function describeBoss(
 
   return [
     { label: "health", value: `${health}` },
-    { label: "hits you for", value: `${damage}` },
+    /*
+     * Named and given its unit, matching the champion cards, where a row reads
+     * "light attack: 30 damage". "Hits you for 22" left the 22 to be guessed at
+     * and read as a rate rather than a quantity.
+     */
+    { label: "its attack", value: `${damage} damage` },
     /*
      * The number that actually decides whether to take this fight, and the
      * reason this takes the champion's health rather than a constant: the same

@@ -129,4 +129,13 @@ describe("describeBoss", () => {
       expect(stat.value).not.toContain("%");
     }
   });
+
+  it("carries the unit on any value that is not a bare count", () => {
+    // "hits you for 22" left the 22 to be guessed at and could be read as a
+    // rate. Every card on this screen names the thing and puts the unit on the
+    // number.
+    const attack = describeBoss(1, 100).find((s) => s.label === "its attack");
+    expect(attack?.value).toContain("damage");
+    expect(describeBoss(1, 100).find((s) => s.label === "kills you in")?.value).toContain("hits");
+  });
 });
