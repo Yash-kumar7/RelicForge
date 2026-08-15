@@ -41,8 +41,8 @@ import { DEFAULT_HAND_SOCKET, HAND_SOCKETS, type HandSocketRatios } from "./hand
  */
 export const FIST_SOCKETS: Record<string, HandSocketRatios> = {
   ember: { x: -0.4, y: 0.71, z: 0.26, bone: "RightHand" },
-  frost: { x: -0.42, y: 0.67, z: 0.26, bone: "RightHand" },
-  storm: { x: -0.42, y: 0.65, z: 0.26, bone: "RightHand" },
+  frost: { x: -0.48, y: 0.67, z: 0.3, bone: "RightHand" },
+  storm: { x: -0.46, y: 0.65, z: 0.3, bone: "RightHand" },
   "ashen-warden": { x: -0.42, y: 0.66, z: 0.24, bone: "RightHand" },
   "drowned-choir": { x: -0.42, y: 0.67, z: 0.24, bone: "RightHand" },
   "gilded-husk": { x: -0.42, y: 0.54, z: 0.2, bone: "RightHand" },
