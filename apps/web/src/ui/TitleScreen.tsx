@@ -49,9 +49,9 @@ const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
  * own art already, so this is the room rather than the key light.
  */
 const ELEMENT_GLOW: Record<Affinity, string> = {
-  fire: "rgba(255,107,26,0.16)",
-  ice: "rgba(74,168,216,0.15)",
-  storm: "rgba(251,191,36,0.13)",
+  fire: "rgba(255,107,26,0.3)",
+  ice: "rgba(74,168,216,0.28)",
+  storm: "rgba(251,191,36,0.24)",
 };
 
 const AFFINITIES: {
@@ -209,7 +209,15 @@ export function TitleScreen() {
       instead of three stacked ones.
     */
     <div className="h-full overflow-y-auto bg-ash-950 px-6 pb-10 pt-14">
-      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2">
+      {/*
+        The width of the screen, not a column in the middle of it.
+
+        max-w-6xl was chosen when this page stacked several sections; as a
+        two-panel step it left most of a wide monitor empty on both sides while
+        the title screen beside it runs full bleed. The right column is capped on
+        its own instead, so text still sets to a readable measure.
+      */}
+      <div className="mx-auto grid w-full max-w-[104rem] items-center gap-12 lg:grid-cols-[1.05fr_1fr] xl:gap-20">
         {/* Left: the champion, as large as the viewport allows. */}
         {/*
           Deliberately not sticky.
@@ -297,7 +305,7 @@ export function TitleScreen() {
         </div>
 
         {/* Right: element, then weapon, then who you fight, then descend. */}
-        <div className="flex flex-col">
+        <div className="flex max-w-2xl flex-col justify-center">
           {/*
             One decision at a time.
 

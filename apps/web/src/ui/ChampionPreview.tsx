@@ -81,7 +81,10 @@ export function ChampionPreview({
             ? "your champion, holding your relic · drag to inspect"
             : "your champion, holding the iron blade · drag to inspect"
       }
-      className="h-[calc(100vh-9rem)] max-h-[46rem] min-h-[26rem] w-full border border-ash-800 bg-ash-900/40"
+      /* No frame and no fill. A bordered panel with a background reads as a
+         viewer embedded in a page; without it the champion is simply standing
+         in the room. Taller too, because the figure is the subject. */
+      className="h-[calc(100svh-7rem)] max-h-[54rem] min-h-[30rem] w-full"
     />
   );
 }
