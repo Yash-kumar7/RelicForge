@@ -11,6 +11,7 @@ import { TitleBackdrop } from "./TitleBackdrop";
 import { BossPortrait } from "./BossPortrait";
 import { BossPreview } from "./BossPreview";
 import { ArmamentPanel } from "./ArmamentPanel";
+import { PendingForgePanel } from "./PendingForgePanel";
 import { rankFor } from "../state/useProgress";
 import { useProgress } from "../state/useProgress";
 
@@ -265,6 +266,14 @@ export function TitleScreen() {
             while still looking at who is going to fight it. Separate pages would
             have thrown that away and added a back button to get it back.
           */}
+          {/*
+            Above the steps, because a relic still being forged is news and the
+            steps are a routine. It also has to be reachable from every step,
+            since the player may have left mid-forge and come back to any of
+            them.
+          */}
+          <PendingForgePanel />
+
           <ol className="mb-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em]">
             {STEPS.map((label, index) => {
               const reached = index <= step;

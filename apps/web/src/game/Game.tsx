@@ -24,6 +24,7 @@ import { useForgeRun } from "../forge/useForgeRun";
 import { ForgeSequence } from "../forge/ForgeSequence";
 import { setEquippedRelic } from "./equipped";
 import { setActiveChampion } from "./champions";
+import { usePendingForge } from "../state/usePendingForge";
 import { Hud } from "../ui/Hud";
 import { DefeatScreen } from "../ui/DefeatScreen";
 import { PreFightBriefing } from "../ui/PreFightBriefing";
@@ -149,6 +150,16 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
         bossLevel: state.bossLevel ?? 1,
       });
     }
+    /*
+     * Settles any pending record for this relic.
+     *
+     * A player can leave a forge, come back, and reach the cinematic again by
+     * fighting the same boss the same way, which serves from cache. Without
+     * this the strip would keep offering a relic already in their hands.
+     */
+    const pending = usePendingForge.getState().pending;
+    if (pending && pending.relicId === f.relicId) usePendingForge.getState().settle();
+
     setPhase("EQUIPPED");
   }, [setPhase]);
 
@@ -284,6 +295,26 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
             document.exitPointerLock?.();
             reset();
           }}
+          /*
+            Leaving does not cancel anything. The forge runs server side, keyed
+            by relic id, and the client is only ever watching it: closing the
+            stream stops the watching, not the work. Recording the id is all
+            that is needed to pick it up again.
+          */
+          onLeave={
+            forge.relicId && forge.name
+              ? () => {
+                  document.exitPointerLock?.();
+                  usePendingForge.getState().leave({
+                    relicId: forge.relicId!,
+                    name: forge.name!,
+                    bossLevel: useGameStore.getState().bossLevel ?? 1,
+                    startedAt: Date.now(),
+                  });
+                  reset();
+                }
+              : null
+          }
         />
       )}
       {phase === "DEFEAT" && <DefeatScreen />}

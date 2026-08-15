@@ -33,10 +33,13 @@ export function ForgeSequence({
   onClaim,
   onRetry,
   onAbandon,
+  onLeave,
 }: {
   onClaim: () => void;
   onRetry: () => void;
   onAbandon: () => void;
+  /** Walk away and let it finish. Absent when there is nothing to wait for. */
+  onLeave: (() => void) | null;
 }) {
   const forge = useGameStore((s) => s.forge);
   const telemetry = useGameStore((s) => s.telemetry);
@@ -250,6 +253,29 @@ export function ForgeSequence({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/*
+          A way out, once it is clear this will take a while.
+
+          Held back until the mesh stage because everything before it is fast,
+          and offering an exit during a two second cache hit would make the
+          instant path look like it was about to be slow. From here it is 90 to
+          120 seconds, which is too long to hold someone who wants to move on.
+        */}
+        {onLeave && forge.stage === "FORGING_3D" && (
+          <div className="pointer-events-auto mt-6 text-center">
+            <button
+              type="button"
+              onClick={onLeave}
+              className="border border-stone-700 px-8 py-2 text-[10px] uppercase tracking-[0.3em] text-stone-500 transition hover:border-stone-500 hover:text-stone-300"
+            >
+              Leave it forging
+            </button>
+            <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.2em] text-stone-700">
+              it keeps working without you
+            </p>
+          </div>
+        )}
 
         {forge.stage === "FAILED" && (
           <div className="pointer-events-auto text-center">
