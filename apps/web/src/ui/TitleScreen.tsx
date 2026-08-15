@@ -624,7 +624,19 @@ export function TitleScreen() {
               keep the comparison and this carries the reasons.
             */}
             <div className="mt-6 border-t border-brass-800 pt-5">
+              {/*
+                Labelled to match the line under it.
+
+                One had a label and the other did not, so they read as unrelated
+                sentences rather than as two answers about the same champion.
+                Fights and forges are the two things a champion does, and they
+                are the two questions this screen exists to answer: how it plays,
+                and what it leaves you holding.
+              */}
               <p className="max-w-lg text-[13px] leading-relaxed text-bone-200/80">
+                <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
+                  fights{" "}
+                </span>
                 {championFor(affinity).blurb}
               </p>
               <p className="mt-3 max-w-lg text-[12px] leading-relaxed text-bone-400">
