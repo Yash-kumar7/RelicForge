@@ -452,7 +452,9 @@ export function TitleScreen() {
 
                 <span className="flex-1">
                   <span className="flex items-baseline justify-between gap-3">
-                    <span className="font-mono text-[10px] tabular-nums text-bone-300">
+                    {/* XP is an initialism, so it takes capitals the way the
+                        rest of the labels on this row do. */}
+                    <span className="font-mono text-[10px] tabular-nums uppercase text-bone-300">
                       {xp} xp
                     </span>
                     <span className="font-mono text-[9px] tabular-nums text-brass-700">
