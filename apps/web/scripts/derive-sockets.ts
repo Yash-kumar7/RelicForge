@@ -18,6 +18,11 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
  * Positions are stored as fractions of the fitted character rather than world
  * units, so they survive a change to AVATAR_HEIGHT or BOSS_HEIGHT.
  *
+ * Writes handSockets.ts wholesale, which is why nothing hand-authored may live
+ * in that file. The sockets placed by eye are in fistSockets.ts for exactly this
+ * reason: running this script once deleted them, silently, because a generated
+ * file cannot also be edited by hand.
+ *
  *   cd apps/web && npx tsx scripts/derive-sockets.ts
  */
 

@@ -3,7 +3,8 @@ import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import { Box3, Vector3, type Group } from "three";
 import { fitCharacter } from "../lib/characterFit";
-import { handSocketFor, type HandSocketRatios } from "../game/handSockets";
+import { type HandSocketRatios } from "../game/handSockets";
+import { fistSocketFor } from "../game/fistSockets";
 import { HeldWeapon } from "./HeldWeapon";
 import type { OrientationHint, WeaponClass } from "@relic/core";
 
@@ -145,7 +146,7 @@ function Model({
     return { width: size.x * fit.scale, depth: size.z * fit.scale };
   }, [model, fit.scale]);
 
-  const authored = handSocketFor(slug);
+  const authored = fistSocketFor(slug);
   const ratios = useSocketNudge(slug, authored);
 
   return (
