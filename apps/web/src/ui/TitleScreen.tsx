@@ -218,8 +218,16 @@ export function TitleScreen() {
     */
     <div
       className={
+        /*
+          Bleeding, the page has no vertical padding of its own.
+
+          A figure asked to be 100svh tall inside a container padded top and
+          bottom is 6rem taller than the screen, so the page scrolled to show a
+          champion that was supposed to fit it exactly. The padding moves onto
+          the column that still needs it.
+        */
         bleed
-          ? "h-full overflow-y-auto bg-ash-950 pb-10 pl-0 pr-6 pt-14"
+          ? "h-full overflow-hidden bg-ash-950 pl-0 pr-6"
           : "h-full overflow-y-auto bg-ash-950 px-6 pb-10 pt-14"
       }
     >
@@ -231,7 +239,11 @@ export function TitleScreen() {
         the title screen beside it runs full bleed. The right column is capped on
         its own instead, so text still sets to a readable measure.
       */}
-      <div className="mx-auto grid w-full max-w-[104rem] items-center gap-12 lg:grid-cols-[1.05fr_1fr] xl:gap-20">
+      <div
+        className={`mx-auto grid w-full items-center gap-12 lg:grid-cols-[1.05fr_1fr] xl:gap-20 ${
+          bleed ? "h-full max-w-none" : "max-w-[104rem]"
+        }`}
+      >
         {/* Left: the champion, as large as the viewport allows. */}
         {/*
           Deliberately not sticky.
@@ -329,7 +341,7 @@ export function TitleScreen() {
         </div>
 
         {/* Right: element, then weapon, then who you fight, then descend. */}
-        <div className="flex max-w-2xl flex-col justify-center">
+        <div className={`flex max-w-2xl flex-col justify-center ${bleed ? "py-14" : ""}`}>
           {/*
             One decision at a time.
 
