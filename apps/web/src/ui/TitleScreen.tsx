@@ -828,14 +828,26 @@ export function TitleScreen() {
           )}
 
 
-          <div className="mt-8 border-t border-ash-800 pt-5">
+          {/*
+            Pinned to the bottom, because the column scrolls.
+
+            The way forward sat in flow underneath a list of five bosses, so on
+            the last step it began below the fold and the player had to scroll
+            past every enemy to reach the button that starts the fight. A control
+            that leaves the screen is a control that looks missing. The steps are
+            pinned at the top of this column for the same reason; this is the
+            other end of it.
+
+            Opaque, since the rows pass underneath.
+          */}
+          <div className="sticky bottom-0 z-20 mt-8 border-t border-ash-800 bg-ash-950 pb-4 pt-5">
             {step < steps.length - 1 && (
               <button
                 type="button"
                 disabled={section === 1 && armament === null}
                 onClick={() => setStep(step + 1)}
                 className={[
-                  "mb-4 w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
+                  "w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
                   section === 1 && armament === null
                     ? "cursor-not-allowed border-ash-800 text-stone-700"
                     : "border-stone-600 text-stone-300 hover:border-stone-400",
