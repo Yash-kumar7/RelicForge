@@ -11,6 +11,7 @@ import { BossPreview } from "./BossPreview";
 import { ArmamentPanel } from "./ArmamentPanel";
 import { PendingForgePanel } from "./PendingForgePanel";
 import { SpecimenPlate } from "./SpecimenPlate";
+import { TitleHero } from "./TitleHero";
 import { rankFor } from "../state/useProgress";
 import { useProgress } from "../state/useProgress";
 
@@ -90,14 +91,26 @@ export function TitleScreen() {
      */
     return (
       <div className="relative h-full overflow-y-auto bg-ash-950">
-        {/* Always-on motion, so the very first thing a visitor sees is not a
-            static page waiting on a fetch. */}
-        <TitleBackdrop />
-
         <div className="relative flex flex-col items-center">
-          <SpecimenPlate onEnter={() => setPhase("CHOOSE_AFFINITY")} />
+          {/*
+            Embers belong to the hero and stop at its edge.
 
-          <div className="w-full max-w-4xl px-8 pb-20">
+            They used to drift behind the whole page, so every paragraph further
+            down was read over moving specks. Ambient motion is atmosphere behind
+            a title and noise behind body text, and the difference is only where
+            it is allowed to be.
+          */}
+          <div className="relative w-full">
+            <TitleBackdrop />
+            <TitleHero onEnter={() => setPhase("CHOOSE_AFFINITY")} />
+          </div>
+
+          {/* The evidence, for anyone who scrolled to ask how. */}
+          <SpecimenPlate />
+
+          {/* Solid ground under everything that has to be read. */}
+          <div className="relative z-10 w-full bg-ash-950">
+          <div className="mx-auto w-full max-w-4xl px-8 pb-20">
             {/*
               The premise, for anyone who scrolled to ask. Players arrive with a
               lifetime of loot tables behind them and will assume the weapon was
@@ -134,6 +147,7 @@ export function TitleScreen() {
                 </li>
               ))}
             </ol>
+          </div>
           </div>
         </div>
       </div>

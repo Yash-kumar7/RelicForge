@@ -109,7 +109,7 @@ function Reading({ field, value, delay }: { field: string; value: string; delay:
   );
 }
 
-export function SpecimenPlate({ onEnter }: { onEnter: () => void }) {
+export function SpecimenPlate() {
   const [relics, setRelics] = useState<ShowcaseRelic[]>([]);
   const [index, setIndex] = useState(0);
 
@@ -145,13 +145,14 @@ export function SpecimenPlate({ onEnter }: { onEnter: () => void }) {
   const loading = relics.length === 0;
 
   return (
-    <section className="relative grid min-h-[100svh] w-full max-w-6xl grid-cols-1 gap-8 px-8 py-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-      {/* Plate header. The number is the relic's real place in the archive, not
-          a decorative counter. */}
-      <div className="absolute left-8 right-8 top-8 flex items-baseline justify-between border-b border-brass-800 pb-3">
-        <span className="font-display text-sm tracking-[0.4em] text-bone-200">RELICFORGE</span>
+    <section className="relative z-10 mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 border-t border-brass-800 bg-ash-950 px-8 py-20 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+      {/* The section's own heading, now that the hero above owns the title. */}
+      <div className="col-span-full flex items-baseline justify-between border-b border-brass-800 pb-3">
+        <span className="font-display text-sm tracking-[0.4em] text-bone-200">
+          WHAT THE WEAPON REMEMBERS
+        </span>
         <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-brass-700">
-          {current ? `no.${String(index + 1).padStart(3, "0")} · ${current.dna.bossInfluence}` : "archive"}
+          {current ? current.dna.bossInfluence : "archive"}
         </span>
       </div>
 
@@ -199,13 +200,6 @@ export function SpecimenPlate({ onEnter }: { onEnter: () => void }) {
           )}
         </AnimatePresence>
 
-        <button
-          type="button"
-          onClick={onEnter}
-          className="mt-10 border border-ember-500/60 px-12 py-4 font-mono text-[11px] uppercase tracking-[0.4em] text-ember-300 transition hover:bg-ember-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ember-500"
-        >
-          Enter the forge
-        </button>
       </div>
 
       {/* The specimen. */}
