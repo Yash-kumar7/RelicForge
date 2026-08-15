@@ -63,9 +63,12 @@ function fitDistance(height: number, margin = 0.45): number {
  *
  * Off unless asked for, so it costs a player nothing.
  */
+/** ?socket in the URL: hold the turntable still and let the socket be moved. */
+const SOCKET_TUNING =
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).has("socket");
+
 function useSocketNudge(slug: string, authored: HandSocketRatios): HandSocketRatios {
-  const enabled =
-    typeof window !== "undefined" && new URLSearchParams(window.location.search).has("socket");
+  const enabled = SOCKET_TUNING;
   const [ratios, setRatios] = useState(authored);
 
   useEffect(() => setRatios(authored), [authored]);
@@ -225,7 +228,15 @@ export function CharacterViewer({
           */}
           <OrbitControls
             makeDefault
-            autoRotate={autoRotate}
+            /*
+              Held still while a socket is being placed.
+
+              The turntable makes a front-on offset project differently at every
+              angle, and depth reads as horizontal error, so two screenshots of
+              the same socket disagreed about which way it was wrong. Judging a
+              position against a moving target is not judging it.
+            */
+            autoRotate={autoRotate && !SOCKET_TUNING}
             autoRotateSpeed={0.7}
             enablePan={false}
             minDistance={2}

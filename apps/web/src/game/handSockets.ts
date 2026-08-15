@@ -75,16 +75,21 @@ export function handSocketFor(slug: string): HandSocketRatios {
  * eight, because they were all estimated the same way and therefore carry the
  * same bias.
  *
- * Still estimates. ?socket in the URL nudges them live and prints the corrected
- * line, which is faster than another round of this.
+ * Two screenshots then disagreed about which way x was wrong, because the
+ * preview turntable was running: a front-on offset projects differently at every
+ * angle and depth reads as horizontal error. x is set between the two readings
+ * and the turntable now stops while ?socket is on, so the next judgement is made
+ * against something that is holding still.
+ *
+ * Height came out of both readings agreeing, so y is trusted.
  */
 const FIST_SOCKETS: Record<string, HandSocketRatios> = {
-  ember: { x: -0.24, y: 0.68, z: 0.2, bone: "RightHand" },
-  frost: { x: -0.27, y: 0.59, z: 0.2, bone: "RightHand" },
-  storm: { x: -0.27, y: 0.57, z: 0.2, bone: "RightHand" },
-  "ashen-warden": { x: -0.27, y: 0.55, z: 0.18, bone: "RightHand" },
-  "drowned-choir": { x: -0.27, y: 0.56, z: 0.18, bone: "RightHand" },
-  "gilded-husk": { x: -0.27, y: 0.43, z: 0.14, bone: "RightHand" },
-  "rootbound-king": { x: -0.29, y: 0.43, z: 0.14, bone: "RightHand" },
-  "hollow-sovereign": { x: -0.27, y: 0.47, z: 0.14, bone: "RightHand" },
+  ember: { x: -0.32, y: 0.68, z: 0.26, bone: "RightHand" },
+  frost: { x: -0.34, y: 0.59, z: 0.26, bone: "RightHand" },
+  storm: { x: -0.34, y: 0.57, z: 0.26, bone: "RightHand" },
+  "ashen-warden": { x: -0.34, y: 0.55, z: 0.24, bone: "RightHand" },
+  "drowned-choir": { x: -0.34, y: 0.56, z: 0.24, bone: "RightHand" },
+  "gilded-husk": { x: -0.34, y: 0.43, z: 0.2, bone: "RightHand" },
+  "rootbound-king": { x: -0.36, y: 0.43, z: 0.2, bone: "RightHand" },
+  "hollow-sovereign": { x: -0.34, y: 0.47, z: 0.2, bone: "RightHand" },
 };
