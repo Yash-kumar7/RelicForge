@@ -4,6 +4,7 @@ import type { PointLight } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { themeForBoss } from "./theme";
 import { ARENA_RADIUS } from "./arenaGeometry";
+import { ArenaFeatures, hasWall } from "./arenaFeatures";
 
 export { ARENA_RADIUS } from "./arenaGeometry";
 
@@ -179,10 +180,28 @@ export function Arena() {
         ),
       )}
 
-      <mesh position={[0, 3, 0]}>
-        <cylinderGeometry args={[ARENA_RADIUS, ARENA_RADIUS, 6, 64, 1, true]} />
-        <meshStandardMaterial color={theme.wall} roughness={1} side={2} />
-      </mesh>
+      {/*
+        Not every rung stands in a room.
+
+        Dropping the wall is the largest single change any level makes, because
+        the boundary has been there for four fights by then, and its absence is
+        felt before it is noticed.
+      */}
+      {hasWall(bossLevel) && (
+        <mesh position={[0, 3, 0]}>
+          <cylinderGeometry args={[ARENA_RADIUS, ARENA_RADIUS, 6, 64, 1, true]} />
+          <meshStandardMaterial color={theme.wall} roughness={1} side={2} />
+        </mesh>
+      )}
+
+      {/*
+        What actually makes this rung a different place.
+
+        Ten colours and a pillar count is a reskin, and it read as one room five
+        times over. Each level now has one structural idea: a cracked floor, a
+        flood, a laid-out hall, roots and a canopy, or no walls at all.
+      */}
+      <ArenaFeatures level={bossLevel} theme={theme} />
 
       {pillars.map((p) => (
         <mesh key={p.key} position={p.position} rotation={[p.tilt, 0, p.tilt]}>
