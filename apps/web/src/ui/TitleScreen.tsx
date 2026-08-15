@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import type { Affinity } from "@relic/core";
 import { championFor, describeChampion } from "../game/champions";
@@ -35,6 +36,9 @@ import { useProgress } from "../state/useProgress";
  */
 const SECTION_HEADING = "flex h-4 items-baseline text-[11px] uppercase leading-4 tracking-[0.4em] text-stone-600";
 
+/** Character select, then loadout, then stage select. */
+const STEPS = ["Element", "Weapon", "Enemy"] as const;
+
 const AFFINITIES: { id: Affinity; glyph: string; name: string; blurb: string; accent: string }[] = [
   {
     id: "fire",
@@ -62,6 +66,7 @@ const AFFINITIES: { id: Affinity; glyph: string; name: string; blurb: string; ac
 export function TitleScreen() {
   const phase = useGameStore((s) => s.phase);
   const setPhase = useGameStore((s) => s.setPhase);
+  const [step, setStep] = useState(0);
   const affinity = useGameStore((s) => s.affinity);
   const bossLevel = useGameStore((s) => s.bossLevel);
   const chooseAffinity = useGameStore((s) => s.chooseAffinity);
@@ -195,7 +200,12 @@ export function TitleScreen() {
         */}
         <div className="lg:self-start">
           <div className={`${SECTION_HEADING} mb-2 justify-between`}>
-            <p>Your champion</p>
+            {/*
+              Named for the step it belongs to. On the enemy step the champion
+              is no longer the thing being decided, it is who you are sending,
+              and saying so keeps the left column from looking like a leftover.
+            */}
+            <p>{step === 2 ? "Sending" : "Your champion"}</p>
             <p className="font-mono text-[10px] leading-4 tracking-[0.25em] text-stone-700">
               {rank.name} · {xp} xp
             </p>
@@ -205,6 +215,47 @@ export function TitleScreen() {
 
         {/* Right: element, then weapon, then who you fight, then descend. */}
         <div className="flex flex-col">
+          {/*
+            One decision at a time.
+
+            Everything used to sit on one scrolling page, which made every choice
+            look equally available and gave a first-time player nowhere obvious
+            to start. Character select, then loadout, then stage select is the
+            order almost every action game uses, and for the same reason.
+
+            Steps rather than routes: the champion stays on screen throughout, so
+            picking a weapon shows it in their hand and picking an enemy is done
+            while still looking at who is going to fight it. Separate pages would
+            have thrown that away and added a back button to get it back.
+          */}
+          <ol className="mb-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em]">
+            {STEPS.map((label, index) => {
+              const reached = index <= step;
+              return (
+                <li key={label} className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    // Only backwards. Skipping ahead would let a player reach the
+                    // enemy list without a weapon, which the descend button then
+                    // has to refuse, and a step you can enter but not complete is
+                    // worse than one you cannot enter.
+                    disabled={index > step}
+                    onClick={() => setStep(index)}
+                    className={
+                      reached
+                        ? "text-ember-300 transition hover:text-ember-200"
+                        : "cursor-not-allowed text-stone-700"
+                    }
+                  >
+                    {index + 1}. {label}
+                  </button>
+                  {index < STEPS.length - 1 && <span className="text-stone-800">/</span>}
+                </li>
+              );
+            })}
+          </ol>
+
+          {step === 0 && (
           <section>
             {/*
               Affinity is the field name and the fiction, but on a first-run
@@ -227,7 +278,13 @@ export function TitleScreen() {
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => chooseAffinity(a.id)}
+                  onClick={() => {
+                    chooseAffinity(a.id);
+                    // Straight on, since picking is the only thing this step
+                    // asks for. A Continue button under a single choice is a
+                    // second click for no decision.
+                    setStep(1);
+                  }}
                   className={[
                     "border px-4 py-4 text-left transition",
                     affinity === a.id
@@ -276,11 +333,16 @@ export function TitleScreen() {
               ))}
             </div>
           </section>
+          )}
 
+          {step === 1 && (
           <div className="mt-8">
             <ArmamentPanel />
           </div>
 
+          )}
+
+          {step === 2 && (
           <section className="mt-8">
             {/*
               "Quarry" is a hunting word most players will not have met, and it
@@ -353,8 +415,25 @@ export function TitleScreen() {
               })}
             </div>
           </section>
+          )}
+
 
           <div className="mt-8 border-t border-ash-800 pt-5">
+            {step < 2 && (
+              <button
+                type="button"
+                disabled={step === 1 && armament === null}
+                onClick={() => setStep(step + 1)}
+                className={[
+                  "mb-4 w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
+                  step === 1 && armament === null
+                    ? "cursor-not-allowed border-ash-800 text-stone-700"
+                    : "border-stone-600 text-stone-300 hover:border-stone-400",
+                ].join(" ")}
+              >
+                {step === 1 && armament === null ? "Choose your weapon" : "Continue"}
+              </button>
+            )}
             <p className="text-[11px] leading-relaxed text-stone-600">
               How hard you swing, how often you dodge, and how close to death you finish all shape
               the weapon the forge makes for you.
