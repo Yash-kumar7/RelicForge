@@ -110,15 +110,6 @@ export function TitleScreen() {
   const setPhase = useGameStore((s) => s.setPhase);
   const [step, setStep] = useState(0);
 
-  /*
-   * The champion fills its half of the screen.
-   *
-   * This was behind ?bleed while the framed portrait and the full-height figure
-   * were compared side by side. The figure won: framed, it shared a rectangle
-   * with the column of choices and needed a border to say where one ended, and
-   * the border is what made the page read as a form beside a picture.
-   */
-  const bleed = true;
   const owned = useLoadout((s) => s.owned);
   const selectArmament = useLoadout((s) => s.select);
 
@@ -248,9 +239,7 @@ export function TitleScreen() {
           champion that was supposed to fit it exactly. The padding moves onto
           the column that still needs it.
         */
-        bleed
-          ? "h-full overflow-hidden bg-ash-950 py-14 pl-0 pr-6"
-          : "h-full overflow-y-auto bg-ash-950 px-6 pb-10 pt-14"
+        "h-full overflow-hidden bg-ash-950 py-14 pl-0 pr-6"
       }
     >
       {/*
@@ -262,9 +251,7 @@ export function TitleScreen() {
         its own instead, so text still sets to a readable measure.
       */}
       <div
-        className={`mx-auto grid w-full items-center gap-12 lg:grid-cols-[1.05fr_1fr] xl:gap-20 ${
-          bleed ? "h-full max-w-none" : "max-w-[104rem]"
-        }`}
+        className="mx-auto grid h-full w-full max-w-none items-center gap-12 lg:grid-cols-[1.05fr_1fr] xl:gap-20"
       >
         {/* Left: the champion, as large as the viewport allows. */}
         {/*
@@ -275,7 +262,7 @@ export function TitleScreen() {
           the page moved at all. Two headings that are meant to share a line
           cannot have one of them positioned against the viewport.
         */}
-        <div className={bleed ? "relative lg:self-stretch" : "lg:self-start"}>
+        <div className="relative lg:self-stretch">
           {/*
             The chosen element lights the room.
 
@@ -315,22 +302,9 @@ export function TitleScreen() {
               className="h-[calc(100svh-7rem)] w-full"
             />
           ) : (
-            <ChampionPreview affinity={affinity} armed={section > 0} bleed={bleed} />
+            <ChampionPreview affinity={affinity} armed={section > 0} />
           )}
           </div>
-
-          {/*
-            The name under the figure, at size.
-
-            A character select names its character. This had the name only inside
-            a row on the other side of the page, so the person filling the left
-            half of the screen was anonymous while you were looking at them.
-          */}
-          {section !== 2 && !bleed && (
-            <p className="mt-3 text-center font-display text-2xl tracking-[0.26em] text-bone-200 lg:text-3xl">
-              {championFor(affinity).name.toUpperCase()}
-            </p>
-          )}
 
           {/*
             No name over the figure.

@@ -16,7 +16,6 @@ const CHAMPION_HEIGHT = 2.6;
 export function ChampionPreview({
   affinity,
   armed = true,
-  bleed = false,
 }: {
   affinity: Affinity;
   /**
@@ -27,7 +26,6 @@ export function ChampionPreview({
    * outright and is cropped by the viewport, so there is nothing to delimit: it
    * ends off-screen, the way the fighters on the title screen do.
    */
-  bleed?: boolean;
   /**
    * False while the player is still choosing who to be.
    *
@@ -85,42 +83,13 @@ export function ChampionPreview({
       accent={theme.forge}
       weapon={weapon}
       /*
-       * No caption when bleeding.
-       *
-       * It sits at the bottom of the view, and the view now ends at the bottom
-       * of the screen, so the line was cut in half by the edge of the page.
-       * Bleeding, the figure explains itself.
-       */
-      /*
        * The only thing that says the figure can be turned.
        *
-       * Bleeding, this was dropped because it ran off the bottom of the screen,
-       * which also removed the sole affordance: a champion that can be dragged
-       * looks identical to one that cannot until somebody tries. There is room
-       * for it again now, and it says less, because the long version was
-       * explaining a panel that no longer exists.
+       * A champion that can be dragged looks identical to one that cannot until
+       * somebody tries. It says only that, because the longer version was
+       * explaining a framed panel that no longer exists.
        */
-      caption={
-        bleed
-          ? "drag to turn · scroll to zoom"
-          : weapon === undefined
-            ? "your champion · choose a weapon below · drag to turn · scroll to zoom"
-            : weapon.kind === "relic"
-              ? "your champion, holding your relic · drag to turn · scroll to zoom"
-              : "your champion, holding the iron blade · drag to turn · scroll to zoom"
-      }
-      /*
-       * Framed, deliberately.
-       *
-       * The border was removed on the theory that a panel reads as a viewer
-       * embedded in a page. It does the opposite here: the champion shares this
-       * screen with a column of choices, and the frame is what says where one
-       * ends and the other begins. Without it the figure floated against the
-       * same black as the text beside it.
-       *
-       * In the page's own brass rather than the old grey, and with only a breath
-       * of fill, so it reads as a plate around a portrait instead of a widget.
-       */
+      caption="drag to turn · scroll to zoom"
       /*
        * Enough room for feet.
        *
@@ -128,15 +97,11 @@ export function ChampionPreview({
        * screen still has to stand on something, and a knight cut off at the
        * ankles reads as a rendering error rather than as a composition.
        */
-      framing={bleed ? 0.22 : 0.45}
-      className={
-        bleed
-          ? /* Short of the full height on purpose. At 100svh the figure met the
-               top and bottom edges at once, which reads as a picture too big for
-               its window rather than a character standing in a room. */
-            "h-[calc(100svh-7rem)] w-full"
-          : "h-[calc(100svh-7rem)] max-h-[54rem] min-h-[30rem] w-full border border-brass-800 bg-white/[0.015]"
-      }
+      framing={0.22}
+      /* Short of the full height on purpose. At 100svh the figure met the top
+         and bottom edges at once, which reads as a picture too big for its
+         window rather than a character standing in a room. */
+      className="h-[calc(100svh-7rem)] w-full"
     />
   );
 }
