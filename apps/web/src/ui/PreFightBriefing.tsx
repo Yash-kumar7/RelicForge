@@ -148,11 +148,15 @@ export function PreFightBriefing() {
               <h2 className={`mt-3 font-display text-5xl leading-[1.05] tracking-[0.06em] lg:text-6xl ${accent}`}>
                 {boss.title.toUpperCase()}
               </h2>
-              {/* The one line that says what this fight will do to you. It was
-                  on the ladder and then thrown away at the moment it matters. */}
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-400">{boss.blurb}</p>
+              {/*
+                No description of the boss here.
 
-              <p className="mt-6 max-w-md border-l border-brass-800 pl-4 text-[13px] leading-relaxed text-stone-500">
+                It was on the ladder, one screen back, and reading it there is
+                how this boss got chosen over the other four. Repeating it at the
+                door tells a player something they decided on a minute ago and
+                pushes the part they do not know further down the column.
+              */}
+              <p className="mt-5 max-w-md border-l border-brass-800 pl-4 text-[13px] leading-relaxed text-stone-500">
                 There is no loot table. When it falls, the forge reads{" "}
                 <span className="text-stone-200">how you won</span> and builds a weapon that has
                 never existed before.
