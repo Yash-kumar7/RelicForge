@@ -30,7 +30,7 @@ import type { ArenaTheme } from "./theme";
  */
 let cachedGlow: CanvasTexture | null = null;
 
-function glowTexture(): CanvasTexture {
+export function glowTexture(): CanvasTexture {
   if (cachedGlow) return cachedGlow;
 
   const size = 128;

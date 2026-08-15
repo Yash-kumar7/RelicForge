@@ -4,6 +4,7 @@ import { Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PointLight
 import { useGameStore } from "../state/useGameStore";
 import { COMBAT, isWithinArc } from "./combat";
 import { BOSS_LIMIT } from "./arenaGeometry";
+import { glowTexture } from "./arenaFeatures";
 import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
 import { themeForBoss } from "./theme";
@@ -40,6 +41,8 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   const body = useRef<Group>(null);
   const dangerRing = useRef<Mesh>(null);
   const plates = useRef<Group>(null);
+  const dangerEdge = useRef<MeshBasicMaterial>(null);
+  const dangerFill = useRef<MeshBasicMaterial>(null);
   const coreMesh = useRef<Mesh>(null);
   const coreLight = useRef<PointLight>(null);
   const position = useRef(new Vector3(BOSS_SPAWN.x, BOSS_SPAWN.y, BOSS_SPAWN.z));
@@ -285,11 +288,19 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
       if (visible) {
         const scale = striking ? 1 : 0.35 + charge * 0.65;
         dangerRing.current.scale.setScalar(scale);
-        const material = dangerRing.current.material as MeshBasicMaterial;
-        material.opacity = striking ? 0.85 : 0.15 + charge * 0.5;
         // Tinted by affinity so an ember fight and a frost fight do not
         // telegraph identically.
-        material.color = new Color(striking ? "#ffffff" : theme.bossCore);
+        const colour = new Color(striking ? "#ffffff" : theme.bossCore);
+        if (dangerEdge.current) {
+          dangerEdge.current.opacity = striking ? 0.9 : 0.25 + charge * 0.45;
+          dangerEdge.current.color = colour;
+        }
+        if (dangerFill.current) {
+          // The fill stays well under the edge. It is the thing that says the
+          // blow is coming; the edge is the thing that says where it stops.
+          dangerFill.current.opacity = striking ? 0.5 : 0.08 + charge * 0.26;
+          dangerFill.current.color = colour;
+        }
       }
     }
 
@@ -409,16 +420,49 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
       </group>
 
       {/* Attack telegraph, flat on the floor and scaled to the boss's reach. */}
-      <mesh ref={dangerRing} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} visible={false}>
-        <ringGeometry args={[COMBAT.boss.reach - 1.4, COMBAT.boss.reach, 56]} />
-        <meshBasicMaterial color={theme.bossCore} transparent opacity={0.4} toneMapped={false} side={2} />
-      </mesh>
+      {/*
+        The telegraph, as light on the floor rather than a painted hoop.
+
+        It was a flat annulus 1.4 metres thick at 0.4 opacity, which is the same
+        mistake the arena markings made and louder: a hard-edged orange band
+        around the player, bright enough to be the first thing in the frame.
+
+        A telegraph does need an edge, unlike decoration, because the edge is the
+        information: it says where the blow stops. So the edge stays and gets
+        thin, and the ground inside it is filled with the same soft falloff the
+        arena lights use, which is what carries the growing threat.
+      */}
+      <group ref={dangerRing} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} visible={false}>
+        <mesh>
+          <planeGeometry args={[COMBAT.boss.reach * 2, COMBAT.boss.reach * 2]} />
+          <meshBasicMaterial
+            ref={dangerFill}
+            map={glowTexture()}
+            color={theme.bossCore}
+            transparent
+            opacity={0.2}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+        <mesh>
+          <ringGeometry args={[COMBAT.boss.reach - 0.16, COMBAT.boss.reach, 64]} />
+          <meshBasicMaterial
+            ref={dangerEdge}
+            color={theme.bossCore}
+            transparent
+            opacity={0.5}
+            toneMapped={false}
+            side={2}
+          />
+        </mesh>
+      </group>
 
       {/* Damage numbers live on the boss, so a bare number cannot be mistaken
           for anything other than damage dealt to it. */}
       <BossDamagePopups />
 
-      <group ref={plates} position={[0, 1.8, 0]}>
+      <group ref={plates} position={[0, 1.8, 0]} visible={!hasModel}>
         {brokenPlates.map((p) => (
           <mesh
             key={p.key}
