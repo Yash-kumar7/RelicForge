@@ -161,13 +161,17 @@ export function describeChampion(champion: Champion): { label: string; value: st
    * damage differed by one point. Storm was strictly worse on the card and its
    * entire reason to exist, dodging twice as often, was invisible.
    *
-   * A count of dodges per ten seconds is the same fact in the units a player
-   * experiences it in, and it compares at a glance: 11 against 8 against 7.
+   * And then removed again, with the count this time. One number per card reads
+   * cleanest, and the blurbs carry the difference in words: Storm's says it
+   * dodges again long before the others can, which is the same fact without a
+   * figure to weigh against health.
+   *
+   * The cost is real and worth naming. Health alone shows 130 for Frost against
+   * 85 for Storm, so on the card Storm looks like a worse Frost, and the thing
+   * that makes it worth playing is now only readable in prose. The stat is still
+   * tuned and still applies.
    */
-  return [
-    { label: "health", value: `${stats.health}` },
-    { label: "dodges per 10s", value: `${stats.dodgesPerTenSeconds}` },
-  ];
+  return [{ label: "health", value: `${stats.health}` }];
   /*
    * Dodge cooldown is deliberately not a row.
    *

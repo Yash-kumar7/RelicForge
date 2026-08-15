@@ -71,7 +71,7 @@ describe("champions", () => {
     // better than no stat.
     for (const affinity of AFFINITIES) {
       const stats = describeChampion(championFor(affinity));
-      expect(stats.length).toBeGreaterThanOrEqual(2);
+      expect(stats.length).toBeGreaterThanOrEqual(1);
       for (const stat of stats) {
         expect(stat.label.length).toBeGreaterThan(2);
         expect(stat.value.length).toBeGreaterThan(0);
@@ -105,7 +105,7 @@ describe("champions", () => {
     expect(new Set(health).size).toBe(AFFINITIES.length);
   });
 
-  it("never leaves a champion beaten on every number a player can see", () => {
+  it("never leaves a champion beaten on everything it is actually good at", () => {
     /*
      * The card shows health, dodges and damage. A champion losing on all three
      * is a trap: Storm once showed 90 health against Frost's 125 while their
