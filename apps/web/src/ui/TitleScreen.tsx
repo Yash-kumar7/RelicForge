@@ -48,6 +48,42 @@ const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
  * screen, not so much that it becomes a coloured page. The figure is lit by its
  * own art already, so this is the room rather than the key light.
  */
+/**
+ * The three champions measured against each other.
+ *
+ * Character select screens compare rather than report, because a number only
+ * means something next to the numbers it is competing with: 80 health says
+ * nothing until you have read 130 and 85 and done the arithmetic yourself. Bars
+ * do that arithmetic, so the trade is visible before anything is read.
+ *
+ * Scaled against the highest value rather than from zero, because the question
+ * is which champion is toughest and by how much, not what fraction of some
+ * absolute ceiling each one reaches.
+ */
+const COMPARISONS: Record<Affinity, { label: string; fill: number }[]> = (() => {
+  const all: Affinity[] = ["fire", "ice", "storm"];
+  const stats = all.map((id) => championStats(championFor(id)));
+  const peak = {
+    health: Math.max(...stats.map((s) => s.health)),
+    hit: Math.max(...stats.map((s) => s.heavyDamage)),
+    dodge: Math.max(...stats.map((s) => s.dodgesPerTenSeconds)),
+  };
+
+  return Object.fromEntries(
+    all.map((id, i) => {
+      const s = stats[i]!;
+      return [
+        id,
+        [
+          { label: "tough", fill: s.health / peak.health },
+          { label: "hit", fill: s.heavyDamage / peak.hit },
+          { label: "evade", fill: s.dodgesPerTenSeconds / peak.dodge },
+        ],
+      ];
+    }),
+  ) as Record<Affinity, { label: string; fill: number }[]>;
+})();
+
 const ELEMENT_GLOW: Record<Affinity, string> = {
   fire: "rgba(255,107,26,0.3)",
   ice: "rgba(74,168,216,0.28)",
@@ -375,12 +411,6 @@ export function TitleScreen() {
           */}
           <PendingForgePanel />
 
-          {bleed && (
-            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.25em] text-brass-700">
-              rank {rank.name} · {xp} xp
-            </p>
-          )}
-
           <ol className="mb-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em]">
             {steps.map((label, index) => {
               const reached = index <= step;
@@ -504,6 +534,33 @@ export function TitleScreen() {
                   <p className="mt-2 text-[11px] leading-relaxed text-stone-500">
                     {championFor(a.id).blurb}
                   </p>
+
+                  {/*
+                    Three bars, measured against the other two.
+
+                    This was one number parked on the far side of the row. A
+                    lone figure has to be carried to the next champion and back
+                    to mean anything, and the two stats that were not health
+                    were not shown at all, so the only visible difference between
+                    the three was the one the rows happened to list.
+                  */}
+                  <span className="mt-4 flex max-w-xs gap-4">
+                    {COMPARISONS[a.id].map((stat) => (
+                      <span key={stat.label} className="flex-1">
+                        <span className="block font-mono text-[9px] uppercase tracking-[0.2em] text-brass-700">
+                          {stat.label}
+                        </span>
+                        <span className="mt-1 block h-[3px] w-full bg-ash-800">
+                          <span
+                            className={`block h-[3px] transition-all duration-500 ${
+                              affinity === a.id ? a.bar : "bg-stone-600"
+                            }`}
+                            style={{ width: `${Math.round(stat.fill * 100)}%` }}
+                          />
+                        </span>
+                      </span>
+                    ))}
+                  </span>
                   </span>
                 </button>
               ))}
@@ -635,6 +692,15 @@ export function TitleScreen() {
               thing read before the fight starts, which is when it means
               something.
             */}
+            {/* Rank sits with the rest of the chrome rather than above the
+                question, where it was the first thing read on a screen about
+                choosing a character. */}
+            {bleed && (
+              <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.25em] text-brass-800">
+                rank {rank.name} · {xp} xp
+              </p>
+            )}
+
             {section === 2 && (
               <p className="text-[11px] leading-relaxed text-stone-600">
                 How hard you swing, how often you dodge, and how close to death you finish all
