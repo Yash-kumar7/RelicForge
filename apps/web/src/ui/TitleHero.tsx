@@ -149,7 +149,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
    * an open hand rather than a different one.
    */
   const art = current
-    ? `/assets/bosses/${slugFor(current.dna.bossInfluence)}/concept-stance.png`
+    ? `/assets/bosses/${slugFor(current.dna.bossInfluence)}/concept-cut.png`
     : null;
 
   /** The champion whose affinity produced this relic's element. */
@@ -222,7 +222,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
           {championSlug && (
             <motion.img
               key={`champion-${championSlug}`}
-              src={`/assets/champions/${championSlug}/concept-stance.png`}
+              src={`/assets/champions/${championSlug}/concept-cut.png`}
               alt=""
               aria-hidden
               initial={{ opacity: 0, x: -60, rotateY: 34 }}
@@ -241,20 +241,22 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
                */
               style={{ transformOrigin: "left bottom" }}
               /*
-               * Screened rather than masked.
+               * Cut out, with a real alpha channel.
                *
-               * These were painted on a pale background, then regenerated on
-               * pure black so they would sit on a dark page. That still left a
-               * visible rectangle, because the page is #070605 and the image is
-               * #000000: the figure arrived in a box very slightly darker than
-               * everything around it.
+               * Three attempts got here. Asking the model for a neutral
+               * background produced a pale sheet, so each figure arrived inside
+               * a grey card. Asking for pure black produced near-black with a
+               * faint gradient, which still read as a rectangle against a page
+               * that is not exactly that black. Screen blending cancelled most
+               * of it and not all, because there was something left to cancel.
                *
-               * Screen blending solves it exactly rather than approximately.
-               * Black contributes nothing under that mode, so the background
-               * disappears completely whatever colour the page happens to be,
-               * and the fade that was hiding the seam is no longer needed.
+               * A prompt cannot promise an exact pixel value, so the background
+               * is removed from the pixels instead: the figures are lit and the
+               * background is not, so luminance separates them, and a soft ramp
+               * keeps the edges from turning into cutout jaggies. Free, exact,
+               * and it works on any page colour.
                */
-              className="absolute bottom-[13svh] left-[-3%] h-[68svh] w-auto object-contain mix-blend-screen"
+              className="absolute bottom-[13svh] left-[-3%] h-[68svh] w-auto object-contain"
             />
           )}
         </AnimatePresence>
@@ -286,7 +288,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               style={{ transformOrigin: "right bottom" }}
               /* A touch darker and cooler than the glow behind it, so the boss
                stays its own colour instead of being tinted by the forge. */
-            className="absolute bottom-[13svh] left-[-3%] h-[72svh] w-auto object-contain brightness-[0.92] contrast-[1.04] mix-blend-screen"
+            className="absolute bottom-[13svh] left-[-3%] h-[72svh] w-auto object-contain brightness-[0.92] contrast-[1.04]"
             />
           )}
         </AnimatePresence>
