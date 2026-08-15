@@ -4,7 +4,8 @@ import { useGameStore } from "../state/useGameStore";
 import { COMBAT, attackSpec } from "../game/combat";
 import { combinedTraits } from "../game/equipped";
 import { useLoadout } from "../state/useLoadout";
-import { bossTitleFor } from "../game/bosses";
+import { bossAt, bossTitleFor } from "../game/bosses";
+import { championFor, championStats } from "../game/champions";
 
 /**
  * Onboarding, in one screen.
@@ -39,6 +40,20 @@ export function PreFightBriefing() {
   const traits = combinedTraits(carried?.dna, affinity);
   const light = attackSpec("light", traits);
   const heavy = attackSpec("heavy", traits);
+
+  /*
+   * Who is actually in the room.
+   *
+   * Three sentences of this screen said "the Warden" no matter which of the five
+   * bosses was standing outside, so a player who picked the Hollow Sovereign was
+   * briefed on a different fight. The name comes from the ladder now.
+   */
+  const boss = bossAt(bossLevel ?? 1);
+  const champion = championFor(affinity);
+  const health = {
+    yours: championStats(champion).health,
+    theirs: Math.round(COMBAT.boss.maxHp * boss.hp),
+  };
 
   /**
    * One click does both jobs: it starts the fight and takes pointer lock.
@@ -84,23 +99,46 @@ export function PreFightBriefing() {
             DEFEAT {bossTitleFor(bossLevel ?? 1, affinity).toUpperCase()}
           </h2>
 
+          {/*
+            One paragraph, where there were two.
+            
+            The second said the same thing as the first in different words, and
+            nine lines of reading is a lot to put between a player and a fight
+            they have already chosen. The half worth keeping is the half that
+            says the weapon is being decided while you play.
+          */}
           <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-stone-400">
-            There is no loot table. When the Warden falls, the forge reads{" "}
-            <span className="text-stone-200">how you won</span>, how hard you swung, how often you
-            dodged, how close to death you finished, and generates a weapon that has never existed
-            before.
+            There is no loot table. When {boss.name} falls, the forge reads{" "}
+            <span className="text-stone-200">how you won</span> and builds a weapon that has never
+            existed before. Fight recklessly and it comes out brutal and cracked; fight carefully
+            and it comes out precise and clean.
           </p>
-          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-stone-500">
-            Fight recklessly and it comes out brutal and broken. Fight carefully and it comes out
-            elegant and pristine. Watch the panel on the left change as you fight.
-          </p>
+
+          {/*
+            The matchup, in the two numbers that decide it.
+            
+            A boss was chosen off a ladder that showed its health, and then this
+            screen quoted the damage a swing does without either health bar it
+            counts against, so there was no way to know whether 30 was a lot.
+          */}
+          <dl className="mx-auto mt-6 flex max-w-lg items-center justify-center gap-8 font-mono text-[11px] uppercase tracking-[0.2em]">
+            <div className="text-right">
+              <dt className="text-stone-600">{champion.name}</dt>
+              <dd className={`mt-1 text-lg tabular-nums ${accent}`}>{health.yours} health</dd>
+            </div>
+            <span className="text-stone-700">vs</span>
+            <div className="text-left">
+              <dt className="text-stone-600">{boss.title}</dt>
+              <dd className="mt-1 text-lg tabular-nums text-stone-300">{health.theirs} health</dd>
+            </div>
+          </dl>
 
           {/* The telegraph ring is a mechanic, and an unexplained red circle on
               the floor reads as a graphical fault rather than a warning. */}
           <p className="mx-auto mt-8 max-w-lg border border-red-500/30 px-4 py-3 text-[11px] leading-relaxed text-stone-400">
-            <span className="text-red-400">A ring on the ground</span> means the Warden is winding
-            up. It grows as the blow gets closer, and everything inside it will be hit. Dodge out,
-            or dodge through.
+            <span className="text-red-400">A ring on the ground</span> means the blow is coming. It
+            grows as it gets closer, and everything inside it will be hit. Dodge out, or dodge
+            through.
           </p>
 
           {/*
@@ -115,7 +153,7 @@ export function PreFightBriefing() {
                 left click · quick attack
               </p>
               <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
-                {light.damage} dmg
+                {light.damage} damage
                 {light.damage !== COMBAT.lightAttack.damage && (
                   <span className="ml-2 text-[11px] text-frost-400">
                     {carried?.name}
@@ -134,7 +172,7 @@ export function PreFightBriefing() {
                 right click · strong attack
               </p>
               <p className="mt-1 font-mono text-lg tabular-nums text-stone-200">
-                {heavy.damage} dmg
+                {heavy.damage} damage
                 {heavy.damage !== COMBAT.heavyAttack.damage && (
                   <span className="ml-2 text-[11px] text-ember-400">
                     {carried?.name}
@@ -142,7 +180,7 @@ export function PreFightBriefing() {
                 )}
               </p>
               <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
-                Slow to start and it staggers the Warden. Lean on it and the forge
+                Slow to start, and it staggers. Lean on it and the forge
                 reads you as <span className="text-ember-300">brutal</span>: an oversized,
                 heavy weapon.
               </p>
@@ -156,7 +194,9 @@ export function PreFightBriefing() {
               ["Space", "jump"],
               // Milliseconds are a tuning value, not something a player thinks
               // in. What matters is that a well-timed dodge avoids the hit.
-              ["Shift", "dodge · slip through the blow"],
+              // One word. "dodge · slip through the blow" wrapped onto a second
+              // line and read as two separate controls on one key.
+              ["Shift", "dodge"],
               ["Q", "heal · 2 charges"],
               ["V", "first or third person"],
             ].map(([key, action]) => (
