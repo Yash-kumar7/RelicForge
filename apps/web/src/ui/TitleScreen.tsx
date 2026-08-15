@@ -75,11 +75,19 @@ const COMPARISONS: Record<Affinity, { label: string; value: string; fill: number
       return [
         id,
         [
-          { label: "tough", value: `${s.health}`, fill: s.health / peak.health },
-          { label: "hit", value: `${s.heavyDamage}`, fill: s.heavyDamage / peak.hit },
+          /*
+           * Nouns a player already owns.
+           *
+           * These were tough, hit and evade, which are shorthand invented for
+           * three narrow columns rather than words anyone arrives with. Health
+           * and damage need no explanation, and dodges says what the third one
+           * is counting instead of naming an ability.
+           */
+          { label: "health", value: `${s.health}`, fill: s.health / peak.health },
+          { label: "damage", value: `${s.heavyDamage}`, fill: s.heavyDamage / peak.hit },
           {
-            label: "evade",
-            value: `${s.dodgesPerTenSeconds}/10s`,
+            label: "dodges",
+            value: `${s.dodgesPerTenSeconds} / 10s`,
             fill: s.dodgesPerTenSeconds / peak.dodge,
           },
         ],
