@@ -59,19 +59,19 @@ export const CHAMPIONS: Record<Affinity, Champion> = {
     slug: "ember",
     name: "Ember",
     blurb: "Hits hardest, breaks soonest. Fewer mistakes allowed.",
-    traits: { damage: 1.18, maxHp: 0.85, dodgeCooldown: 1 },
+    traits: { damage: 1.2, maxHp: 0.8, dodgeCooldown: 1 },
   },
   ice: {
     slug: "frost",
     name: "Frost",
     blurb: "Absorbs the most punishment, gives up the power to end it quickly.",
-    traits: { damage: 0.88, maxHp: 1.25, dodgeCooldown: 1.12 },
+    traits: { damage: 0.82, maxHp: 1.3, dodgeCooldown: 1.12 },
   },
   storm: {
     slug: "storm",
     name: "Storm",
     blurb: "Dodges again long before the others can. Fragile if you stand still.",
-    traits: { damage: 0.9, maxHp: 0.9, dodgeCooldown: 0.78 },
+    traits: { damage: 1, maxHp: 0.85, dodgeCooldown: 0.75 },
   },
 };
 
@@ -110,8 +110,15 @@ export interface ChampionStats {
   health: number;
   lightDamage: number;
   heavyDamage: number;
-  /** Seconds between dodges, which is how a player counts them. */
-  dodgeSeconds: number;
+  /**
+   * How many dodges fit into ten seconds.
+   *
+   * A count rather than a cooldown. "Dodge every 1.2s" is a timer, and a timer
+   * sitting among damage figures reads as something to be added up. A count of
+   * dodges is the same fact in the units the player experiences it in, and it
+   * compares across champions at a glance.
+   */
+  dodgesPerTenSeconds: number;
 }
 
 export function championStats(champion: Champion): ChampionStats {
@@ -120,8 +127,9 @@ export function championStats(champion: Champion): ChampionStats {
     health: Math.round(COMBAT.player.maxHp * traits.maxHp),
     lightDamage: Math.round(COMBAT.lightAttack.damage * traits.damage),
     heavyDamage: Math.round(COMBAT.heavyAttack.damage * traits.damage),
-    dodgeSeconds:
-      Math.round((COMBAT.player.dodgeCooldownMs * traits.dodgeCooldown) / 100) / 10,
+    dodgesPerTenSeconds: Math.round(
+      10_000 / (COMBAT.player.dodgeCooldownMs * traits.dodgeCooldown),
+    ),
   };
 }
 
@@ -145,16 +153,21 @@ export function describeChampion(champion: Champion): { label: string; value: st
    * rounds of relabelling went into making those rows readable when the real
    * problem was that they should not have been there.
    *
-   * Dodge cooldown is gone too. It is a timer, not a skill, and a row of
-   * seconds sitting where a player looks for abilities invites reading it as
-   * one. It is still tuned and still the reason Storm plays differently; the
-   * blurb carries it in words instead.
+   * Dodging is back, as a count rather than a cooldown.
    *
-   * Health is therefore the only figure on the card, which is why the three
-   * values are kept distinct. Two champions showing the same number would read
-   * as two identical choices, and a test enforces it.
+   * It was removed as a seconds figure, correctly: a timer among damage numbers
+   * reads as something to add up. But removing it entirely left health as the
+   * only stat, and then Storm showed 90 health against Frost's 125 while their
+   * damage differed by one point. Storm was strictly worse on the card and its
+   * entire reason to exist, dodging twice as often, was invisible.
+   *
+   * A count of dodges per ten seconds is the same fact in the units a player
+   * experiences it in, and it compares at a glance: 11 against 8 against 7.
    */
-  return [{ label: "health", value: `${stats.health}` }];
+  return [
+    { label: "health", value: `${stats.health}` },
+    { label: "dodges per 10s", value: `${stats.dodgesPerTenSeconds}` },
+  ];
   /*
    * Dodge cooldown is deliberately not a row.
    *

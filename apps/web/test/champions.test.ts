@@ -71,7 +71,7 @@ describe("champions", () => {
     // better than no stat.
     for (const affinity of AFFINITIES) {
       const stats = describeChampion(championFor(affinity));
-      expect(stats.length).toBeGreaterThanOrEqual(1);
+      expect(stats.length).toBeGreaterThanOrEqual(2);
       for (const stat of stats) {
         expect(stat.label.length).toBeGreaterThan(2);
         expect(stat.value.length).toBeGreaterThan(0);
@@ -81,7 +81,8 @@ describe("champions", () => {
       // its own unit. "38/71 dmg" and "you deal - light" both failed this by
       // needing the reader to already know the convention.
       for (const stat of stats) {
-        expect(stat.label).toMatch(/^[a-z ]+$/);
+        // Digits allowed: "dodges per 10s" names a window, it is not a value.
+        expect(stat.label).toMatch(/^[a-z0-9 ]+$/);
         expect(stat.label).not.toContain("·");
       }
       // Damage is deliberately absent. It belongs to the weapon, and stating
@@ -92,17 +93,40 @@ describe("champions", () => {
         expect(stat.value).not.toContain("damage");
         // No timers either. A cooldown in seconds is not a skill, and sitting
         // where a player looks for abilities it invites being read as one.
+        // A cooldown in seconds is a timer and reads as something to add up.
+        // The same fact is stated as a count of dodges instead.
         expect(stat.value).not.toMatch(/\ds$/);
       }
     }
   });
 
-  it("gives each champion its own health, the only figure on the card", () => {
-    // With damage on the weapon panel and the dodge timer gone, health is the
-    // one number shown. Two champions sharing it would read as two identical
-    // choices.
+  it("gives each champion its own health", () => {
     const health = AFFINITIES.map((a) => championStats(championFor(a)).health);
     expect(new Set(health).size).toBe(AFFINITIES.length);
+  });
+
+  it("never leaves a champion beaten on every number a player can see", () => {
+    /*
+     * The card shows health, dodges and damage. A champion losing on all three
+     * is a trap: Storm once showed 90 health against Frost's 125 while their
+     * damage differed by a single point, so nothing on screen explained why
+     * anyone would take it. Its advantage was real and entirely invisible.
+     */
+    const shown = AFFINITIES.map((a) => {
+      const s = championStats(championFor(a));
+      return { a, health: s.health, dodges: s.dodgesPerTenSeconds, damage: s.heavyDamage };
+    });
+
+    for (const champion of shown) {
+      const beatenOnAll = shown.some(
+        (other) =>
+          other.a !== champion.a &&
+          other.health >= champion.health &&
+          other.dodges >= champion.dodges &&
+          other.damage >= champion.damage,
+      );
+      expect(beatenOnAll, `${champion.a} is beaten on every visible stat`).toBe(false);
+    }
   });
 
   it("lets a player learn their health before the fight rather than during it", () => {
@@ -123,7 +147,11 @@ describe("champions", () => {
     const frost = championStats(CHAMPIONS.ice);
     expect(ember.heavyDamage).toBeGreaterThan(frost.heavyDamage);
     expect(ember.heavyDamage).toBeGreaterThan(ember.lightDamage);
-    expect(frost.dodgeSeconds).toBeGreaterThan(championStats(CHAMPIONS.storm).dodgeSeconds);
+    // Storm fits more dodges into the same window than anyone else, which is
+    // the entire reason to pick it.
+    expect(championStats(CHAMPIONS.storm).dodgesPerTenSeconds).toBeGreaterThan(
+      frost.dodgesPerTenSeconds,
+    );
   });
 
   it("carries no trait the player cannot feel", () => {
