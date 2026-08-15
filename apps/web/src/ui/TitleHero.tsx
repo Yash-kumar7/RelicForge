@@ -23,6 +23,9 @@ import { BOSSES } from "../game/bosses";
  * sold can find the evidence.
  */
 
+/** Just enough of a relic to rank it. */
+type StepRelicLike = { dna: RelicDNA };
+
 interface ShowcaseRelic {
   relicId: string;
   name: string;
@@ -99,43 +102,46 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
          */
         const usable = data.relics.filter((r) => r.status === "COMPLETE" && r.modelUrl);
         /*
-         * One per boss, and as many different elements as possible.
+         * One relic per boss, up the ladder, opening on the first fight.
          *
-         * Picking only by boss gave five relics that all happened to be
-         * lightning, so the same champion stood on the left every time and the
-         * left half of the face-off never changed. The element decides which
-         * champion is shown, so it has to vary too.
+         * The page opens on whatever it shows first, so that frame is chosen
+         * rather than inherited: the Ashen Warden against Ember, which is the
+         * pairing a new player actually meets. Level one is also the boss
+         * everybody fights, so it is the honest thing to lead with.
+         *
+         * After that, one per boss climbing the ladder. Elements are varied
+         * where there is a choice, because the element decides which champion
+         * stands on the left and picking only by boss gave five lightning
+         * relics and the same champion every time. Greatswords win a tie, since
+         * a spear between two armoured figures is a thin line that loses to
+         * both.
          */
+        const score = (r: StepRelicLike) => {
+          const level = bossFor(r.dna.bossInfluence)?.level ?? 99;
+          const opener = level === 1 && r.dna.element === "fire" ? 0 : 1;
+          const shape = r.dna.weaponClass === "greatsword" ? 0 : 1;
+          return { level, opener, shape };
+        };
+
         const seenBoss = new Set<string>();
         const seenElement = new Set<string>();
-        const perBoss = usable.filter((r) => {
-          if (seenBoss.has(r.dna.bossInfluence)) return false;
-          // Prefer an unseen element, but never drop a boss for it.
-          const others = usable.filter(
-            (o) => o.dna.bossInfluence === r.dna.bossInfluence && !seenElement.has(o.dna.element),
-          );
-          if (others.length > 0 && seenElement.has(r.dna.element)) return false;
-          seenBoss.add(r.dna.bossInfluence);
-          seenElement.add(r.dna.element);
-          return true;
-        });
-        /* Up the ladder, so it opens on the first fight rather than mid-list. */
-        /*
-         * Greatswords first, where two are available for a boss.
-         *
-         * A spear in the centre of the face-off is a thin vertical line between
-         * two armoured figures and it loses to both of them. A greatsword has
-         * the silhouette to hold that space. Spears are still shown further down
-         * the page, alone, where their length reads as reach rather than as
-         * thinness.
-         */
-        perBoss.sort((a, b) => {
-          const weight = (w: string) => (w === "greatsword" ? 0 : 1);
-          return weight(a.dna.weaponClass) - weight(b.dna.weaponClass);
-        });
-        const ordered = perBoss.sort(
-          (a, b) => (bossFor(a.dna.bossInfluence)?.level ?? 99) - (bossFor(b.dna.bossInfluence)?.level ?? 99),
-        );
+        const ordered = [...usable]
+          .sort((a, b) => {
+            const x = score(a);
+            const y = score(b);
+            return x.level - y.level || x.opener - y.opener || x.shape - y.shape;
+          })
+          .filter((r) => {
+            if (seenBoss.has(r.dna.bossInfluence)) return false;
+            const alternatives = usable.filter(
+              (o) => o.dna.bossInfluence === r.dna.bossInfluence && !seenElement.has(o.dna.element),
+            );
+            if (alternatives.length > 0 && seenElement.has(r.dna.element)) return false;
+            seenBoss.add(r.dna.bossInfluence);
+            seenElement.add(r.dna.element);
+            return true;
+          });
+
         setRelics(ordered.length > 1 ? ordered : usable.slice(0, 5));
       })
       .catch(() => {
