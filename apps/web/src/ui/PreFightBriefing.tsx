@@ -108,7 +108,10 @@ export function PreFightBriefing() {
           transition={{ duration: 1.4, ease: "easeOut" }}
           /* Faded into the page rather than cut against it, so the figure reads
              as standing in the dark instead of pasted onto it. */
-          className="pointer-events-none absolute bottom-0 right-[-4%] h-[88svh] max-w-[62vw] object-contain object-bottom opacity-45 [mask-image:linear-gradient(to_left,black_58%,transparent)] lg:right-[2%] lg:opacity-70"
+          /* Standing clear of the bottom edge. At bottom-0 the boots ran into
+             the control strip, so the figure read as sunk into the frame rather
+             than standing in it, and its head sat below the name naming it. */
+          className="pointer-events-none absolute bottom-[9svh] right-[-4%] h-[82svh] max-w-[62vw] object-contain object-bottom opacity-45 [mask-image:linear-gradient(to_left,black_58%,transparent)] lg:right-[2%] lg:opacity-70"
         />
 
         {/* Its own colour, under its own feet. */}
@@ -119,7 +122,16 @@ export function PreFightBriefing() {
           }}
         />
 
-        <div className="relative flex flex-1 items-center overflow-y-auto">
+        {/*
+          High in the frame rather than centred in it.
+
+          Vertically centred, the reading started a fifth of the way down the
+          window and the space above it was doing nothing, while the boss it sat
+          beside runs the full height. Starting near the top puts the name level
+          with the head and leaves the empty room under the text, where the
+          figure's own weight is.
+        */}
+        <div className="relative flex flex-1 items-start overflow-y-auto pt-[6svh]">
           <div className="mx-auto w-full max-w-7xl px-8 py-10 lg:px-14">
             <div className="max-w-xl">
               <p className="font-mono text-[10px] uppercase tracking-[0.45em] text-stone-600">
@@ -217,8 +229,16 @@ export function PreFightBriefing() {
           did. They are reference, not reading: a player checks one of them once
           and never looks again, so they belong at the edge of the frame.
         */}
-        <div className="relative border-t border-ash-800 bg-black/40 px-8 py-4">
-          <dl className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.18em]">
+        {/*
+          Left, under the column it belongs to.
+
+          Centred across the full width, the strip ran under the boss's feet and
+          read as a caption on the figure rather than as the controls for the
+          reading above it. It lines up with the text now, on the same margin.
+        */}
+        <div className="relative border-t border-ash-800 bg-black/40">
+          <div className="mx-auto w-full max-w-7xl px-8 py-4 lg:px-14">
+          <dl className="flex max-w-2xl flex-wrap items-baseline gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.18em]">
             {[
               ["WASD", "move"],
               ["Mouse", "look"],
@@ -239,10 +259,11 @@ export function PreFightBriefing() {
           <motion.p
             animate={{ opacity: [0.4, 1, 0.4] }}
             transition={{ duration: 2.2, repeat: Infinity }}
-            className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.4em] text-stone-400"
+            className="mt-3 font-mono text-[10px] uppercase tracking-[0.4em] text-stone-400"
           >
             Click anywhere to begin
           </motion.p>
+          </div>
         </div>
       </motion.div>
     </AnimatePresence>
