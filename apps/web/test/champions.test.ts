@@ -200,3 +200,27 @@ describe("combined traits", () => {
     expect(withRelic.heavyDamage).toBeGreaterThan(combinedTraits(null, "fire").heavyDamage);
   });
 });
+
+describe("why anyone picks one champion over another", () => {
+  it("says what each one tends to forge, which stats cannot", () => {
+    /*
+     * Stats answer which champion is stronger, and that is a question about
+     * winning. In this game the question is what you walk away holding, and the
+     * champion leans it: Ember's fragility drags fights to the wire and produces
+     * cracked weapons, Frost survives cleanly and produces flawless ones.
+     * Without this the screen offered three ways to win the same fight.
+     */
+    for (const affinity of AFFINITIES) {
+      const forges = championFor(affinity).forges;
+      expect(forges.length).toBeGreaterThan(40);
+      // A tendency, not a promise: playstyle still decides, so the copy must not
+      // claim an outcome the fight can contradict.
+      expect(forges).toMatch(/tend/);
+    }
+  });
+
+  it("promises a different kind of weapon from each", () => {
+    const forges = AFFINITIES.map((a) => championFor(a).forges);
+    expect(new Set(forges).size).toBe(AFFINITIES.length);
+  });
+});

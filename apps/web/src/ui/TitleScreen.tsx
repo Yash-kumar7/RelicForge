@@ -533,6 +533,22 @@ export function TitleScreen() {
                   </p>
 
                   {/*
+                    What this champion tends to walk away with.
+
+                    Stats answer which champion is stronger, which is a question
+                    about winning. This answers what you end up holding, which is
+                    the question the game is actually about, and it is the only
+                    reason to pick one of these three over another that the
+                    screen was not stating.
+                  */}
+                  <p className="mt-3 max-w-lg text-[12px] leading-relaxed text-bone-400/90">
+                    <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
+                      forges{" "}
+                    </span>
+                    {championFor(a.id).forges}
+                  </p>
+
+                  {/*
                     Three bars, measured against the other two.
 
                     This was one number parked on the far side of the row. A

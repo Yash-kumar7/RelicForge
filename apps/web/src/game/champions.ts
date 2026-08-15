@@ -51,6 +51,19 @@ export interface Champion {
   name: string;
   /** One line, shown on the affinity screen so the trade is visible up front. */
   blurb: string;
+  /**
+   * What kind of relic this champion tends to produce.
+   *
+   * The real reason to pick a different champion, and the screen never said it.
+   * Stats answer which is stronger, which is a question about winning; this
+   * answers what you walk away with, which is the question this game is about.
+   *
+   * It is a tendency rather than a rule. The element is fixed by the choice, but
+   * condition and silhouette come from how the fight actually goes, and an Ember
+   * played carefully still earns a pristine weapon. Saying "tends to" keeps that
+   * true: playstyle decides, the champion leans.
+   */
+  forges: string;
   traits: ChampionTraits;
 }
 
@@ -59,18 +72,21 @@ export const CHAMPIONS: Record<Affinity, Champion> = {
     slug: "ember",
     name: "Ember",
     blurb: "Hits hardest, breaks soonest. Fewer mistakes allowed.",
+    forges: "Molten weapons. Fragile enough that fights go to the wire, so its relics tend to come out cracked and oversized.",
     traits: { damage: 1.2, maxHp: 0.8, dodgeCooldown: 1 },
   },
   ice: {
     slug: "frost",
     name: "Frost",
     blurb: "Absorbs the most punishment, gives up the power to end it quickly.",
+    forges: "Crystalline weapons. Survives fights with health to spare, so its relics tend to come out flawless and ceremonial.",
     traits: { damage: 0.82, maxHp: 1.3, dodgeCooldown: 1.12 },
   },
   storm: {
     slug: "storm",
     name: "Storm",
     blurb: "Dodges again long before the others can. Fragile if you stand still.",
+    forges: "Storm-etched weapons. Dodging is what the forge reads as elegant, so its relics tend to come out narrow and long.",
     traits: { damage: 1, maxHp: 0.85, dodgeCooldown: 0.75 },
   },
 };
