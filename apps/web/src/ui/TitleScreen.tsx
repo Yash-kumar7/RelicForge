@@ -567,17 +567,32 @@ export function TitleScreen() {
                   */}
                   <span
                     className={[
+                      /*
+                        Lifted, not dimmed.
+
+                        Ember and Storm are dark armour, so at this size on a
+                        dark page they were silhouettes, and desaturating the
+                        unselected ones removed the only thing separating them:
+                        their colour. Only Frost read, because it happens to be
+                        pale. The unselected state is now a small step back in
+                        brightness rather than a drain of colour, and every
+                        portrait is lifted enough to survive being small.
+                      */
                       "relative h-16 w-14 shrink-0 overflow-hidden transition",
-                      affinity === a.id ? "opacity-100" : "opacity-45 grayscale",
+                      affinity === a.id
+                        ? "opacity-100 brightness-125"
+                        : "opacity-80 brightness-110",
                     ].join(" ")}
                   >
                     <img
                       src={`/assets/champions/${a.id === "fire" ? "ember" : a.id === "ice" ? "frost" : "storm"}/concept-cut.png`}
                       alt=""
                       aria-hidden
-                      /* Framed from the chest up: at this size a full figure is
-                         a smudge, and a helm is recognisable. */
-                      className="absolute left-1/2 top-0 h-[13rem] w-auto max-w-none -translate-x-1/2 object-contain"
+                      /* Cropped to the helm and shoulders. A chest-up frame at
+                         56 pixels wide is still mostly torso, and torsos are
+                         what these three have in common; the helmets are what
+                         tells them apart. */
+                      className="absolute left-1/2 -top-1 h-[17rem] w-auto max-w-none -translate-x-1/2 object-contain"
                     />
                   </span>
 
