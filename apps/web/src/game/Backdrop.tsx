@@ -29,18 +29,27 @@ interface Sky {
   from: keyof Pick<ArenaTheme, "forge" | "rune" | "ember" | "keyLight">;
 }
 
+/*
+ * Far dimmer than the first pass, which filled the entire background with flat
+ * orange and turned the arena into a sunset. A horizon is the last thing the eye
+ * should find, not the first: it sits behind the boss, the scenery and the fight,
+ * and anything bright enough to compete with those is not a background.
+ *
+ * Strengths are now a fifth of what they were, and the glow is kept close to the
+ * ground on every rung except the two that are meant to feel open.
+ */
 const SKIES: Record<number, Sky> = {
-  // Ashen Warden: something is burning past the wall, and close.
-  1: { reach: 0.34, strength: 0.5, from: "forge" },
-  // Drowned Choir: light coming through water, higher and colder.
-  2: { reach: 0.55, strength: 0.34, from: "ember" },
+  // Ashen Warden: something is burning past the edge, low down and close.
+  1: { reach: 0.14, strength: 0.16, from: "forge" },
+  // Drowned Choir: light coming down through water, higher and colder.
+  2: { reach: 0.3, strength: 0.1, from: "ember" },
   // Gilded Husk: a hall lit for a ceremony, even and low.
-  3: { reach: 0.26, strength: 0.3, from: "rune" },
+  3: { reach: 0.12, strength: 0.1, from: "rune" },
   // Rootbound King: almost nothing, because the canopy is over the top of it.
-  4: { reach: 0.2, strength: 0.22, from: "keyLight" },
-  // Hollow Sovereign: no wall on this rung, so the dome is the whole world, and
-  // it barely glows at all. The emptiness is the set.
-  5: { reach: 0.7, strength: 0.16, from: "rune" },
+  4: { reach: 0.1, strength: 0.06, from: "keyLight" },
+  // Hollow Sovereign: the dome is the whole world here and it barely glows at
+  // all. The emptiness is the set.
+  5: { reach: 0.45, strength: 0.07, from: "rune" },
 };
 
 function skyTexture(theme: ArenaTheme, sky: Sky): CanvasTexture {
@@ -58,7 +67,9 @@ function skyTexture(theme: ArenaTheme, sky: Sky): CanvasTexture {
   gradient.addColorStop(0, `#${top.getHexString()}`);
   gradient.addColorStop(
     Math.max(0.01, 1 - sky.reach),
-    `#${top.clone().lerp(horizon, sky.strength * 0.35).getHexString()}`,
+    // A quarter of the way in, not a third: the falloff has to be steep or the
+    // colour creeps up the dome and becomes a wash rather than a horizon.
+    `#${top.clone().lerp(horizon, sky.strength * 0.25).getHexString()}`,
   );
   gradient.addColorStop(1, `#${top.clone().lerp(horizon, sky.strength).getHexString()}`);
   ctx.fillStyle = gradient;

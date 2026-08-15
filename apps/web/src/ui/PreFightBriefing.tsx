@@ -164,8 +164,17 @@ export function PreFightBriefing() {
                 door tells a player something they decided on a minute ago and
                 pushes the part they do not know further down the column.
               */}
+              {/*
+                Says which object on screen it means.
+
+                A stone furnace stands at the far end of every arena, in every
+                fight, and nothing anywhere told a player what it was: it read as
+                a prop somebody left there. It is the thing this whole game is
+                about, so the one sentence that mentions it should point at it.
+              */}
               <p className="mt-5 max-w-md border-l border-brass-800 pl-4 text-[13px] leading-relaxed text-stone-500">
-                There is no loot table. When it falls, the forge reads{" "}
+                There is no loot table. The forge is the furnace at the far end of the arena, and
+                it stays cold until you win. When it falls, the forge reads{" "}
                 <span className="text-stone-200">how you won</span> and builds a weapon that has
                 never existed before.
               </p>
