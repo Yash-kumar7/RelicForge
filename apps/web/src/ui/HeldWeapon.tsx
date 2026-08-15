@@ -44,21 +44,25 @@ export function HeldWeapon({
    * Sitting it dead centre in the hand ran the blade through the forearm.
    */
   /*
-   * Measured off the rigged twins of these same champions, not estimated.
+   * Height and depth are measured, the side is not, and the difference matters.
    *
-   * Reading RightHand out of ember/rig/walking.glb, fitted to a 1.8 unit
-   * champion, gives [-0.484, 1.029, 0.065] against a body 1.142 wide, 1.8 tall
-   * and 0.459 deep. As fractions: -0.42 of width, 0.572 of height, 0.14 of
-   * depth.
+   * RightHand in ember/rig/walking.glb, fitted to a 1.8 unit champion, sits at
+   * [-0.484, 1.029, 0.065] against a body 1.142 wide, 1.8 tall and 0.459 deep.
+   * The height and depth carried over directly: 0.572 and 0.14. The old 0.46 of
+   * height was mid-thigh, which hung the grip about a third of a world unit
+   * below the hand so the fingers closed on the blade above the guard.
    *
-   * The estimate was wrong on two axes and both were visible. 0.46 of height is
-   * mid-thigh, so the grip hung about a third of a world unit below the hand and
-   * the fingers closed on the blade above the guard. The width was positive,
-   * which on these rigs is the left hand, so the champion carried the weapon in
-   * the wrong one.
+   * The sign did not carry over. Meshy's rigging reorients the character, so the
+   * rigged GLB and the raw model.glb do not share a facing and the rig's
+   * negative x is the other side of this mesh. Taking the measurement literally
+   * put the weapon in the left hand. The side is therefore set from the model
+   * itself rather than from its rig.
+   *
+   * Slightly outboard of the hand's centre, so the shaft rides the palm instead
+   * of running through the middle of it.
    */
   const hand: [number, number, number] = [
-    socket.width * -0.42,
+    socket.width * 0.47,
     socket.height * 0.572,
     socket.depth * 0.14,
   ];
@@ -72,11 +76,11 @@ export function HeldWeapon({
    * it.
    */
   /*
-   * Positive roll, because the hand is on negative x. A rotation about z maps
-   * the blade's +Y toward +x when the angle is negative, so a negative roll on
-   * that side leans the weapon across the body instead of away from it.
+   * Negative roll, matching the positive side. A rotation about z maps the
+   * blade's +Y toward +x when the angle is negative, which leans the weapon away
+   * from a body whose hand is on positive x.
    */
-  const tilt: [number, number, number] = [20 * DEG, 0, 30 * DEG];
+  const tilt: [number, number, number] = [20 * DEG, 0, -30 * DEG];
 
   if (weapon.kind === "iron") {
     return (
