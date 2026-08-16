@@ -857,16 +857,18 @@ export function TitleScreen() {
                 disabled={section === 1 && armament === null}
                 onClick={() => setStep(step + 1)}
                 /*
-                  Sized to the words, not to the column.
+                  Sized to the words and centred under them.
                   
-                  Full width across a panel past 1200 pixels made a step forward
-                  the largest object on a screen whose subject is a champion, and
-                  set it in the middle of a bar of empty outline. Continue is the
-                  smaller of the two commitments this screen asks for, so it
-                  should not be its loudest control.
+                  It ran the full width of a panel past 1200 pixels, which made a
+                  step forward the largest object on a screen whose subject is a
+                  champion and set one word in the middle of a long empty outline.
+                  Cut to fit its own label it went the other way and read as an
+                  afterthought pinned to the left. A control this important is
+                  neither of those: it is a comfortable target, centred, where the
+                  eye already is after reading down the middle of the column.
                 */
                 className={[
-                  "border px-10 py-2.5 text-[11px] uppercase tracking-[0.3em] transition",
+                  "mx-auto block border px-16 py-3 text-xs uppercase tracking-[0.32em] transition",
                   section === 1 && armament === null
                     ? "cursor-not-allowed border-ash-800 text-stone-700"
                     : "border-stone-600 text-stone-300 hover:border-stone-400",
@@ -925,10 +927,9 @@ export function TitleScreen() {
                 /* The one press on this screen that starts a fight. */
                 data-sound="confirm"
                 /* Wider and brighter than Continue, because it starts a fight
-                   rather than turning a page, but no longer the width of the
-                   panel. */
+                   rather than turning a page, and centred with it. */
                 className={[
-                  "mt-4 border px-14 py-3 text-xs uppercase tracking-[0.35em] transition",
+                  "mx-auto mt-4 block border px-20 py-3.5 text-xs uppercase tracking-[0.35em] transition",
                   bossLevel === null
                     ? "cursor-not-allowed border-ash-800 text-stone-700"
                     : "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
