@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
+import fastifyCors from "@fastify/cors";
 import { mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
@@ -27,6 +28,25 @@ const app = Fastify({
         }),
   },
 });
+
+/*
+ * Cross-origin access, only when the client is hosted elsewhere.
+ *
+ * Registered before anything it has to cover, and skipped entirely in the
+ * single-origin deployment this was built around, where there is no cross-origin
+ * request to permit.
+ *
+ * One named origin, never a wildcard. This API spends credits, so anything that
+ * can reach it can spend them, and an open CORS policy on a metered endpoint is
+ * a bill waiting to happen.
+ */
+if (env.CLIENT_ORIGIN) {
+  await app.register(fastifyCors, {
+    origin: env.CLIENT_ORIGIN,
+    methods: ["GET", "POST"],
+  });
+  app.log.info({ origin: env.CLIENT_ORIGIN }, "cross-origin client allowed");
+}
 
 await mkdir(env.storageDir, { recursive: true });
 await mkdir(env.cacheDir, { recursive: true });

@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useGLTF } from "@react-three/drei";
 import { Box3, Vector3, type Group } from "three";
+import { asset } from "../lib/backend";
 
 /**
  * The thing standing around the arena, which is different for every boss.
@@ -150,7 +151,7 @@ export function ArenaScenery({ level }: { level: number }) {
     let cancelled = false;
     // A fresh clone has no generated assets, and an arena with no horizon is
     // better than an arena that throws.
-    fetch(`/assets/arena/${scenery.slug}/model.glb`, { method: "HEAD" })
+    fetch(asset(`/assets/arena/${scenery.slug}/model.glb`), { method: "HEAD" })
       .then((res) => !cancelled && setAvailable(res.ok))
       .catch(() => !cancelled && setAvailable(false));
     return () => {
@@ -159,7 +160,7 @@ export function ArenaScenery({ level }: { level: number }) {
   }, [scenery]);
 
   if (!scenery || !available) return null;
-  const url = `/assets/arena/${scenery.slug}/model.glb`;
+  const url = asset(`/assets/arena/${scenery.slug}/model.glb`);
 
   return (
     <Suspense fallback={null}>

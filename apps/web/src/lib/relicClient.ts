@@ -1,4 +1,5 @@
 import type { CombatTelemetry, RelicDNA, RelicTransform } from "@relic/core";
+import { api } from "./backend";
 
 /**
  * The only module that talks to the backend.
@@ -45,7 +46,7 @@ export async function requestRelic(
   boss = "the Ashen Warden",
   mode: "dev" | "hero" = "hero",
 ): Promise<RelicResponse> {
-  const res = await fetch("/api/relics", {
+  const res = await fetch(api("/api/relics"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ boss, telemetry, mode }),
@@ -67,7 +68,7 @@ export function streamRelic(
   relicId: string,
   onEvent: (event: RelicStreamEvent) => void,
 ): () => void {
-  const source = new EventSource(`/api/relics/${relicId}/events`);
+  const source = new EventSource(api(`/api/relics/${relicId}/events`));
 
   const handler = (event: MessageEvent<string>) => {
     try {
@@ -104,7 +105,7 @@ export function streamRelic(
  */
 export async function fetchRelic(relicId: string): Promise<RelicResponse | null> {
   try {
-    const res = await fetch(`/api/relics/${relicId}`);
+    const res = await fetch(api(`/api/relics/${relicId}`));
     if (!res.ok) return null;
     return (await res.json()) as RelicResponse;
   } catch {
@@ -114,13 +115,13 @@ export async function fetchRelic(relicId: string): Promise<RelicResponse | null>
 
 /** Re-runs a failed relic from the top, reusing its DNA and prompt. */
 export async function retryRelic(relicId: string): Promise<void> {
-  const res = await fetch(`/api/relics/${relicId}/retry`, { method: "POST" });
+  const res = await fetch(api(`/api/relics/${relicId}/retry`), { method: "POST" });
   if (!res.ok && res.status !== 202) throw new Error(`Retry failed (${res.status})`);
 }
 
 /** Persists the client-computed canonical transform so re-equip is stable. */
 export async function saveTransform(relicId: string, transform: RelicTransform): Promise<void> {
-  await fetch(`/api/relics/${relicId}/transform`, {
+  await fetch(api(`/api/relics/${relicId}/transform`), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ transform }),

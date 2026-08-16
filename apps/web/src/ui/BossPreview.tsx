@@ -3,6 +3,7 @@ import { bossSlug } from "./BossPortrait";
 import { bossWeaponHint } from "../game/orientationHints";
 import { bossWeaponScale } from "../game/weaponScale";
 import { bossAt } from "../game/bosses";
+import { asset } from "../lib/backend";
 
 /**
  * The selected boss, as a real mesh, holding its real weapon.
@@ -40,7 +41,7 @@ export function BossPreview({
   const hint = bossWeaponHint(slug);
   const weapon: HeldWeaponSpec = {
     kind: "relic",
-    url: `/assets/bosses/${slug}/weapon.glb`,
+    url: asset(`/assets/bosses/${slug}/weapon.glb`),
     weaponClass: bossAt(level).weaponClass,
     // Derived, not chosen. The ladder used 1.35 while the fight used 1.15, so
     // the same weapon was a different size depending on which screen you were
@@ -52,7 +53,7 @@ export function BossPreview({
   return (
     <CharacterViewer
       slug={slug}
-      url={`/assets/bosses/${slug}/model.glb`}
+      url={asset(`/assets/bosses/${slug}/model.glb`)}
       height={BOSS_HEIGHT}
       accent={accent}
       weapon={weapon}

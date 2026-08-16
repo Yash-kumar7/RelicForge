@@ -5,6 +5,7 @@ import { Quaternion, Vector3, type Group } from "three";
 import { normalizeRelic, type RelicTransform, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
 import { useInView } from "../lib/useInView";
+import { asset } from "../lib/backend";
 
 /**
  * Gate 0 harness.
@@ -46,7 +47,7 @@ function NormalizedRelic({
   slug: string;
   onMeasure: (t: RelicTransform, ms: number) => void;
 }) {
-  const { scene } = useGLTF(`/assets/spike/${slug}/model.glb`);
+  const { scene } = useGLTF(asset(`/assets/spike/${slug}/model.glb`));
   const cloned = useMemo(() => scene.clone(true), [scene]);
 
   const transform = useMemo(() => {
@@ -181,7 +182,7 @@ export default function NormalizeLab() {
       const found: SpikeMeta[] = [];
       for (const wave of [0, 1, 2]) {
         try {
-          const res = await fetch(`/assets/spike/wave-${wave}.json`);
+          const res = await fetch(asset(`/assets/spike/wave-${wave}.json`));
           if (!res.ok) continue;
           const data = (await res.json()) as { results: SpikeMeta[] };
           found.push(...data.results.filter((r) => !r.error));

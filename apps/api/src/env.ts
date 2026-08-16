@@ -14,6 +14,18 @@ dotenv.config({ path: path.join(repoRoot, ".env") });
 const EnvSchema = z.object({
   MESHY_API_KEY: z.string().min(1, "MESHY_API_KEY is required").startsWith("msy_"),
   PORT: z.coerce.number().int().positive().default(8787),
+  /**
+   * Where the client is hosted, when it is not hosted here.
+   *
+   * Empty by default, which is the deployment this was built around: Fastify
+   * serves the built client, the API and the assets from one origin, so there is
+   * no cross-origin request to permit and nothing to configure.
+   *
+   * Set it when the client lives somewhere else, a static host in front of this
+   * one, and that origin alone is allowed. Deliberately not a wildcard: the API
+   * spends credits, so anything that can reach it can spend them.
+   */
+  CLIENT_ORIGIN: z.string().url().optional(),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
   STORAGE_DIR: z.string().default("./storage"),
   CACHE_DIR: z.string().default("./cache"),

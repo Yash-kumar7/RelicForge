@@ -7,6 +7,7 @@ import { bossWeaponHint } from "./orientationHints";
 import { bossWeaponScale } from "./weaponScale";
 import { bossSwing } from "./bossState";
 import { BossHandWeaponSwing } from "./HandWeapon";
+import { asset } from "../lib/backend";
 
 /**
  * A boss's generated weapon, socketed at its estimated right hand.
@@ -28,7 +29,7 @@ export function BossWeapon({
   weaponClass: WeaponClass;
   height: number;
 }) {
-  const url = `/assets/bosses/${slug}/weapon.glb`;
+  const url = asset(`/assets/bosses/${slug}/weapon.glb`);
   const [available, setAvailable] = useState(false);
 
   useEffect(() => {
@@ -117,7 +118,7 @@ export function BossHandWeapon({
   weaponClass: WeaponClass;
   height: number;
 }) {
-  const url = `/assets/bosses/${slug}/weapon.glb`;
+  const url = asset(`/assets/bosses/${slug}/weapon.glb`);
   const [available, setAvailable] = useState(false);
 
   useEffect(() => {

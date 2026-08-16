@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useGLTF } from "@react-three/drei";
 import { Box3, Vector3, type Group } from "three";
+import { asset } from "../lib/backend";
 
 /**
  * The forge, as a generated mesh with the boxes kept as a fallback.
@@ -23,7 +24,7 @@ import { Box3, Vector3, type Group } from "three";
  * is shadowed and 404s, and this would have silently fallen back to the boxes
  * forever.
  */
-const MODEL_URL = "/assets/arena/forge/model.glb";
+const MODEL_URL = asset("/assets/arena/forge/model.glb");
 
 /** How tall the forge should stand, in metres. Scaled to this, never trusted. */
 const HEIGHT = 3.4;

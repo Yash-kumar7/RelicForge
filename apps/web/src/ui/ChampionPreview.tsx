@@ -3,6 +3,7 @@ import type { Affinity } from "@relic/core";
 import { themeFor } from "../game/theme";
 import { CharacterViewer, type HeldWeaponSpec } from "./CharacterViewer";
 import { IRON, useLoadout } from "../state/useLoadout";
+import { asset } from "../lib/backend";
 
 /**
  * Your champion, holding the weapon you selected.
@@ -76,8 +77,8 @@ export function ChampionPreview({
       */
       url={
         weapon === undefined
-          ? `/assets/champions/${slug}/model-open.glb`
-          : `/assets/champions/${slug}/model.glb`
+          ? asset(`/assets/champions/${slug}/model-open.glb`)
+          : asset(`/assets/champions/${slug}/model.glb`)
       }
       height={CHAMPION_HEIGHT}
       accent={theme.forge}

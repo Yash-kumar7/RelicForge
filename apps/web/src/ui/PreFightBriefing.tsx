@@ -6,6 +6,7 @@ import { combinedTraits } from "../game/equipped";
 import { useLoadout } from "../state/useLoadout";
 import { bossAt } from "../game/bosses";
 import { bossSlug } from "./BossPortrait";
+import { asset } from "../lib/backend";
 
 /**
  * Onboarding, in one screen.
@@ -100,7 +101,7 @@ export function PreFightBriefing() {
         */}
         <motion.img
           key={boss.level}
-          src={`/assets/bosses/${bossSlug(boss.title)}/concept-cut.png`}
+          src={asset(`/assets/bosses/${bossSlug(boss.title)}/concept-cut.png`)}
           alt=""
           aria-hidden
           initial={{ opacity: 0, scale: 1.06 }}

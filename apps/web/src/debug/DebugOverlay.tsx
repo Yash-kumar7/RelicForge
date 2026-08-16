@@ -4,6 +4,7 @@ import { bossState, bossSwing } from "../game/bossState";
 import { playerHandle } from "../game/Player";
 import { swingProgress } from "../game/swing";
 import { bossAt } from "../game/bosses";
+import { api, asset } from "../lib/backend";
 
 /**
  * Backtick-toggled diagnostics.
@@ -46,7 +47,7 @@ export function DebugOverlay() {
 
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch("/api/debug/relics");
+      const res = await fetch(api("/api/debug/relics"));
       const data = (await res.json()) as { balance: number; relics: DebugRelic[] };
       setBalance(data.balance);
       setRelics(data.relics.slice(0, 8));
@@ -71,8 +72,8 @@ export function DebugOverlay() {
       fetch(url, { method: "HEAD" })
         .then((r) => r.ok)
         .catch(() => false);
-    void head(`/assets/bosses/${slug}/weapon.glb`).then(setBossWeaponLoaded);
-    void head(`/assets/bosses/${slug}/rig/walking.glb`).then(setBossRigLoaded);
+    void head(asset(`/assets/bosses/${slug}/weapon.glb`)).then(setBossWeaponLoaded);
+    void head(asset(`/assets/bosses/${slug}/rig/walking.glb`)).then(setBossRigLoaded);
   }, [open, bossLevel]);
 
   useEffect(() => {

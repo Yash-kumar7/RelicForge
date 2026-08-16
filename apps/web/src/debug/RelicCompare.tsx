@@ -4,6 +4,7 @@ import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import { Quaternion, Vector3 } from "three";
 import { normalizeRelic, type RelicDNA, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
+import { api } from "../lib/backend";
 
 /**
  * The comparison the whole project argues for: two fights against the same
@@ -135,7 +136,7 @@ export default function RelicCompare() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/debug/relics")
+    fetch(api("/api/debug/relics"))
       .then((r) => r.json())
       .then((data: { relics: RelicSummary[] }) => {
         const complete = data.relics.filter((r) => r.status === "COMPLETE" && r.modelUrl);

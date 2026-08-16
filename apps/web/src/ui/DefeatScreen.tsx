@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
 import { bossSlug } from "./BossPortrait";
+import { asset } from "../lib/backend";
 
 /**
  * Losing costs you the relic.
@@ -50,7 +51,7 @@ export function DefeatScreen() {
         the two screens that open and close a fight now bookend it.
       */}
       <motion.img
-        src={`/assets/bosses/${bossSlug(boss.title)}/concept-cut.png`}
+        src={asset(`/assets/bosses/${bossSlug(boss.title)}/concept-cut.png`)}
         alt=""
         aria-hidden
         initial={{ opacity: 0, scale: 1.08 }}

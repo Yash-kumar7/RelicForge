@@ -8,6 +8,7 @@ import { normalizeRelic, type RelicDNA, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
 import { BOSSES } from "../game/bosses";
 import { championFor } from "../game/champions";
+import { api, asset } from "../lib/backend";
 
 /**
  * The title screen.
@@ -89,7 +90,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    fetch("/api/debug/relics")
+    fetch(api("/api/debug/relics"))
       .then((r) => r.json())
       .then((data: { relics: ShowcaseRelic[] }) => {
         /*
@@ -169,7 +170,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
    * an open hand rather than a different one.
    */
   const art = current
-    ? `/assets/bosses/${slugFor(current.dna.bossInfluence)}/concept-cut.png`
+    ? asset(`/assets/bosses/${slugFor(current.dna.bossInfluence)}/concept-cut.png`)
     : null;
 
   /** The champion whose affinity produced this relic's element. */
@@ -241,7 +242,7 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
           {championSlug && (
             <motion.img
               key={`champion-${championSlug}`}
-              src={`/assets/champions/${championSlug}/concept-cut.png`}
+              src={asset(`/assets/champions/${championSlug}/concept-cut.png`)}
               alt=""
               aria-hidden
               initial={{ opacity: 0, x: -60, rotateY: 34 }}

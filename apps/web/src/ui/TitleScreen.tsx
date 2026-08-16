@@ -16,6 +16,7 @@ import { TitleHero } from "./TitleHero";
 import { HowItWorks } from "./HowItWorks";
 import { RANKS, rankFor } from "../state/useProgress";
 import { useProgress } from "../state/useProgress";
+import { asset } from "../lib/backend";
 
 /**
  * Run setup: what you fight as, then what you fight.
@@ -601,7 +602,7 @@ export function TitleScreen() {
                     ].join(" ")}
                   >
                     <img
-                      src={`/assets/champions/${a.id === "fire" ? "ember" : a.id === "ice" ? "frost" : "storm"}/concept-cut.png`}
+                      src={asset(`/assets/champions/${a.id === "fire" ? "ember" : a.id === "ice" ? "frost" : "storm"}/concept-cut.png`)}
                       alt=""
                       aria-hidden
                       /* Cropped to the helm and shoulders. A chest-up frame at

@@ -5,6 +5,7 @@ import { motion, useInView } from "framer-motion";
 import { Group, Quaternion, Vector3 } from "three";
 import { normalizeRelic, type RelicDNA, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
+import { api } from "../lib/backend";
 
 /**
  * The pipeline, walked one step at a time, using a single real relic.
@@ -154,7 +155,7 @@ export function HowItWorks() {
   const [relic, setRelic] = useState<StepRelic | null>(null);
 
   useEffect(() => {
-    fetch("/api/debug/relics")
+    fetch(api("/api/debug/relics"))
       .then((r) => r.json())
       .then((data: { relics: StepRelic[] }) => {
         // The first relic with everything a walkthrough needs: an image to show

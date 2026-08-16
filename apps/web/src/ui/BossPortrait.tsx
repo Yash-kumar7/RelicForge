@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { asset } from "../lib/backend";
 
 /**
  * A boss's own generated concept art.
@@ -29,7 +30,7 @@ export function BossPortrait({
   useEffect(() => {
     let cancelled = false;
     setAvailable(null);
-    fetch(`/assets/bosses/${slug}/concept.png`, { method: "HEAD" })
+    fetch(asset(`/assets/bosses/${slug}/concept.png`), { method: "HEAD" })
       .then((res) => !cancelled && setAvailable(res.ok))
       .catch(() => !cancelled && setAvailable(false));
     return () => {
@@ -41,7 +42,7 @@ export function BossPortrait({
     <div className={`relative overflow-hidden bg-ash-950 ${className}`}>
       {available && (
         <img
-          src={`/assets/bosses/${slug}/concept.png`}
+          src={asset(`/assets/bosses/${slug}/concept.png`)}
           alt={locked ? "Unknown boss" : title}
           loading="lazy"
           className={

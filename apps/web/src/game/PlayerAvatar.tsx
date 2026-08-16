@@ -15,6 +15,7 @@ import { IronSwordMesh } from "./IronSwordMesh";
 import { IRON_SCALE } from "./weaponScale";
 import { HeldRelicMesh } from "./HeldRelicMesh";
 import { PlayerHandWeapon } from "./HandWeapon";
+import { asset } from "../lib/backend";
 
 /**
  * Your champion, in the arena.
@@ -54,7 +55,7 @@ export function PlayerAvatar() {
   // static mesh rather than fail.
   useEffect(() => {
     let cancelled = false;
-    fetch(`/assets/champions/${slug}/rig/walking.glb`, { method: "HEAD" })
+    fetch(asset(`/assets/champions/${slug}/rig/walking.glb`), { method: "HEAD" })
       .then((res) => !cancelled && setRigged(res.ok))
       .catch(() => !cancelled && setRigged(false));
     return () => {
@@ -84,7 +85,7 @@ function AvatarBody({
   const body = useRef<Group>(null);
   const arm = useRef<Group>(null);
   const [walkSpeed, setWalkSpeed] = useState(0);
-  const { scene } = useGLTF(`/assets/champions/${slug}/model.glb`);
+  const { scene } = useGLTF(asset(`/assets/champions/${slug}/model.glb`));
   const model = useMemo(() => scene.clone(true), [scene]);
   const fit = useMemo(() => fitCharacter(model as Group, AVATAR_HEIGHT), [model]);
 
@@ -150,8 +151,8 @@ function AvatarBody({
         {rigged ? (
           <AnimatedCharacter
             handBone={handSocketFor(slug).bone}
-            url={`/assets/champions/${slug}/rig/walking.glb`}
-            idleUrl={`/assets/champions/${slug}/rig/idle.glb`}
+            url={asset(`/assets/champions/${slug}/rig/walking.glb`)}
+            idleUrl={asset(`/assets/champions/${slug}/rig/idle.glb`)}
             height={AVATAR_HEIGHT}
             speed={walkSpeed}
           >

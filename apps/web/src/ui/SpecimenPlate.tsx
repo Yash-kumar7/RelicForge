@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Group, Quaternion, Vector3 } from "three";
 import { normalizeRelic, type RelicDNA, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
+import { api } from "../lib/backend";
 
 /**
  * The relic, presented as a catalogued specimen rather than as a hero image.
@@ -114,7 +115,7 @@ export function SpecimenPlate() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    fetch("/api/debug/relics")
+    fetch(api("/api/debug/relics"))
       .then((r) => r.json())
       .then((data: { relics: ShowcaseRelic[] }) => {
         setRelics(data.relics.filter((r) => r.status === "COMPLETE" && r.modelUrl).slice(0, 5));

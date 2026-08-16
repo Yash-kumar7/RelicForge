@@ -4,6 +4,7 @@ import type { Group } from "three";
 import { handSocketFor } from "./handSockets";
 import { fitCharacter } from "../lib/characterFit";
 import { AnimatedCharacter } from "./AnimatedCharacter";
+import { asset as assetUrl } from "../lib/backend";
 
 /**
  * A Meshy-generated boss, rigged and walking when a rig exists.
@@ -20,7 +21,7 @@ import { AnimatedCharacter } from "./AnimatedCharacter";
 export const BOSS_HEIGHT = 2.75;
 
 function StaticBoss({ slug, onLoaded }: { slug: string; onLoaded: () => void }) {
-  const { scene } = useGLTF(`/assets/bosses/${slug}/model.glb`);
+  const { scene } = useGLTF(assetUrl(`/assets/bosses/${slug}/model.glb`));
   const model = useMemo(() => scene.clone(true), [scene]);
   const fit = useMemo(() => fitCharacter(model as Group, BOSS_HEIGHT), [model]);
 
@@ -67,14 +68,14 @@ export function BossModel({
         .catch(() => false);
 
     void (async () => {
-      const rigged = await head(`/assets/bosses/${slug}/rig/walking.glb`);
+      const rigged = await head(assetUrl(`/assets/bosses/${slug}/rig/walking.glb`));
       if (cancelled) return;
       if (rigged) {
         setAsset("rig");
         onLoaded(true);
         return;
       }
-      const staticMesh = await head(`/assets/bosses/${slug}/model.glb`);
+      const staticMesh = await head(assetUrl(`/assets/bosses/${slug}/model.glb`));
       if (cancelled) return;
       setAsset(staticMesh ? "static" : "none");
       onLoaded(staticMesh);
@@ -94,8 +95,8 @@ export function BossModel({
         // the model's front at the player, so a half turn would face it away.
         <AnimatedCharacter
           handBone={handSocketFor(slug).bone}
-          url={`/assets/bosses/${slug}/rig/walking.glb`}
-          idleUrl={`/assets/bosses/${slug}/rig/idle.glb`}
+          url={assetUrl(`/assets/bosses/${slug}/rig/walking.glb`)}
+          idleUrl={assetUrl(`/assets/bosses/${slug}/rig/idle.glb`)}
           height={BOSS_HEIGHT}
           speed={walking}
         >
