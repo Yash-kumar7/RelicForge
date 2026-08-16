@@ -245,10 +245,17 @@ export function TitleScreen() {
         /* py-14 top and bottom put the first line of a step a hundred pixels
            down an otherwise empty column, and left the same again under the
            button. The figure beside it is what should fill the height. */
-        /* Almost nothing at the top. The steps are the first thing on the page
-           and were being pushed down by three paddings in a row: this container,
-           the scrolling column inside it, and the sticky header's own. */
-        "h-full overflow-hidden bg-ash-950 pb-8 pl-0 pr-6 pt-2"
+        /*
+          A breath at the top, and no more.
+
+          This was py-14, which stacked with the column's own padding and the
+          header's to push the steps fifty pixels down an empty panel. Cutting all
+          three to nothing went the other way and pinned them to the very edge of
+          the window, where they read as part of the browser rather than part of
+          the page. One step back from the edge is enough to sit them level with
+          the champion's head without touching it.
+        */
+        "h-full overflow-hidden bg-ash-950 pb-8 pl-0 pr-6 pt-8"
       }
     >
       {/*
