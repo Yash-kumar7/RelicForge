@@ -72,6 +72,43 @@ export function xpFor(event: XpEvent): number {
   return xp;
 }
 
+/**
+ * What a rung can pay, from the worst win to the best one.
+ *
+ * The ladder advertised the base award and called it "you earn", which reads as
+ * the total. It is not: a clean, unhurried, unhealed win that forges a relic pays
+ * 260 on the first rung against the 60 on the card, so the game looked like it
+ * was miscounting in the player's favour, which is the kind of wrong that makes
+ * every other number suspect.
+ *
+ * Derived by running the real award both ways rather than by adding the bonuses
+ * up here. Two places computing the same total is how the first version drifted,
+ * and the bonuses are not simply additive: finishing near death and finishing
+ * healthy are the same branch, so the maximum is not the sum of everything
+ * listed.
+ */
+export function xpRangeFor(bossLevel: number): { min: number; max: number } {
+  const worst = xpFor({
+    bossLevel,
+    // A win that earned nothing beyond the fight itself: middling health, a heal
+    // taken, no dodges, and no relic claimed.
+    healthRemaining: 50,
+    dodges: 0,
+    healingUsed: 1,
+    forgedRelic: false,
+  });
+
+  const best = xpFor({
+    bossLevel,
+    healthRemaining: 8,
+    dodges: 6,
+    healingUsed: 0,
+    forgedRelic: true,
+  });
+
+  return { min: worst, max: best };
+}
+
 interface Stored {
   xp: number;
   fightsWon: number;

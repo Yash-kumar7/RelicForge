@@ -113,6 +113,14 @@ describe("describeBoss", () => {
     expect(describeBoss(1).map((stat) => stat.label)).toEqual(["health", "you earn"]);
     expect(Number(describeBoss(1)[0]?.value)).toBeGreaterThan(0);
     expect(describeBoss(1)[1]?.value).toContain("XP");
+
+    /*
+     * A range, not the floor of one. It advertised the base award as "you earn",
+     * which reads as the total: the first rung says 60 while a clean win that
+     * forges a relic pays 260, and a game that miscounts in the player's favour
+     * makes every other number on the screen suspect.
+     */
+    expect(describeBoss(1)[1]?.value).toMatch(/^\d+–\d+ XP$/);
   });
 
   it("gets harder in the number a player can see, not only in the fiction", () => {

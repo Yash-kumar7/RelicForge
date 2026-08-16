@@ -1,3 +1,4 @@
+import { xpRangeFor } from "../state/useProgress";
 import { COMBAT } from "./combat";
 /**
  * The boss ladder.
@@ -183,10 +184,18 @@ export function describeBoss(level: number): { label: string; value: string }[] 
    * the honest measure of how long a rung takes.
    */
   const boss = bossAt(level);
+  const range = xpRangeFor(boss.level);
   return [
     { label: "health", value: `${Math.round(COMBAT.boss.maxHp * boss.hp)}` },
-    // The base award. A good fight adds to it, so the card never overstates what
-    // the win is worth.
-    { label: "you earn", value: `${60 * boss.level} XP` },
+    /*
+     * The whole range, because the bottom of it was being shown as the answer.
+     *
+     * This said "you earn 60 XP", which reads as the total and is the base award
+     * before anything a good fight adds. A clean win that forges a relic pays 260
+     * on this rung, so the game appeared to be miscounting in the player's
+     * favour, and a number that is wrong in your favour makes every other number
+     * on the screen suspect.
+     */
+    { label: "you earn", value: `${range.min}–${range.max} XP` },
   ];
 }
