@@ -182,6 +182,51 @@ const REST_PITCH = -0.3;
 const REST_ROLL = 0.5;
 
 /**
+ * Turns the carried pose live, with ?carry, and prints it.
+ *
+ * These two numbers are the last thing about a held weapon that cannot be
+ * derived: everything else is measured off the rig or the mesh, and this is the
+ * angle a blade is carried at, which only looks right or wrong. Guessing it and
+ * having somebody else look has already cost several rounds, so it is tunable
+ * instead. Arrow up and down pitch, left and right roll, shift for fine steps.
+ */
+const CARRY_TUNING =
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("carry") !== null;
+
+function useCarryPose(): { pitch: number; roll: number } {
+  const [pose, setPose] = useState({ pitch: REST_PITCH, roll: REST_ROLL });
+
+  useEffect(() => {
+    if (!CARRY_TUNING) return undefined;
+    const onKey = (event: KeyboardEvent) => {
+      const step = event.shiftKey ? 0.02 : 0.1;
+      const moves: Record<string, [number, number]> = {
+        ArrowUp: [step, 0],
+        ArrowDown: [-step, 0],
+        ArrowRight: [0, step],
+        ArrowLeft: [0, -step],
+      };
+      const move = moves[event.code];
+      if (!move) return;
+      event.preventDefault();
+      setPose((current) => {
+        const next = {
+          pitch: Number((current.pitch + move[0]).toFixed(3)),
+          roll: Number((current.roll + move[1]).toFixed(3)),
+        };
+        console.log(`const REST_PITCH = ${next.pitch};\nconst REST_ROLL = ${next.roll};`);
+        return next;
+      });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  return pose;
+}
+
+/**
  * Draws a marker where the weapon is being attached, via ?debug=socket.
  *
  * These rigs are third-party auto-rigs over generated meshes, so "the weapon
@@ -225,6 +270,7 @@ function HandFollower({
   children: ReactNode;
 }) {
   const socket = useRef<Group>(null);
+  const carry = useCarryPose();
   const inverse = useMemo(() => new Matrix4(), []);
   const local = useMemo(() => new Matrix4(), []);
   const position = useMemo(() => new Vector3(), []);
@@ -296,7 +342,7 @@ function HandFollower({
      * stands still on its own clip, so the hand barely turns, and a fixed pose
      * holds.
      */
-    group.rotation.set(REST_PITCH, 0, outward * REST_ROLL);
+    group.rotation.set(carry.pitch, 0, outward * carry.roll);
   });
 
   return (
