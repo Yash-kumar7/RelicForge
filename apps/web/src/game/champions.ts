@@ -63,6 +63,14 @@ export interface Champion {
    * played carefully still earns a pristine weapon. Saying "tends to" keeps that
    * true: playstyle decides, the champion leans.
    */
+  /**
+   * What this champion tends to leave behind.
+   *
+   * Deliberately three different shapes. All three were one template, "X weapons,
+   * and because of Y they tend to come out Z", which reads as a form letter the
+   * second time you see it and makes three characters sound like one character
+   * with the nouns swapped.
+   */
   forges: string;
   traits: ChampionTraits;
 }
@@ -72,21 +80,31 @@ export const CHAMPIONS: Record<Affinity, Champion> = {
     slug: "ember",
     name: "Ember",
     blurb: "Hits hardest, breaks soonest. Fewer mistakes allowed.",
-    forges: "Molten weapons, and it rarely finishes with health to spare, so they tend to come out cracked.",
+    forges: "Molten, and usually cracked. It rarely finishes a fight with much health left, and that is what breaks a weapon.",
     traits: { damage: 1.2, maxHp: 0.8, dodgeCooldown: 1 },
   },
   ice: {
     slug: "frost",
     name: "Frost",
-    blurb: "Absorbs the most punishment, gives up the power to end it quickly.",
-    forges: "Crystalline weapons, and it usually finishes with health left over, so they tend to come out flawless.",
+    /*
+     * Rewritten. This read "absorbs the most punishment, gives up the power to
+     * end it quickly", which is an abstraction where the other two are concrete,
+     * and the only one of the three that never says what goes wrong. Ember warns
+     * you it breaks, Storm warns you about standing still; Frost's failure is
+     * that a fight it cannot finish goes on long enough to lose.
+     */
+    blurb: "Outlasts anything. Kills slowly, so every fight runs long.",
+    forges: "Crystalline, and usually unmarked. Finishing with health to spare is what leaves a weapon flawless.",
     traits: { damage: 0.82, maxHp: 1.3, dodgeCooldown: 1.12 },
   },
   storm: {
     slug: "storm",
     name: "Storm",
     blurb: "Dodges again long before the others can. Fragile if you stand still.",
-    forges: "Storm-etched weapons, and all that dodging tends to make them narrow and long rather than heavy.",
+    /* "usually" is load-bearing, and a test enforces it. Dropping it while
+       varying the sentence turned a tendency into a promise, and a player who
+       swings heavy with Storm and gets a greatsword would think it broke. */
+    forges: "Storm-etched, and usually narrow rather than heavy. All that dodging is what draws a blade long.",
     traits: { damage: 1, maxHp: 0.85, dodgeCooldown: 0.75 },
   },
 };
