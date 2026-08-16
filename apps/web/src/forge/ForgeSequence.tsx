@@ -31,6 +31,21 @@ function Elapsed() {
   return <span className="ml-3 text-stone-700">{seconds}s</span>;
 }
 
+/**
+ * Sparks, fixed rather than random.
+ *
+ * Random positions would differ between two recordings of the same forge, and
+ * the whole demo is two runs compared side by side.
+ */
+const SPARKS = [
+  { key: 0, left: 38, rise: 90, drift: -14, duration: 1.5, delay: 0 },
+  { key: 1, left: 46, rise: 130, drift: 10, duration: 1.9, delay: 0.15 },
+  { key: 2, left: 52, rise: 70, drift: 18, duration: 1.3, delay: 0.4 },
+  { key: 3, left: 58, rise: 150, drift: -8, duration: 2.1, delay: 0.75 },
+  { key: 4, left: 44, rise: 110, drift: 22, duration: 1.7, delay: 1.05 },
+  { key: 5, left: 62, rise: 95, drift: -20, duration: 1.6, delay: 1.3 },
+] as const;
+
 export function ForgeSequence({
   onClaim,
   onRetry,
@@ -51,6 +66,9 @@ export function ForgeSequence({
   // Named explicitly: the boss you killed is part of the relic's identity, and
   // it is literally in the prompt that generated it.
   const boss = bossAt(bossLevel ?? 1);
+
+  /* The stages where a mesh is actually being built, and the wait is long. */
+  const beingForged = forge.stage === "FORGING_3D" || forge.stage === "MODEL_READY";
 
   const showTelemetry = forge.stage !== "IDLE" && forge.stage !== "ANALYZING";
   const headline = STAGE_HEADLINE[forge.stage];
@@ -146,6 +164,51 @@ export function ForgeSequence({
               alt="Relic concept"
               className="max-h-[46vh] rounded border border-ember-500/30 shadow-[0_0_80px_rgba(255,107,26,0.25)]"
             />
+
+            {/*
+              Worked, rather than waited on.
+              
+              The mesh takes 90 to 120 seconds and the concept art sat perfectly
+              still for all of it, under a progress bar. A still picture and a
+              number is a loading screen; the claim being made is that something
+              is being made, and nothing on screen was behaving as though it
+              were.
+              
+              So the drawing is heated. It flares on the same 1.5 second beat the
+              hammer plays on, which is the whole trick: the sound already
+              existed and there was nothing to see when it landed, so the two
+              were describing different events.
+            */}
+            {beingForged && (
+              <>
+                <motion.div
+                  className="pointer-events-none absolute inset-0 rounded bg-ember-400 mix-blend-overlay"
+                  animate={{ opacity: [0.05, 0.42, 0.12, 0.05] }}
+                  transition={{ duration: 1.5, repeat: Infinity, times: [0, 0.06, 0.3, 1] }}
+                />
+                {/* Struck metal throws sparks. Six is enough to read as a shower
+                    and few enough to stay out of the way of the drawing. */}
+                {SPARKS.map((spark) => (
+                  <motion.span
+                    key={spark.key}
+                    className="pointer-events-none absolute bottom-[18%] h-1 w-1 rounded-full bg-ember-200"
+                    style={{ left: `${spark.left}%` }}
+                    animate={{
+                      y: [0, -spark.rise],
+                      x: [0, spark.drift],
+                      opacity: [0, 1, 0],
+                      scale: [1, 0.4],
+                    }}
+                    transition={{
+                      duration: spark.duration,
+                      repeat: Infinity,
+                      delay: spark.delay,
+                      ease: "easeOut",
+                    }}
+                  />
+                ))}
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
