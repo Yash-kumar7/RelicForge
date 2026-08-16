@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { CanvasTexture, type Group, type Mesh } from "three";
+import { useGameStore } from "../state/useGameStore";
 import { ARENA_RADIUS } from "./arenaGeometry";
 import type { ArenaTheme } from "./theme";
 
@@ -257,6 +258,19 @@ function VoidField({ theme }: { theme: ArenaTheme }) {
   const shards = useRef<Group>(null);
 
   /*
+   * The room answers when the boss turns.
+   *
+   * Below half health the Sovereign gives a third less warning, and a fight that
+   * silently gets harder reads as a fight that is cheating. The debris is the
+   * tell: it stops drifting and starts moving, over two seconds, so the change
+   * is announced by the place rather than by a message.
+   */
+  const bossHp = useGameStore((s) => s.bossHp);
+  const bossMaxHp = useGameStore((s) => s.bossMaxHp);
+  const enraged = bossHp > 0 && bossHp <= bossMaxHp * 0.5;
+  const spin = useRef(0.026);
+
+  /*
    * One rotation every four minutes.
    *
    * Fast enough that a player who looks twice sees it has moved, slow enough
@@ -264,7 +278,10 @@ function VoidField({ theme }: { theme: ArenaTheme }) {
    * reads as a machine; one that has drifted a little reads as a place.
    */
   useFrame((_, delta) => {
-    if (shards.current) shards.current.rotation.y += delta * 0.026;
+    // Eased rather than switched, so the room accelerates into it.
+    const target = enraged ? 0.34 : 0.026;
+    spin.current += (target - spin.current) * Math.min(1, delta * 0.5);
+    if (shards.current) shards.current.rotation.y += delta * spin.current;
   });
 
   const pieces = useMemo(

@@ -10,7 +10,7 @@ import { sfx } from "../audio/sfx";
 import { themeForBoss } from "./theme";
 import { registerPlayerHurt, registerTelegraph } from "./feedback";
 import { setBossAction, BOSS_SPAWN } from "./bossState";
-import { bossAt } from "./bosses";
+import { MAX_LEVEL, bossAt } from "./bosses";
 import { BossModel } from "./BossModel";
 import { BossWeapon, BossHandWeapon } from "./BossWeapon";
 import { BOSS_HEIGHT } from "./BossModel";
@@ -55,6 +55,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
 
   const phase = useGameStore((s) => s.phase);
   const bossHp = useGameStore((s) => s.bossHp);
+  const bossMaxHp = useGameStore((s) => s.bossMaxHp);
   const combatActive = useGameStore((s) => s.combatActive);
   const bossLevel = useGameStore((s) => s.bossLevel);
   const theme = themeForBoss(bossLevel ?? 1);
@@ -68,6 +69,37 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
       telegraphMs: Math.round(COMBAT.boss.telegraphMs / level.speed),
     };
   }, [bossLevel]);
+
+  /**
+   * The Hollow Sovereign changes when it is half dead.
+   *
+   * Every boss on the ladder was the same fight at different multipliers: more
+   * health, more damage, a shorter wind-up. That is a difficulty curve and not a
+   * finale, and the last rung was the same loop as the first with bigger numbers
+   * attached, which is why it read as the weakest of the five despite being the
+   * hardest.
+   *
+   * Below half health it stops giving as much warning. The telegraph shortens by
+   * a third and it closes faster, so the answer that has worked for four bosses,
+   * watch the ring and step out, stops being enough and the player has to commit
+   * to shorter windows. Nothing new to learn, everything learned so far under
+   * pressure, which is what a last fight should ask.
+   *
+   * Health rather than time, so it is a thing the player caused.
+   */
+  const enraged = (bossLevel ?? 1) === MAX_LEVEL && bossHp > 0 && bossHp <= bossMaxHp * 0.5;
+
+  const active = useMemo(
+    () =>
+      enraged
+        ? {
+            damage: tuning.damage,
+            moveSpeed: tuning.moveSpeed * 1.25,
+            telegraphMs: Math.round(tuning.telegraphMs * 0.68),
+          }
+        : tuning,
+    [tuning, enraged],
+  );
 
   useImperativeHandle(ref, () => ({
     position: () => position.current,
@@ -193,7 +225,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
       case "APPROACH": {
         // Staggering interrupts the advance, which is what makes a heavy
         // attack worth its slower wind-up.
-        const speed = tuning.moveSpeed * (1 - stagger.current * 0.8);
+        const speed = active.moveSpeed * (1 - stagger.current * 0.8);
         if (distance > COMBAT.boss.preferredRange) {
           position.current.addScaledVector(forward, speed * delta);
           // Drives the walk clip, so the feet move at the speed the body does.
@@ -201,14 +233,14 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         } else {
           setWalking((current) => (current > 0.01 ? 0 : current));
           state.current = "TELEGRAPH";
-          stateUntil.current = now + tuning.telegraphMs;
+          stateUntil.current = now + active.telegraphMs;
           sfx.telegraph();
           registerTelegraph();
         }
         break;
       }
       case "TELEGRAPH": {
-        position.current.addScaledVector(forward, tuning.moveSpeed * 0.25 * delta);
+        position.current.addScaledVector(forward, active.moveSpeed * 0.25 * delta);
         if (now >= stateUntil.current) {
           state.current = "STRIKE";
           stateUntil.current = now + COMBAT.boss.activeMs;
@@ -223,9 +255,9 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
           );
           // i-frames from a dodge are checked here, at the moment of impact.
           if (hit && now >= playerHandle.invulnerableUntil) {
-            useGameStore.getState().damagePlayer(tuning.damage);
+            useGameStore.getState().damagePlayer(active.damage);
             sfx.playerHurt();
-            registerPlayerHurt(tuning.damage);
+            registerPlayerHurt(active.damage);
           }
         }
         break;
@@ -254,7 +286,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
      * component, moves on the same frame as the body rather than one behind.
      */
     if (state.current === "TELEGRAPH") {
-      setBossAction("telegraph", 1 - (stateUntil.current - now) / tuning.telegraphMs);
+      setBossAction("telegraph", 1 - (stateUntil.current - now) / active.telegraphMs);
     } else if (state.current === "STRIKE") {
       setBossAction("strike", 1 - Math.max(0, (stateUntil.current - now) / COMBAT.boss.activeMs));
     } else if (state.current === "RECOVER") {
@@ -266,7 +298,7 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
     /* -------------------------------------------------------- presentation */
     const charge =
       state.current === "TELEGRAPH"
-        ? 1 - (stateUntil.current - now) / tuning.telegraphMs
+        ? 1 - (stateUntil.current - now) / active.telegraphMs
         : state.current === "STRIKE"
           ? 1
           : 0;
