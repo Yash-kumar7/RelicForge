@@ -638,7 +638,10 @@ export function TitleScreen() {
               selected one is obviously one of three rather than a highlighted
               cell.
             */}
-            <div className="mt-6 flex flex-col gap-6">
+            {/* The heading is set in a display face at up to 2.5rem with
+                leading-none, so it has almost no room under it of its own: mt-6
+                put the first champion within a few pixels of the descenders. */}
+            <div className="mt-10 flex flex-col gap-6">
               {AFFINITIES.map((a) => (
                 /*
                   A mark per row, in the corner rather than in the card.
