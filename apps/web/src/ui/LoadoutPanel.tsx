@@ -170,7 +170,10 @@ export function LoadoutPanel() {
                         ].map(([k, v]) => (
                           <div key={k} className="flex justify-between border-b border-ash-800/60 pb-1">
                             <dt className="uppercase tracking-[0.15em] text-stone-700">{k}</dt>
-                            <dd className="text-stone-300">{v}</dd>
+                            {/* Same treatment as the weapon step: these are enum
+                                values, lowercase where they are stored and hashed,
+                                and capitalised only where they are read. */}
+                            <dd className="capitalize text-stone-300">{v}</dd>
                           </div>
                         ))}
                       </dl>

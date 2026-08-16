@@ -326,7 +326,15 @@ export function ArmamentPanel() {
               <p className="mt-1 font-display text-base tracking-[0.12em] text-ember-300">
                 {shown.name}
               </p>
-              <p className="mt-1 text-[11px] leading-relaxed text-stone-600">
+              {/*
+                Capitalised in the stylesheet, not in the data.
+
+                These are enum values and they are lowercase everywhere they are
+                stored, compared and hashed into a cache key. Capitalising the
+                strings themselves would put display formatting into the thing the
+                prompt is compiled from, so the presentation does it.
+              */}
+              <p className="mt-1 text-[11px] capitalize leading-relaxed text-stone-600">
                 {shown.dna.element} · {shown.dna.temperament} · {shown.dna.condition}
               </p>
               <AttackBreakdown traits={traits} dim={!selected} />
@@ -357,15 +365,15 @@ export function ArmamentPanel() {
                 </span>
                 <span className="flex justify-between gap-3">
                   <span className="text-stone-600">element</span>
-                  <span className="text-stone-300">{shown.dna.element}</span>
+                  <span className="capitalize text-stone-300">{shown.dna.element}</span>
                 </span>
                 <span className="flex justify-between gap-3">
                   <span className="text-stone-600">silhouette</span>
-                  <span className="text-stone-300">{shown.dna.temperament}</span>
+                  <span className="capitalize text-stone-300">{shown.dna.temperament}</span>
                 </span>
                 <span className="flex justify-between gap-3">
                   <span className="text-stone-600">condition</span>
-                  <span className="text-stone-300">{shown.dna.condition}</span>
+                  <span className="capitalize text-stone-300">{shown.dna.condition}</span>
                 </span>
               </span>
 
