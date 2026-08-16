@@ -841,7 +841,16 @@ export function TitleScreen() {
 
             Opaque, since the rows pass underneath.
           */}
-          <div className="sticky bottom-0 z-20 mt-8 border-t border-ash-800 bg-ash-950 pb-4 pt-5">
+          {/*
+            No rule above the button.
+
+            It was drawn when this bar was pinned, on the assumption that content
+            scrolling underneath needed a hard edge to stop against. The button
+            already has a border on all four sides, so the line sat a few pixels
+            above another line and read as a seam in the panel rather than as a
+            division of it. The gap does that job on its own.
+          */}
+          <div className="sticky bottom-0 z-20 mt-8 bg-ash-950 pb-4 pt-5">
             {step < steps.length - 1 && (
               <button
                 type="button"
