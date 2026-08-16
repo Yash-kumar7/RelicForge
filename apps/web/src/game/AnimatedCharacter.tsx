@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } 
 import { useFrame } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import {
-  Euler,
   Group,
   LoopRepeat,
   Matrix4,
@@ -227,26 +226,6 @@ function HandFollower({
   const handWorld = useMemo(() => new Vector3(), []);
   const reach = useMemo(() => new Vector3(), []);
 
-  /*
-   * The offset from the hand bone to the carried pose, solved once.
-   *
-   * The weapon used to take the bone's position and a fixed rotation, which is
-   * why it slid through the hand while walking: the arm swings and the hand
-   * turns through the whole cycle, and a blade that keeps one angle in the
-   * character's frame has to pass through the fist that is supposedly holding
-   * it. Every engine does this the other way round. The socket inherits the
-   * hand's full transform and carries a fixed offset relative to it, so the
-   * weapon is welded to the hand and the animation moves both.
-   *
-   * The offset is derived rather than authored: on the first frame the hand's
-   * rotation is measured and the offset that takes it to the pose the blade
-   * should rest in is solved for. That keeps the carried pose exactly what it
-   * was, which was already tuned by eye, while making it hold through the
-   * animation instead of only at one frame of it.
-   */
-  const restOffset = useRef<Quaternion | null>(null);
-  const desired = useMemo(() => new Quaternion(), []);
-  const boneRest = useMemo(() => new Quaternion(), []);
 
   useFrame(() => {
     const group = socket.current;
@@ -292,19 +271,24 @@ function HandFollower({
     }
 
     /*
-     * Rotation inherited from the hand, plus the solved offset.
+     * A fixed carried pose, in the character's frame. Mirrored per side, so the
+     * blade leans away from the body whichever hand holds it.
      *
-     * The rest pose is still mirrored per side, so the blade leans away from the
-     * body whichever hand holds it, and it is still the pose that was tuned by
-     * eye. The difference is that it is now expressed relative to the hand
-     * rather than to the character, so the arm can move.
+     * Inheriting the hand bone's rotation was tried, on the correct principle
+     * that this is what a socket does in every engine, and it put both blades
+     * flat and pointing backwards. The offset that maps the bone to the carried
+     * pose has to be solved against a real animated frame, and there is no frame
+     * where that is reliable: the first one runs before the mixer has written
+     * anything, so it solves against the bind pose, and every frame after that
+     * carries the animation's own rotation into the answer.
+     *
+     * It is also no longer needed. The reason inheritance was worth the risk was
+     * that the walk swung the hand through its whole cycle and a fixed blade slid
+     * through the fist. The arm is damped against the walk now and the character
+     * stands still on its own clip, so the hand barely turns, and a fixed pose
+     * holds.
      */
-    if (!restOffset.current) {
-      desired.setFromEuler(new Euler(REST_PITCH, 0, outward * REST_ROLL));
-      boneRest.copy(quaternion).invert();
-      restOffset.current = boneRest.multiply(desired);
-    }
-    group.quaternion.copy(quaternion).multiply(restOffset.current);
+    group.rotation.set(REST_PITCH, 0, outward * REST_ROLL);
   });
 
   return (

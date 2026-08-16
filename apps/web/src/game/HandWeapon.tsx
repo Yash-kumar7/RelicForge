@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Euler, Group, Mesh, MeshBasicMaterial, Quaternion } from "three";
+import { Euler, Group, Mesh, MeshBasicMaterial } from "three";
 import type { WeaponClass } from "@relic/core";
 import type { AttackKind } from "./combat";
 import { HeldRelicMesh } from "./HeldRelicMesh";
@@ -63,28 +63,14 @@ function hintProps(slug: string): { hint?: OrientationHint } {
  * out. A light is a quick lateral cut, mostly yaw. A heavy is an overhead, mostly
  * pitch, and it drops further than it can be mistaken for.
  */
-/*
- * Scratch objects, so a swing does not allocate three quaternions a frame.
- */
+/* Scratch, so a swing does not allocate a Euler every frame. */
 const swingEuler = new Euler();
-const swingQuat = new Quaternion();
-const frame = new Quaternion();
 
 /**
- * Turns the swing into the character's frame before applying it.
+ * The swing, applied at the grip.
  *
- * The socket used to hold a fixed rotation, so its children were effectively
- * aligned with the character and "rotate about Y" meant "sweep across the body".
- * The socket now inherits the hand bone's rotation, which is the right thing for
- * carrying a weapon and the wrong frame to swing in: a hand bone points down the
- * forearm, so the same Y rotation became a swing going backwards, away from the
- * boss and behind the player.
- *
- * The axes are the character's again. The swing is built as a rotation in the
- * character's frame and conjugated by the socket's own rotation, which is the
- * standard way to express "rotate about that frame's axis, from inside this
- * one". The pivot is unchanged: the group sits at the grip, so the blade still
- * turns around the hand rather than about its own middle.
+ * The group sits at the grip, so the blade turns around the hand rather than
+ * about its own middle, which is the difference between a swing and a propeller.
  */
 function applySwing(group: Group, swing: number, scale = 1, kind: AttackKind = "light"): void {
   if (kind === "heavy") {
@@ -95,16 +81,16 @@ function applySwing(group: Group, swing: number, scale = 1, kind: AttackKind = "
     swingEuler.set(-swing * 0.16 * scale, swing * 0.58 * scale, -swing * 0.3 * scale);
   }
 
-  swingQuat.setFromEuler(swingEuler);
-
-  const socket = group.parent;
-  if (!socket) {
-    group.quaternion.copy(swingQuat);
-    return;
-  }
-
-  frame.copy(socket.quaternion).invert();
-  group.quaternion.copy(frame).multiply(swingQuat).multiply(socket.quaternion);
+  /*
+   * The socket is aligned with the character, so these axes are already the
+   * character's: rotating about Y means sweeping across the body.
+   *
+   * This briefly had to conjugate by the socket's rotation, back when the socket
+   * inherited the hand bone's, because a hand bone points down the forearm and
+   * the same rotation came out as a swing going backwards. The socket holds a
+   * fixed pose again, so the conversion is gone with it.
+   */
+  group.quaternion.setFromEuler(swingEuler);
 }
 
 export function PlayerHandWeapon({
