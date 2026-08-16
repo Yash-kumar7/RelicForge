@@ -859,6 +859,8 @@ export function TitleScreen() {
                 type="button"
                 onClick={startFight}
                 disabled={bossLevel === null}
+                /* The one press on this screen that starts a fight. */
+                data-sound="confirm"
                 className={[
                   "mt-4 w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
                   bossLevel === null

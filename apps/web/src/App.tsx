@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import { Game } from "./game/Game";
 import { TitleScreen } from "./ui/TitleScreen";
 import { useGameStore } from "./state/useGameStore";
+import { useInterfaceSounds } from "./audio/useInterfaceSounds";
 
 /**
  * Dev surfaces are lazy: the lab and the compare view pull in their own scene
@@ -35,6 +36,14 @@ function Loading() {
 export default function App() {
   const route = useHashRoute();
   const phase = useGameStore((s) => s.phase);
+
+  /*
+   * Mounted above the route check, so the lab and the compare view get it too.
+   * They are dev surfaces, but a button that is silent on one screen and not on
+   * another is the kind of inconsistency that reads as a bug in the sound rather
+   * than as a decision about which screens matter.
+   */
+  useInterfaceSounds();
 
   if (route.startsWith("/lab")) {
     return (

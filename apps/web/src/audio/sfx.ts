@@ -93,7 +93,56 @@ function noise(duration: number, gain = 0.2, filterHz = 1200, delay = 0) {
   source.start(start);
 }
 
+/**
+ * Interface sounds, which the game had none of.
+ *
+ * Every sound in here answered something happening in the arena, and the three
+ * screens before it were silent: a champion could be chosen, a weapon equipped
+ * and a boss picked without the game acknowledging any of it. A menu that makes
+ * no sound reads as a menu that has not registered the click, which is why
+ * players press things twice.
+ *
+ * These are deliberately small and dry. A selection sound competes with nothing,
+ * plays constantly, and is the fastest thing in a game to start hating, so it is
+ * quieter than anything in the fight and gets out of the way in under a tenth of
+ * a second.
+ *
+ * They belong to the same family as the rest: struck metal, not a chime. Two
+ * partials a fifth apart, low and short, so the interface sounds like the forge
+ * it is attached to rather than like an operating system.
+ */
+const UI = {
+  /** Passing over something choosable. The lightest sound in the game. */
+  hover: () => {
+    tone({ frequency: 880, duration: 0.045, type: "triangle", gain: 0.025 });
+  },
+
+  /** Picking one thing out of several. */
+  select: () => {
+    tone({ frequency: 520, duration: 0.07, type: "triangle", gain: 0.07 });
+    tone({ frequency: 780, duration: 0.05, type: "sine", gain: 0.04, delay: 0.012 });
+  },
+
+  /** Committing: continue, descend, claim. Lower and longer than a select. */
+  confirm: () => {
+    tone({ frequency: 300, sweepTo: 450, duration: 0.16, type: "triangle", gain: 0.1 });
+    tone({ frequency: 600, duration: 0.1, type: "sine", gain: 0.05, delay: 0.02 });
+  },
+
+  /** Going back, or closing something. The confirm, inverted. */
+  back: () => {
+    tone({ frequency: 420, sweepTo: 260, duration: 0.13, type: "triangle", gain: 0.07 });
+  },
+
+  /** Pressing something that cannot be pressed yet. */
+  denied: () => {
+    tone({ frequency: 160, duration: 0.09, type: "square", gain: 0.05 });
+  },
+} as const;
+
 export const sfx = {
+  ...UI,
+
   swingLight: () => {
     noise(0.16, 0.14, 2600);
     tone({ frequency: 420, sweepTo: 180, duration: 0.14, type: "triangle", gain: 0.1 });

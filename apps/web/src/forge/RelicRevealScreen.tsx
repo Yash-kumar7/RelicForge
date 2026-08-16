@@ -170,6 +170,7 @@ export function RelicRevealScreen({
           <button
             type="button"
             onClick={onClaim}
+            data-sound="confirm"
             className="mt-10 border px-10 py-3 text-xs uppercase tracking-[0.35em] transition"
             style={{ borderColor: `${accent}99`, color: accent }}
           >
