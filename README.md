@@ -2,14 +2,19 @@
 
 > **Your weapon is made from how you fight**
 
-**What if legendary loot was actually one-of-one?**
+**What if the reward for a fight was made out of the fight?**
 
-Games pick rewards from a finite pile of assets. You kill the boss, a loot table rolls, and you receive `legendary_sword_04.glb`, the same file that eleven million other players received.
+Every weapon you have ever been handed in a game was finished months before you
+played. An artist modelled a few hundred of them, they went in a folder, and when
+you win the game reaches into that folder and gives you one. Beat the same boss as
+someone else and you both walk away holding the identical object, no matter how
+differently you got there.
 
-RelicForge doesn't pick. It **forges**.
+RelicForge doesn't reach into a folder. It **makes the weapon after the fight**,
+from how the fight went.
 
 ```
-boss dies → analyze how you won → Relic DNA → concept art → Meshy-7 → GLB → in your hands
+boss dies → read how you won → concept art → 3D model → in your hands
 ```
 
 Two players beat the same boss and walk away holding physically different weapons, because they fought differently.
@@ -22,7 +27,7 @@ Two players beat the same boss and walk away holding physically different weapon
 **Same boss. Different story. Different relic.**
 
 Relics are pre-generated for **every boss and every playstyle**, so replaying any
-of them resolves in ~25ms and spends nothing. Fight some other way and it
+of them resolves in ~33ms and spends nothing. Fight some other way and it
 generates for real, which is the honest path and stays the honest path: a demo
 just should not be one API hiccup away from an awkward silence.
 
@@ -216,16 +221,21 @@ transforms in all three, so behaviour never changes with the asset.
 
 Most players assume loot comes from a table, so nothing about a boss fight signals that *how* you fight is the input. RelicForge says it once before the fight, then proves it during:
 
-- A **briefing** states the premise and lists the controls (WASD, mouse, LMB light, RMB heavy, Space dodge, Q heal). It also gives pointer lock something to attach to, so the first click is explained rather than mysterious.
+- A **briefing** states the premise and lists the controls (WASD to move, mouse to look, left mouse for a light attack, right mouse for a heavy one, Space to dodge, Q to heal, V to switch between third and first person). It also gives pointer lock something to attach to, so the first click is explained rather than mysterious.
 - A **live relic panel** in the corner runs the real `buildRelicDNA` against your telemetry as you fight. Commit to heavy attacks and `BALANCED` becomes `BRUTAL` in front of you. Drop below 20% health and `battle-worn` becomes `shattered`.
 
 That panel is the tutorial. Watching the projection change is more convincing than any amount of explanation, and it means the reveal at the end confirms something the player already worked out.
 
+You fight in **third person by default**, because choosing a champion and then
+never seeing it makes the choice pointless. The champion is a rigged, generated
+model swinging the real generated weapon. **V** switches to first person, where
+armoured gauntlets hold the blade in view, since a floating camera with no arms
+is not embodiment either.
+
 Impact arrives on four channels at once, because any one alone reads as weak: a
 floating damage number, a boss that staggers and is knocked back, camera shake,
 and hitstop that freezes the shake decay for a few frames so a heavy hit lands
-with weight. Armoured gauntlets hold the blade in view, first person is a scope
-decision, but a floating camera with no arms is not embodiment.
+with weight.
 
 ## Setup
 
@@ -238,7 +248,7 @@ pnpm dev                  # web :5173 · api :8787
 | command | what it does |
 |---|---|
 | `pnpm dev` | web + api together, `/api` and `/assets` proxied |
-| `pnpm test` | relic-core suite (62 tests) |
+| `pnpm test` | relic-core suite (205 tests) |
 | `pnpm typecheck` | strict, all workspaces |
 | `pnpm lint` | ESLint flat config, all workspaces |
 | `pnpm spike -- --wave 0` | generate the Gate 0 corpus (~130 credits) |
@@ -270,11 +280,17 @@ packages/relic-core   Pure, no I/O. Imported by both.
 - **Articulated weapons are out of scope.** A chained flail has multiple rigid bodies and no single principal axis; it needs different runtime semantics, not a better heuristic.
 - **The file cache is a JSON index.** Correct for one process; SQLite when the schema stops moving.
 - **Concept selection is a composition heuristic**, not a quality judgment, it rejects off-centre and small-in-frame subjects, nothing subtler.
-- **The client bundle is ~1.5 MB (430 KB gzipped)**, dominated by three.js. The dev surfaces are code-split; the engine itself is on the critical path.
+- **The client bundle is ~1.6 MB**, dominated by three.js. The dev surfaces are code-split (the lab and compare view are 9 KB and 5 KB); the engine itself is on the critical path.
 - **No deploy config ships.** Fastify serves the built client in production, so it runs as one process on one origin, but nothing here has been deployed or containerised and I would not claim otherwise.
 - **Losing forfeits the relic.** A weapon forged from a defeat would stop being a record of how you won.
-- **Bosses do not animate.** They are static generated meshes moved as whole bodies. Meshy has rigging and animation endpoints; wiring them up is the obvious next step and is not done here.
-- **The player has hands, not a body.** First person means no character model, which is a deliberate scope choice rather than an oversight.
+- **Bosses walk, but that is all they animate.** The rigging endpoint ships walking
+  and idle clips, and those are wired up. Attacks, staggers and deaths are still
+  whole-body transforms rather than authored animation, so a boss winds up for a
+  telegraph by moving, not by moving its arms.
+- **The champion is cosmetic.** Third person shows your rigged champion swinging
+  the real generated weapon, and **V** drops you into first person for hands only.
+  But the choice is visual: champions do not change reach, damage or any other
+  number the fight runs on.
 
 ## Where this goes
 
