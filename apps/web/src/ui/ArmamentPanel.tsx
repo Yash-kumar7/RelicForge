@@ -278,8 +278,16 @@ export function ArmamentPanel() {
         "Armament" is the state field's name, not a word a player would reach
         for. The panel is about the thing in your hands, so it says so.
       */}
-      <p className="flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-stone-600">
-        Your weapon
+      {/*
+        A question, at the size the other steps ask theirs.
+
+        This was an eleven-pixel label while the element step asks "Choose your
+        element" in the display face at up to 2.5rem, so two consecutive steps
+        looked like a heading and a footnote. Each step asks one question and
+        they should all sound the same asking it.
+      */}
+      <h2 className="flex items-center gap-3 font-display text-[clamp(1.75rem,2.6vw,2.5rem)] leading-none tracking-[0.12em] text-bone-200">
+        Choose your weapon
         {/*
           The whole explanation, in one place, on request.
 
@@ -304,18 +312,16 @@ export function ArmamentPanel() {
             oversized, heavy thing.
           </span>
         </InfoTip>
-      </p>
+      </h2>
 
       {/*
-        One line, where there was a paragraph.
+        No line under the heading.
 
-        The paragraph explained how a relic's condition is decided, which is true,
-        useful, and not what this screen asks. This screen asks which weapon you
-        are carrying in, and the answer to that is a sentence.
+        It said to carry the iron blade or a relic already won, which is a
+        description of the two things directly beneath it, both of them labelled.
+        The heading asks the question and the list answers it; a sentence between
+        them was narrating the interface.
       */}
-      <p className="mt-3 max-w-lg text-[12px] leading-relaxed text-bone-400">
-        Carry the iron blade, or a relic you have already won.
-      </p>
 
       {/*
         Full-width rows, matching the element step.
@@ -332,7 +338,7 @@ export function ArmamentPanel() {
         underneath. Wrapping each in a relative container puts the mark beside the
         target rather than in it, which is also where a player expects to find it.
       */}
-      <div className="mt-5 flex flex-col gap-5">
+      <div className="mt-10 flex flex-col gap-5">
         {/* The blade you always have. Selecting it unequips the relic. */}
         <div className="relative">
         <button

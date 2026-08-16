@@ -40,8 +40,6 @@ import { asset } from "../lib/backend";
  * baseline down. Two columns that are meant to start on the same line must not
  * derive their height from whatever happens to be inside them.
  */
-const SECTION_HEADING = "flex h-4 items-baseline text-[11px] uppercase leading-4 tracking-[0.4em] text-stone-600";
-
 /** Character select, then loadout, then stage select. */
 const ALL_STEPS = ["Element", "Weapon", "Enemy"] as const;
 
@@ -850,11 +848,10 @@ export function TitleScreen() {
               "Quarry" is a hunting word most players will not have met, and it
               was doing no work that "who you fight" does not do better.
             */}
-            <p className={`${SECTION_HEADING} mb-2`}>Choose who you fight</p>
-            <p className="mt-2 text-[11px] leading-relaxed text-stone-600">
-              Each one forges a different kind of weapon. What you kill becomes part of what you
-              carry.
-            </p>
+            {/* The third question, asked the way the other two are. */}
+            <h2 className="font-display text-[clamp(1.75rem,2.6vw,2.5rem)] leading-none tracking-[0.12em] text-bone-200">
+              Choose who you fight
+            </h2>
 
             <div className="mt-4 flex flex-col gap-1.5">
               {BOSSES.map((boss) => {
