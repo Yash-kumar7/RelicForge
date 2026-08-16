@@ -143,6 +143,7 @@ function AvatarBody({
           <AnimatedCharacter
             handBone={handSocketFor(slug).bone}
             url={`/assets/champions/${slug}/rig/walking.glb`}
+            idleUrl={`/assets/champions/${slug}/rig/idle.glb`}
             height={AVATAR_HEIGHT}
             speed={walkSpeed}
           >

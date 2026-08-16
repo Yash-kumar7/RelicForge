@@ -95,6 +95,7 @@ export function BossModel({
         <AnimatedCharacter
           handBone={handSocketFor(slug).bone}
           url={`/assets/bosses/${slug}/rig/walking.glb`}
+          idleUrl={`/assets/bosses/${slug}/rig/idle.glb`}
           height={BOSS_HEIGHT}
           speed={walking}
         >

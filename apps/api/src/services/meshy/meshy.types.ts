@@ -106,6 +106,40 @@ export const RigTaskSchema = z
   .passthrough();
 export type RigTask = z.infer<typeof RigTaskSchema>;
 
+/**
+ * An animation task, which is a rig plus one action from Meshy's library.
+ *
+ * Separate from RigTaskSchema because the payload is a different shape: rigging
+ * returns a rigged character and its two free clips nested under
+ * basic_animations, while an animation returns one clip at the top level.
+ */
+export const AnimationTaskSchema = z
+  .object({
+    id: z.string(),
+    status: TaskStatusSchema,
+    progress: z.number().nullish(),
+    task_error: TaskErrorSchema,
+    consumed_credits: z.number().nullish(),
+    result: z
+      .object({
+        /*
+         * animation_glb_url, and the name matters.
+         *
+         * This was written as animated_character_glb_url by analogy with
+         * rigging's rigged_character_glb_url, which cost eight tasks: every one
+         * succeeded, the schema silently parsed the result as an object with no
+         * urls in it, and the script reported "animation returned no glb" for
+         * all of them. The clips were sitting there the whole time.
+         */
+        animation_glb_url: maybeUrl,
+        animation_fbx_url: maybeUrl,
+      })
+      .nullish(),
+  })
+  .passthrough();
+
+export type AnimationTask = z.infer<typeof AnimationTaskSchema>;
+
 /** GET /openapi/v1/{kind}, recent tasks, newest first. */
 export const TaskListSchema = z.array(z.unknown());
 

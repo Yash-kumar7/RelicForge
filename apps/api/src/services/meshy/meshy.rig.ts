@@ -1,5 +1,11 @@
 import { meshyJson, withRetry } from "./meshy.client.js";
-import { CreateTaskResponseSchema, RigTaskSchema, type RigTask } from "./meshy.types.js";
+import {
+  AnimationTaskSchema,
+  CreateTaskResponseSchema,
+  RigTaskSchema,
+  type AnimationTask,
+  type RigTask,
+} from "./meshy.types.js";
 import { MeshyTaskFailed, MeshyTimeout } from "../../lib/errors.js";
 
 /**
@@ -72,4 +78,27 @@ export async function createAnimation(rigTaskId: string, actionId: number): Prom
     }),
   );
   return CreateTaskResponseSchema.parse(raw).result;
+}
+
+export async function getAnimationTask(id: string): Promise<AnimationTask> {
+  return AnimationTaskSchema.parse(await meshyJson<unknown>(`/v1/animations/${id}`, { method: "GET" }));
+}
+
+/** Polls an animation task. Same reasoning as waitForRig: no stream endpoint. */
+export async function waitForAnimation(
+  id: string,
+  { pollIntervalMs = 4000, timeoutMs = 8 * 60_000 } = {},
+): Promise<AnimationTask> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const task = await getAnimationTask(id);
+    if (task.status === "SUCCEEDED") return task;
+    if (task.status === "FAILED" || task.status === "CANCELED") {
+      throw new MeshyTaskFailed(
+        `animations/${id} ${task.status}: ${task.task_error?.message ?? "no detail"}`,
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+  }
+  throw new MeshyTimeout(`animations/${id} did not finish in time`);
 }

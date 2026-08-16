@@ -1,7 +1,16 @@
-import { useEffect, useMemo, useRef, type ReactNode, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
-import { Euler, Group, LoopRepeat, Matrix4, Quaternion, Vector3, type Object3D } from "three";
+import {
+  Euler,
+  Group,
+  LoopRepeat,
+  Matrix4,
+  Quaternion,
+  Vector3,
+  type AnimationClip,
+  type Object3D,
+} from "three";
 import { fitCharacter } from "../lib/characterFit";
 import type { HandSocketRatios } from "./handSockets";
 
@@ -34,6 +43,14 @@ export interface AnimatedCharacterProps {
   children?: ReactNode;
   /** Which hand closed around a weapon when this character was generated. */
   handBone?: HandBone;
+  /**
+   * A standing clip, blended against the walk.
+   *
+   * Optional because it is bought separately: rigging includes walking and
+   * running and nothing else, so a character without one falls back to the slow
+   * walk rather than to nothing.
+   */
+  idleUrl?: string | undefined;
 }
 
 /**
@@ -303,11 +320,33 @@ function HandFollower({
   );
 }
 
+/**
+ * Loads a second rigged GLB purely to lift its clip off it.
+ *
+ * The idle arrives as a whole animated character, mesh and all, but the mesh is
+ * the same one already on screen. Only the clip is wanted, and it drives this
+ * skeleton because both come off the same rig, so the bone names match exactly.
+ *
+ * It is a child component rather than a conditional useGLTF, because a hook
+ * cannot be called only when a file happens to exist.
+ */
+function IdleClip({ url, onLoad }: { url: string; onLoad: (clip: AnimationClip) => void }) {
+  const { animations } = useGLTF(url);
+
+  useEffect(() => {
+    const clip = animations[0];
+    if (clip) onLoad(clip);
+  }, [animations, onLoad]);
+
+  return null;
+}
+
 export function AnimatedCharacter({
   url,
   height,
   speed,
   children,
+  idleUrl,
   handBone = "RightHand",
 }: AnimatedCharacterProps) {
   const root = useRef<Group>(null);
@@ -320,7 +359,19 @@ export function AnimatedCharacter({
    * loaded scene is used directly.
    */
   const fit = useMemo(() => fitCharacter(scene as Group, height), [scene, height]);
-  const { actions, names } = useAnimations(animations, root);
+
+  /*
+   * Walk and stand, mixed rather than switched.
+   *
+   * Rigging ships walking and running and nothing else, so a character standing
+   * still had no pose to hold: the walk was run at 18% instead, on the theory
+   * that a very slow walk reads as breathing. It does not. It reads as a boss
+   * marching on the spot, which is what it is, and a boss spends most of a fight
+   * standing inside its own reach.
+   */
+  const [idle, setIdle] = useState<AnimationClip | null>(null);
+  const clips = useMemo(() => (idle ? [...animations, idle] : animations), [animations, idle]);
+  const { actions, names } = useAnimations(clips, root);
   const hand = useMemo(() => findHand(scene, handBone), [scene, handBone]);
 
   /*
@@ -361,32 +412,53 @@ export function AnimatedCharacter({
     });
   });
 
+  /* Both clips run at once and are balanced by weight, so a boss stepping toward
+     you crossfades into a walk rather than snapping into one. */
   useEffect(() => {
-    const first = names[0];
-    if (!first) return undefined;
-    const action = actions[first];
-    if (!action) return undefined;
+    const running = names
+      .map((name) => actions[name])
+      .filter((action): action is NonNullable<typeof action> => Boolean(action));
+    if (!running.length) return undefined;
 
-    action.reset().setLoop(LoopRepeat, Infinity).fadeIn(0.25).play();
+    running.forEach((action, i) => {
+      action.reset().setLoop(LoopRepeat, Infinity).play();
+      // Standing is the safer opening pose: a character that arrives mid-stride
+      // and then settles looks like it was interrupted.
+      action.weight = i === 0 && running.length > 1 ? 0 : 1;
+    });
+
     return () => {
-      action.fadeOut(0.2);
+      running.forEach((action) => action.fadeOut(0.2));
     };
   }, [actions, names]);
 
-  useEffect(() => {
-    const first = names[0];
-    const action = first ? actions[first] : undefined;
-    if (!action) return;
-    // Standing still still plays the clip, very slowly, so the character is
-    // never a statue between steps.
-    action.timeScale = speed <= 0.01 ? IDLE_TIME_SCALE : speed;
-  }, [actions, names, speed]);
+  useFrame((_, delta) => {
+    const walk = names[0] ? actions[names[0]] : undefined;
+    if (!walk) return;
+
+    const standing = names[1] ? actions[names[1]] : undefined;
+    if (!standing) {
+      // No idle bought for this character, so the old behaviour stands: a very
+      // slow walk is still better than a statue.
+      walk.timeScale = speed <= 0.01 ? IDLE_TIME_SCALE : speed;
+      return;
+    }
+
+    // Roughly a fifth of a second to change stance, either way.
+    const rate = Math.min(1, delta * 5);
+    const moving = speed > 0.01;
+    walk.timeScale = Math.max(speed, 0.35);
+    walk.weight += ((moving ? 1 : 0) - walk.weight) * rate;
+    standing.weight += ((moving ? 0 : 1) - standing.weight) * rate;
+  });
 
   return (
     <group ref={root}>
       <group position={fit.offset} scale={fit.scale}>
         <primitive object={scene} />
       </group>
+
+      {idleUrl && <IdleClip url={idleUrl} onLoad={setIdle} />}
 
       {/*
         The weapon follows the hand rather than being parented to it.
