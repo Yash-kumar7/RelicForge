@@ -6,8 +6,6 @@
     "jsx": "react-jsx",
     "types": ["vite/client"],
     "paths": {
-      "@relic/core": ["../../packages/relic-core/src/index.ts"],
-      "@relic/core/*": ["../../packages/relic-core/src/*"],
       "@/*": ["./src/*"]
     }
   },

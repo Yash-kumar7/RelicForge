@@ -4,11 +4,7 @@
     "rootDir": ".",
     "noEmit": true,
     "lib": ["ES2022"],
-    "types": ["node"],
-    "paths": {
-      "@relic/core": ["../../packages/relic-core/src/index.ts"],
-      "@relic/core/*": ["../../packages/relic-core/src/*"]
-    }
+    "types": ["node"]
   },
   "include": ["src", "scripts"]
 }

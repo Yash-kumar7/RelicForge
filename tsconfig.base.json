@@ -16,12 +16,6 @@
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
-
-    "baseUrl": ".",
-    "paths": {
-      "@relic/core": ["packages/relic-core/src/index.ts"],
-      "@relic/core/*": ["packages/relic-core/src/*"]
-    }
+    "noUnusedParameters": true
   }
 }
