@@ -701,17 +701,32 @@ export function TitleScreen() {
                 are the two questions this screen exists to answer: how it plays,
                 and what it leaves you holding.
               */}
-              <p className="max-w-lg text-[13px] leading-relaxed text-bone-200/80">
-                <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
-                  fights{" "}
+              {/*
+                One of these is the choice, the other is its consequence.
+                
+                How a champion fights is what a player is deciding between right
+                now, so it stays on the page. What it tends to forge is a
+                downstream effect of fighting that way, true and worth knowing and
+                not needed to press the button: a second paragraph of it turned
+                the panel into reading, which is what the mark is for.
+              */}
+              <p className="flex max-w-lg items-start gap-2 text-[13px] leading-relaxed text-bone-200/80">
+                <span className="mt-[3px] shrink-0 font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
+                  fights
                 </span>
-                {championFor(affinity).blurb}
-              </p>
-              <p className="mt-3 max-w-lg text-[12px] leading-relaxed text-bone-400">
-                <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
-                  forges{" "}
-                </span>
-                {championFor(affinity).forges}
+                <span>{championFor(affinity).blurb}</span>
+                <InfoTip label={`what ${championFor(affinity).name} forges`}>
+                  <span className="block text-stone-500">
+                    Fighting this way tends to leave a particular kind of weapon behind.
+                  </span>
+                  <span className="mt-2 block text-stone-300">
+                    {championFor(affinity).forges}
+                  </span>
+                  <span className="mt-2 block text-stone-600">
+                    Only a tendency. The weapon comes from the fight you actually have, so
+                    anyone can forge anything by fighting against type.
+                  </span>
+                </InfoTip>
               </p>
             </div>
           </section>
