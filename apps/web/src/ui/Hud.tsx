@@ -192,7 +192,7 @@ export function Hud() {
               {inHand.name.toUpperCase()}
             </p>
             <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
-              legendary {inHand.weaponClass} · one of one
+              legendary {inHand.weaponClass} · yours alone
             </p>
           </>
         ) : (

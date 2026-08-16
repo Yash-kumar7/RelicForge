@@ -126,7 +126,7 @@ export function SpecimenPlate() {
   }, []);
 
   // Long enough to read the plate before it changes. Seeing several distinct
-  // weapons does the work that "one of one" cannot do in prose.
+  // weapons does the work that no amount of prose about uniqueness can.
   useEffect(() => {
     if (relics.length < 2) return undefined;
     const timer = setInterval(() => setIndex((i) => (i + 1) % relics.length), 9000);

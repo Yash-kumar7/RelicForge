@@ -127,8 +127,17 @@ export function RelicRevealScreen({
           >
             {name.toUpperCase()}
           </h1>
+          {/*
+            "One of one" is collector jargon. It means nothing to anyone who has
+            not heard it, and the thing it is trying to say is the single most
+            important claim this screen makes, so it says it.
+          */}
           <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.3em] text-stone-500">
-            Legendary {weaponClass} · one of one
+            Legendary {weaponClass}
+          </p>
+          <p className="mt-2 max-w-sm text-[13px] leading-relaxed text-stone-500">
+            This weapon did not exist before your fight and no copy of it will
+            ever be made.
           </p>
 
           {/*
