@@ -977,17 +977,17 @@ export function TitleScreen() {
                         <span className="mt-1 block text-stone-400">
                           Forged from {boss.name}, and carries its name into the weapon.
                         </span>
+                        {/*
+                          Sentence case, like the rest of the note.
+
+                          It was uppercase mono with wide tracking, which is the
+                          style this interface uses for labels: RANK, IN HAND,
+                          HEALTH. This is not a label, it is the answer to what
+                          the relic is worth, sitting inside a note written in
+                          sentences, and dressing an answer as a label makes it
+                          read as a heading for something that never arrives.
+                        */}
                         {lean.length > 0 ? (
-                          {/*
-                            Sentence case, like the rest of the note.
-                            
-                            It was uppercase mono with wide tracking, which is the
-                            style this interface uses for labels: RANK, IN HAND,
-                            HEALTH. This is not a label, it is the answer to what
-                            the relic is worth, sitting inside a note written in
-                            sentences, and setting it as a label made it read as a
-                            heading for something that never came.
-                          */}
                           <span className="mt-1 block font-mono text-[10px] capitalize text-stone-400">
                             {lean.join(" · ")}
                           </span>
