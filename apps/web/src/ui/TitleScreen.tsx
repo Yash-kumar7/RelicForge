@@ -856,8 +856,17 @@ export function TitleScreen() {
                 type="button"
                 disabled={section === 1 && armament === null}
                 onClick={() => setStep(step + 1)}
+                /*
+                  Sized to the words, not to the column.
+                  
+                  Full width across a panel past 1200 pixels made a step forward
+                  the largest object on a screen whose subject is a champion, and
+                  set it in the middle of a bar of empty outline. Continue is the
+                  smaller of the two commitments this screen asks for, so it
+                  should not be its loudest control.
+                */
                 className={[
-                  "w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
+                  "border px-10 py-2.5 text-[11px] uppercase tracking-[0.3em] transition",
                   section === 1 && armament === null
                     ? "cursor-not-allowed border-ash-800 text-stone-700"
                     : "border-stone-600 text-stone-300 hover:border-stone-400",
@@ -915,8 +924,11 @@ export function TitleScreen() {
                 disabled={bossLevel === null}
                 /* The one press on this screen that starts a fight. */
                 data-sound="confirm"
+                /* Wider and brighter than Continue, because it starts a fight
+                   rather than turning a page, but no longer the width of the
+                   panel. */
                 className={[
-                  "mt-4 w-full border px-10 py-3 text-xs uppercase tracking-[0.35em] transition",
+                  "mt-4 border px-14 py-3 text-xs uppercase tracking-[0.35em] transition",
                   bossLevel === null
                     ? "cursor-not-allowed border-ash-800 text-stone-700"
                     : "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
