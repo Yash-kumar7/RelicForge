@@ -532,10 +532,19 @@ export function TitleScreen() {
                     <span className="font-mono text-[10px] tabular-nums uppercase text-bone-300">
                       {xp} xp
                     </span>
+                    {/*
+                      The unit, on the number.
+
+                      It read "1000 to Legend-Made", and a bare figure beside a
+                      progress bar is as easily a percentage, a countdown or a
+                      score as it is experience. The figure on the left of the
+                      same row says XP; this one was the only number on the screen
+                      that did not.
+                    */}
                     <span className="font-mono text-[9px] tabular-nums text-brass-700">
                       {rank.next === null
-                        ? "max rank"
-                        : `${rank.next - xp} to ${RANKS[rank.index + 1]?.name ?? ""}`}
+                        ? "highest rank"
+                        : `${rank.next - xp} XP to ${RANKS[rank.index + 1]?.name ?? ""}`}
                     </span>
                   </span>
 
