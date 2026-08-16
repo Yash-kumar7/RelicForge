@@ -118,7 +118,23 @@ function withoutRootTurn(clip: AnimationClip): AnimationClip {
  * whatever the animation asked for, so the slow content of the pose survives and
  * the fast swing averages out.
  *
- * The first attempt damped toward a reference pose captured on the first frame,
+ * Expressed as a time constant in seconds rather than a fraction per frame, and
+ * sized against the measurement rather than picked. The idle turns the head
+ * through 83 degrees on roughly a three second loop, and a first-order filter
+ * passes a sway of period T at 1/sqrt(1 + (2*pi*tau/T)^2):
+ *
+ *   tau 0.2s   92% through   77 degrees of sway left
+ *   tau 1.6s   29% through   24 degrees
+ *   tau 3s     16% through   13 degrees
+ *   tau 5s     10% through    8 degrees
+ *
+ * Eight degrees over three seconds reads as weight shifting, which is what an
+ * idle is for. The first version moved 8% of the way each frame, which at 60fps
+ * is a fifth of a second and let 92% of the fidget straight through: it filtered
+ * nothing anybody could see. A fraction per frame is also silently frame-rate
+ * dependent, so the same code steadies a different amount on a 144Hz monitor.
+ *
+ * An earlier attempt damped toward a reference pose captured on the first frame,
  * which is worse than doing nothing. That frame runs before the mixer has
  * written anything, so the reference was the bind pose, which for these rigs is
  * an A-pose with the arms out: the weapon arm was being dragged out sideways
@@ -126,7 +142,7 @@ function withoutRootTurn(clip: AnimationClip): AnimationClip {
  * blade lying flat and swinging through 180 degrees. Filtering needs no
  * reference pose at all, so there is nothing to capture at the wrong time.
  */
-const CARRY_FOLLOW = 0.08;
+const STEADY_SECONDS = 5;
 
 /**
  * Bones the filter holds steady: the weapon arm, and the torso.
@@ -501,18 +517,22 @@ export function AnimatedCharacter({
   const arm = useMemo(() => findSteadied(scene, handBone), [scene, handBone]);
   const smoothed = useRef<Quaternion[] | null>(null);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!arm.length) return;
     if (!smoothed.current) {
       smoothed.current = arm.map((bone) => bone.quaternion.clone());
       return;
     }
+
+    // Exponential, so the amount of steadying is the same at any frame rate.
+    const follow = 1 - Math.exp(-delta / STEADY_SECONDS);
+
     arm.forEach((bone, i) => {
       const filtered = smoothed.current?.[i];
       if (!filtered) return;
-      // Follow the clip slowly, then write the followed value back: the arm ends
+      // Follow the clip slowly, then write the followed value back: the bone ends
       // up at the average of the swing rather than anywhere in particular.
-      filtered.slerp(bone.quaternion, CARRY_FOLLOW);
+      filtered.slerp(bone.quaternion, follow);
       bone.quaternion.copy(filtered);
     });
   });
