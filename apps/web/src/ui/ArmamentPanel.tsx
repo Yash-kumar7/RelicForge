@@ -360,19 +360,19 @@ export function ArmamentPanel() {
 
               <span className="mt-2 block space-y-1">
                 <span className="flex justify-between gap-3">
-                  <span className="text-stone-600">forged from</span>
+                  <span className="text-stone-600">Forged from</span>
                   <span className="text-stone-300">{shown.dna.bossInfluence}</span>
                 </span>
                 <span className="flex justify-between gap-3">
-                  <span className="text-stone-600">element</span>
+                  <span className="text-stone-600">Element</span>
                   <span className="capitalize text-stone-300">{shown.dna.element}</span>
                 </span>
                 <span className="flex justify-between gap-3">
-                  <span className="text-stone-600">silhouette</span>
+                  <span className="text-stone-600">Silhouette</span>
                   <span className="capitalize text-stone-300">{shown.dna.temperament}</span>
                 </span>
                 <span className="flex justify-between gap-3">
-                  <span className="text-stone-600">condition</span>
+                  <span className="text-stone-600">Condition</span>
                   <span className="capitalize text-stone-300">{shown.dna.condition}</span>
                 </span>
               </span>
@@ -389,7 +389,7 @@ export function ArmamentPanel() {
 
               {relicNotes.length > 0 && (
                 <span className="mt-3 block border-t border-ash-800 pt-2">
-                  <span className="block text-stone-600">against a plain blade</span>
+                  <span className="block text-stone-600">Against a plain blade</span>
                   <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.12em] text-stone-400">
                     {relicNotes.join(" · ")}
                   </span>
