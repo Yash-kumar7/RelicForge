@@ -108,6 +108,27 @@ const PIECES: ArenaPiece[] = [
   },
   {
     /*
+     * A test, on one character, before this is done five times.
+     *
+     * Meshy's rigging rebuilds the mesh and re-poses it into an A-pose with the
+     * hands opened, and the rig has one bone per hand and no fingers, so nothing
+     * at runtime can close them. The closed fist exists only in the unrigged
+     * mesh, which cannot walk.
+     *
+     * A gauntlet sat over the open hand is the remaining idea: cover the spread
+     * fingers with a closed one. It is genuinely uncertain, because it has to sit
+     * on a hand it was not modelled for and match armour it has never seen, so it
+     * is generated for the Warden alone. If it works on the boss the player looks
+     * at for an entire fight, it works; if it does not, one mesh is the whole
+     * cost of finding out.
+     */
+    slug: "warden-fist",
+    metres: 0.34,
+    subject:
+      "A single armoured gauntlet clenched into a tight fist, severed cleanly at the wrist with nothing behind it, fingers curled fully into the palm, thumb wrapped across the front of the fingers, a round opening through the grip where a weapon haft passes through, blackened scorched plate armour with glowing molten orange cracks between the plates, ash caked in the joints",
+  },
+  {
+    /*
      * Not per boss: it is the one fixture that belongs to the game rather than to
      * a rung, and being the same object across all five is what makes it read as
      * the place relics come from.
