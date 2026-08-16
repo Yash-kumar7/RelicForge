@@ -108,19 +108,22 @@ const PIECES: ArenaPiece[] = [
   },
   {
     /*
-     * A test, on one character, before this is done five times.
+     * Kept, and not used. This is the record of an experiment that failed.
      *
-     * Meshy's rigging rebuilds the mesh and re-poses it into an A-pose with the
-     * hands opened, and the rig has one bone per hand and no fingers, so nothing
-     * at runtime can close them. The closed fist exists only in the unrigged
-     * mesh, which cannot walk.
+     * Meshy's rigging rebuilds the mesh rather than skinning it, re-posing the
+     * character into an A-pose with the hands opened, and the rig carries one
+     * bone per hand and no fingers, so nothing at runtime can close them. The
+     * closed fist survives only in the unrigged mesh, which cannot walk.
      *
-     * A gauntlet sat over the open hand is the remaining idea: cover the spread
-     * fingers with a closed one. It is genuinely uncertain, because it has to sit
-     * on a hand it was not modelled for and match armour it has never seen, so it
-     * is generated for the Warden alone. If it works on the boss the player looks
-     * at for an entire fight, it works; if it does not, one mesh is the whole
-     * cost of finding out.
+     * Laying a generated closed fist over the open hand was the remaining idea,
+     * and it does not work for a reason no amount of tuning reaches: an open hand
+     * with the fingers spread is wider than the fist meant to replace it, so the
+     * fingers escape the cover from underneath at every angle, and a fist large
+     * enough to swallow them gives the boss a hand twice the size of its head.
+     * On screen it read as two hands, which is worse than one wrong one.
+     *
+     * The subject stays here so nobody spends another 62 credits asking the same
+     * question. The arena keeps the open hand.
      */
     slug: "warden-fist",
     metres: 0.34,
