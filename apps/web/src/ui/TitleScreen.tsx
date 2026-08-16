@@ -862,10 +862,10 @@ export function TitleScreen() {
               Choose who you fight
             </h2>
 
-            {/* The list was squeezed to fit five rows under a paragraph and two
-                footnotes. Those are gone, so the rows can breathe like the
-                champions do on the first step. */}
-            <div className="mt-10 flex flex-col gap-3">
+            {/* Five rows, and the fifth has to be reachable without scrolling.
+                That is the constraint the champions do not have, so this list
+                gets less air than theirs even with the footnotes gone. */}
+            <div className="mt-7 flex flex-col gap-2">
               {BOSSES.map((boss) => {
                 const cleared = isCleared(boss.level);
                 const selected = bossLevel === boss.level;
@@ -912,15 +912,13 @@ export function TitleScreen() {
                       large view lives on the left now, and every row keeps its
                       portrait so the list stays scannable.
                     */}
-                    <span className="flex items-center gap-4 py-3 pl-4 pr-12">
+                    <span className="flex items-center gap-4 py-2.5 pl-4 pr-12">
                       <BossPortrait
                         title={boss.title}
                         locked={false}
-                        /* Halved to 56 when five rows had to share the step with
-                           a paragraph and two footnotes; those are gone. Still
-                           short of the champions' 112, because there are five of
-                           these and three of those. */
-                        className="h-20 w-16 shrink-0 border border-ash-800"
+                        /* 56 was too small once the footnotes went, 80 pushed the
+                           fifth boss off the bottom. */
+                        className="h-16 w-14 shrink-0 border border-ash-800"
                       />
                       <span className="mt-0.5 w-7 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em]">
                         {boss.level.toString().padStart(2, "0")}
