@@ -145,6 +145,27 @@ export function xpFor(event: XpEvent): number {
  * healthy are the same branch, so the maximum is not the sum of everything
  * listed.
  */
+/**
+ * The bonuses, as conditions a player can check themselves.
+ *
+ * The ladder said a fight pays "up to 260 by finishing hurt, never healing,
+ * dodging often, and claiming the relic", which is four judgements and no
+ * thresholds: how hurt, how often, and worth how much each. A player cannot aim
+ * at that, and a number they cannot aim at is a number they cannot earn on
+ * purpose.
+ *
+ * Kept beside xpFor so the two are read together, and asserted equal by a test:
+ * this list is what the interface promises and xpFor is what the game pays, and
+ * they must be the same thing.
+ */
+export const XP_BONUSES: { label: string; amount: number }[] = [
+  { label: "finish at 20% health or less", amount: 80 },
+  { label: "finish above 70%", amount: 30 },
+  { label: "use no heals", amount: 40 },
+  { label: "dodge six times or more", amount: 30 },
+  { label: "claim the relic", amount: 50 },
+];
+
 export function xpRangeFor(bossLevel: number): { min: number; max: number } {
   const worst = xpFor({
     bossLevel,

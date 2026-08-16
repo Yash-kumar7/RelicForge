@@ -17,7 +17,7 @@ import { RankLadder } from "./RankLadder";
 import { SpecimenPlate } from "./SpecimenPlate";
 import { TitleHero } from "./TitleHero";
 import { HowItWorks } from "./HowItWorks";
-import { RANKS, rankFor, useProgress, xpRangeFor } from "../state/useProgress";
+import { RANKS, XP_BONUSES, rankFor, useProgress, xpRangeFor } from "../state/useProgress";
 import { asset } from "../lib/backend";
 
 /**
@@ -982,11 +982,31 @@ export function TitleScreen() {
                         )}
                       </span>
 
+                      {/*
+                        The conditions, with their thresholds and their prices.
+                        
+                        This said "up to 260 by finishing hurt, never healing,
+                        dodging often, and claiming the relic": four judgements
+                        and no numbers. How hurt, how often, and worth what. A
+                        player cannot aim at that, and a bonus nobody can aim at
+                        is one nobody earns deliberately.
+                      */}
                       <span className="mt-3 block border-t border-ash-800 pt-2">
-                        <span className="block text-stone-600">Experience</span>
-                        <span className="mt-1 block text-stone-400">
-                          {pay.min} for the win. Up to {pay.max} by finishing hurt, never healing,
-                          dodging often, and claiming the relic.
+                        <span className="flex justify-between gap-3">
+                          <span className="text-stone-600">Win the fight</span>
+                          <span className="tabular-nums text-stone-300">{pay.min}</span>
+                        </span>
+                        {XP_BONUSES.map((bonus) => (
+                          <span key={bonus.label} className="mt-1 flex justify-between gap-3">
+                            <span className="text-stone-600">{bonus.label}</span>
+                            <span className="tabular-nums text-stone-400">+{bonus.amount}</span>
+                          </span>
+                        ))}
+                        {/* The two health bonuses are the same branch, so the
+                            maximum is not the sum of the list above it. */}
+                        <span className="mt-2 block text-stone-600">
+                          The two health conditions are one or the other, so the most this fight
+                          can pay is {pay.max}.
                         </span>
                       </span>
                     </InfoTip>

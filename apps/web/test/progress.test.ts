@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { RANKS, rankFor, useProgress, xpFor, type XpEvent } from "../src/state/useProgress";
+import {
+  RANKS,
+  XP_BONUSES,
+  rankFor,
+  useProgress,
+  xpFor,
+  type XpEvent,
+} from "../src/state/useProgress";
 
 /**
  * Rank and XP are cosmetic by design, but they must never contradict the relic.
@@ -183,5 +190,70 @@ describe("the ladder and the ranks", () => {
       cumulative += bestAt(level);
       expect(rankFor(cumulative).index).toBeGreaterThanOrEqual(level);
     }
+  });
+});
+
+describe("the advertised bonuses", () => {
+  /*
+   * XP_BONUSES is what the interface promises and xpFor is what the game pays.
+   * They are written separately, because one is a list of conditions a player
+   * reads before a fight and the other is arithmetic applied after it, so this
+   * asserts they describe the same rules.
+   */
+  it("pays exactly what the enemy list advertises", () => {
+    const base = 60;
+
+    const cases: [string, XpEvent, number][] = [
+      [
+        "finish at 20% health or less",
+        { bossLevel: 1, healthRemaining: 20, dodges: 0, healingUsed: 1, forgedRelic: false },
+        80,
+      ],
+      [
+        "finish above 70%",
+        { bossLevel: 1, healthRemaining: 71, dodges: 0, healingUsed: 1, forgedRelic: false },
+        30,
+      ],
+      [
+        "use no heals",
+        { bossLevel: 1, healthRemaining: 50, dodges: 0, healingUsed: 0, forgedRelic: false },
+        40,
+      ],
+      [
+        "dodge six times or more",
+        { bossLevel: 1, healthRemaining: 50, dodges: 6, healingUsed: 1, forgedRelic: false },
+        30,
+      ],
+      [
+        "claim the relic",
+        { bossLevel: 1, healthRemaining: 50, dodges: 0, healingUsed: 1, forgedRelic: true },
+        50,
+      ],
+    ];
+
+    for (const [label, event, expected] of cases) {
+      const advertised = XP_BONUSES.find((bonus) => bonus.label === label);
+      expect(advertised, `${label} is advertised`).toBeDefined();
+      expect(advertised?.amount).toBe(expected);
+      // And the game actually pays it, on top of the win itself.
+      expect(xpFor(event) - base).toBe(expected);
+    }
+  });
+
+  it("advertises every bonus the game pays", () => {
+    // A bonus that exists and is never mentioned is worse than one that does not
+    // exist, because a player cannot tell where their experience came from.
+    const best = xpFor({
+      bossLevel: 1,
+      healthRemaining: 8,
+      dodges: 6,
+      healingUsed: 0,
+      forgedRelic: true,
+    });
+    const advertised = XP_BONUSES.filter((bonus) => bonus.label !== "finish above 70%").reduce(
+      (sum, bonus) => sum + bonus.amount,
+      60,
+    );
+    expect(best).toBe(advertised);
   });
 });
