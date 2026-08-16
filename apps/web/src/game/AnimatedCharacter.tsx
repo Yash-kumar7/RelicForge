@@ -237,8 +237,21 @@ const GRIP_REACH = 0.018;
  * The swing is layered on top of this by the caller, so it reads as a swing
  * from a carried pose rather than replacing the pose.
  */
-const REST_PITCH = -0.3;
-const REST_ROLL = 0.5;
+/*
+ * Tip down, which is how a weapon is carried when it is not being used.
+ *
+ * These were -0.3 and 0.5, a blade held upright and leaned out from the body,
+ * because the pose was chosen to keep an upright shaft clear of an arm hanging
+ * beside it. That was solving the wrong problem: nobody stands holding a sword
+ * point-at-the-sky, they let it hang.
+ *
+ * normalizeRelic returns every weapon blade-up with the grip at the origin, so
+ * carrying it means turning it over. Pitch just short of a half turn puts the tip
+ * at the ground and tilted a little back, and the roll takes it off the leg
+ * rather than through it.
+ */
+const REST_PITCH = 2.85;
+const REST_ROLL = 0.35;
 
 /**
  * Turns the carried pose live, with ?carry, and prints it.
