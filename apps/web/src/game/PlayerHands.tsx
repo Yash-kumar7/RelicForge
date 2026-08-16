@@ -3,7 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Group } from "three";
 import { weaponSway } from "@relic/core";
 import { playerHandle } from "./Player";
-import { swingProgress } from "./swing";
+import { firstPersonSwingPose, swingProgress } from "./swing";
 import { useGameStore } from "../state/useGameStore";
 import { themeFor } from "./theme";
 
@@ -41,9 +41,10 @@ export function PlayerHands({ twoHanded = true }: { twoHanded?: boolean }) {
     group.translateX(0.32 + sway.x);
     group.translateY(-0.42 + sway.y);
     group.translateZ(-0.6);
-    group.rotateX(0.18 - swing * 0.5);
-    group.rotateY(-0.26);
-    group.rotateZ(-0.34 - swing);
+    const [pitch, yaw, roll] = firstPersonSwingPose(swing);
+    group.rotateX(0.18 + pitch);
+    group.rotateY(-0.26 + yaw);
+    group.rotateZ(-0.34 + roll);
   });
 
   if (phase !== "FIGHTING" && phase !== "EQUIPPED") return null;

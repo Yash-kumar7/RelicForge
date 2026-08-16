@@ -42,3 +42,26 @@ export function swingProgress(
   const struck = (t - windup) / (1 - windup);
   return 0.25 + Math.sin(struck * Math.PI) * amplitude;
 }
+
+/**
+ * How a first-person swing turns, as one set of numbers.
+ *
+ * Three things carry this pose and have to agree exactly or the blade drifts out
+ * of the gauntlets mid-swing: the hands, the starter sword and the relic socket.
+ * They were three copies of the same literals, already disagreeing by 0.05 on
+ * pitch, which is the kind of drift nobody notices until the hands and the sword
+ * are visibly two objects.
+ *
+ * The direction was also wrong in all three. The blade is carried out to the
+ * right, and rolling further negative takes it clockwise on screen, so the tip
+ * swept further right and down, out of the frame and away from whatever was in
+ * front of it. That is a sword leaving to the right and coming back rather than
+ * cutting through anything.
+ *
+ * Rolling positive is counter-clockwise on screen and yawing positive turns the
+ * blade across the view, so together they carry the tip from the right shoulder
+ * down across the body, which is the way a right hand cuts.
+ */
+export function firstPersonSwingPose(swing: number): [number, number, number] {
+  return [-swing * 0.5, swing * 0.55, swing * 0.85];
+}

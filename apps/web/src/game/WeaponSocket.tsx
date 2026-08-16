@@ -5,7 +5,7 @@ import { Group, Quaternion, Vector3 } from "three";
 import { attachRelic, normalizeRelic, weaponSway, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
 import { playerHandle } from "./Player";
-import { swingProgress } from "./swing";
+import { firstPersonSwingPose, swingProgress } from "./swing";
 
 /**
  * Mounts a generated relic in the player's hand.
@@ -65,9 +65,10 @@ export function WeaponSocket({ modelUrl, weaponClass }: WeaponSocketProps) {
     group.translateX(pose.position[0] + sway.x);
     group.translateY(pose.position[1] + sway.y);
     group.translateZ(pose.position[2]);
-    group.rotateX(pose.rotation[0] - swing * 0.55);
-    group.rotateY(pose.rotation[1]);
-    group.rotateZ(pose.rotation[2] - swing);
+    const [pitch, yaw, roll] = firstPersonSwingPose(swing);
+    group.rotateX(pose.rotation[0] + pitch);
+    group.rotateY(pose.rotation[1] + yaw);
+    group.rotateZ(pose.rotation[2] + roll);
   });
 
   return (
