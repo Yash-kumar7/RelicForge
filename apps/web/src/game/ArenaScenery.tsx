@@ -78,23 +78,31 @@ const SCENERY: Record<number, Scenery> = {
   4: {
     slug: "king-tree",
     metres: 12,
+    /* Six, and close in. The roots that used to cross the floor are gone, so the
+       trees carry this rung by themselves, and a wood is a thing you are inside
+       rather than something on a horizon. */
     placements: [
-      { turn: 0.05, radius: 17, scale: 1.1, tilt: 0.06 },
-      { turn: 0.29, radius: 21, scale: 1.35, tilt: -0.05 },
-      { turn: 0.44, radius: 16.5, scale: 0.8, tilt: 0.1 },
-      { turn: 0.63, radius: 24, scale: 1.6 },
-      { turn: 0.88, radius: 19, scale: 1.0, tilt: -0.09 },
+      { turn: 0.03, radius: 16.5, scale: 1.15, tilt: 0.06 },
+      { turn: 0.21, radius: 20, scale: 1.4, tilt: -0.05 },
+      { turn: 0.39, radius: 15.5, scale: 0.85, tilt: 0.1 },
+      { turn: 0.55, radius: 22, scale: 1.65 },
+      { turn: 0.72, radius: 17, scale: 1.05, tilt: -0.09 },
+      { turn: 0.88, radius: 19.5, scale: 1.3, tilt: 0.04 },
     ],
   },
   5: {
     slug: "sovereign-spire",
     metres: 14,
-    /* Far out and few. This rung has no wall and one pool of light, and the
-       spires are there to give the emptiness a scale rather than to fill it. */
+    /* Closer than they were. At 27 to 38 units they were far enough to be
+       scenery in another postcode: the emptiest rung in the game was reading as
+       an empty one rather than a vast one, which needs something near enough to
+       measure the distance against. */
     placements: [
-      { turn: 0.18, radius: 30, scale: 1.4 },
-      { turn: 0.57, radius: 38, scale: 1.9 },
-      { turn: 0.86, radius: 27, scale: 1.1 },
+      { turn: 0.12, radius: 19, scale: 1.1, tilt: 0.04 },
+      { turn: 0.34, radius: 26, scale: 1.5 },
+      { turn: 0.58, radius: 21, scale: 1.25, tilt: -0.05 },
+      { turn: 0.79, radius: 31, scale: 1.9 },
+      { turn: 0.94, radius: 23, scale: 1.35, tilt: 0.06 },
     ],
   },
 };

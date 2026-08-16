@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { CanvasTexture, type Mesh } from "three";
+import { CanvasTexture, type Group, type Mesh } from "three";
 import { ARENA_RADIUS } from "./arenaGeometry";
 import type { ArenaTheme } from "./theme";
 
@@ -205,28 +205,23 @@ function GildedHall({ theme }: { theme: ArenaTheme }) {
  * gaps only, which is what a canopy does, and it is the darkest rung for it.
  */
 function Overgrowth({ theme }: { theme: ArenaTheme }) {
+  /*
+   * The roots are gone from the floor.
+   *
+   * Eight cylinders lay across the arena at radius three to eight, which is
+   * inside the ring the fight happens in, so the boss walked through them and so
+   * did the player: the same untouchable scenery that got the pillars deleted,
+   * except in the way rather than around the edge. Untextured and twenty metres
+   * long, they read as pipes on a green floor rather than as anything that grew.
+   *
+   * What made this rung work was never the roots. It is the canopy: a ceiling
+   * where every other arena has open dark, with light through two gaps, which is
+   * the only rung in the game that feels covered. The generated trees stand
+   * outside the floor and carry the overgrowth, where they can be looked at
+   * without being walked through.
+   */
   return (
     <group>
-      {Array.from({ length: 8 }, (_, i) => {
-        const wobble = ((i * 37) % 11) / 11;
-        const angle = (i / 8) * Math.PI * 2 + wobble * 0.7;
-        const length = 12 + wobble * 10;
-        const thickness = 0.3 + wobble * 0.45;
-        const radius = 3 + wobble * 5;
-        return (
-          <mesh
-            key={i}
-            position={[Math.cos(angle) * radius, thickness * 0.7, Math.sin(angle) * radius]}
-            /* Laid along the floor, turned to its own bearing, and rolled a
-               little so no two read as the same extruded tube. */
-            rotation={[Math.PI / 2, wobble * 0.5, -angle + wobble * 0.3]}
-          >
-            <cylinderGeometry args={[thickness, thickness * 1.4, length, 8]} />
-            <meshStandardMaterial color={theme.pillar} roughness={1} />
-          </mesh>
-        );
-      })}
-
       <mesh position={[0, 8.6, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <circleGeometry args={[ARENA_RADIUS + 1, 48]} />
         <meshStandardMaterial color={theme.wall} roughness={1} />
@@ -245,22 +240,75 @@ function Overgrowth({ theme }: { theme: ArenaTheme }) {
 }
 
 /**
- * Hollow Sovereign: nothing around the floor at all.
+ * Hollow Sovereign: the room has come apart.
  *
- * One pool under the fight and almost nothing beyond it, so the dark past the
- * edge has no depth to it. Every rung lost its wall in the end, but this is the
- * one built around not having one: the spires stand further out and fewer, to
- * give the emptiness a scale rather than to fill it.
+ * This rung was defined by not having a wall, which stopped meaning anything the
+ * moment every arena lost its wall: the last fight in the game became the others
+ * with the features removed, which is the emptiest a room can be without being a
+ * mistake.
+ *
+ * It gets the thing the boss is: a crown of floating shards above an empty helm.
+ * The floor is ringed by pieces of something that used to be a room, hanging
+ * where they broke and turning too slowly to be watched. Nothing is holding them
+ * up, which is the point, and it is the only rung where the architecture is in
+ * the air rather than on the ground.
  */
 function VoidField({ theme }: { theme: ArenaTheme }) {
+  const shards = useRef<Group>(null);
+
+  /*
+   * One rotation every four minutes.
+   *
+   * Fast enough that a player who looks twice sees it has moved, slow enough
+   * that nothing appears to be spinning. A ring of debris that visibly turns
+   * reads as a machine; one that has drifted a little reads as a place.
+   */
+  useFrame((_, delta) => {
+    if (shards.current) shards.current.rotation.y += delta * 0.026;
+  });
+
+  const pieces = useMemo(
+    () =>
+      Array.from({ length: 22 }, (_, i) => {
+        const wobble = ((i * 37) % 13) / 13;
+        const drift = ((i * 61) % 17) / 17;
+        const angle = (i / 22) * Math.PI * 2 + wobble * 0.5;
+        const radius = ARENA_RADIUS - 2 + drift * 12;
+        return {
+          key: i,
+          position: [
+            Math.cos(angle) * radius,
+            2.5 + wobble * 11,
+            Math.sin(angle) * radius,
+          ] as [number, number, number],
+          rotation: [wobble * 3, drift * 3, wobble * 2] as [number, number, number],
+          size: 0.5 + drift * 2.4,
+        };
+      }),
+    [],
+  );
+
   return (
-    <Pools
-      pools={[
-        { radius: 0, turn: 0, size: 13, strength: 0.34, lit: true },
-        { radius: 10.5, turn: 0.5, size: 7, strength: 0.14 },
-      ]}
-      colour={theme.rune}
-    />
+    <group>
+      <group ref={shards}>
+        {pieces.map((piece) => (
+          <mesh key={piece.key} position={piece.position} rotation={piece.rotation}>
+            {/* Slabs rather than rocks: this was built and then broken. */}
+            <boxGeometry args={[piece.size, piece.size * 0.22, piece.size * 0.75]} />
+            <meshStandardMaterial color={theme.pillar} roughness={0.85} metalness={0.3} />
+          </mesh>
+        ))}
+      </group>
+
+      <Pools
+        pools={[
+          { radius: 0, turn: 0, size: 13, strength: 0.34, lit: true },
+          { radius: 10.5, turn: 0.5, size: 7, strength: 0.14 },
+          { radius: 9.2, turn: 0.17, size: 6, strength: 0.12 },
+        ]}
+        colour={theme.rune}
+      />
+    </group>
   );
 }
 
