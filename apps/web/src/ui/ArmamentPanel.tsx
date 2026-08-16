@@ -102,8 +102,11 @@ function AttackBreakdown({
   const light = attackSpec("light", traits);
   const heavy = attackSpec("heavy", traits);
 
+  /* No rule above these. It separated the attacks from the name when both were
+     blocks of text; they are two bars now and the space divides them on its
+     own. */
   return (
-    <span className="mt-3 block space-y-1.5 border-t border-ash-800 pt-3 pr-8">
+    <span className="mt-4 block space-y-2 pr-8">
       {ATTACKS.map((attack) => {
         const spec = attack.kind === "heavy" ? heavy : light;
         return (
@@ -122,7 +125,11 @@ function AttackBreakdown({
              question that has not been asked yet. What matters here is that one
              attack does 30 and the other 72. */
           <span key={attack.kind} className="flex items-center gap-3">
-            <span className="w-28 shrink-0 font-display text-sm tracking-[0.1em] text-stone-300">
+            {/* Wide enough for the longer of the two names on one line. At w-28
+                "Quick attack" broke after the first word and the row became two
+                lines tall, which put the bar beside a wrapped label and knocked
+                the two attacks out of alignment with each other. */}
+            <span className="w-36 shrink-0 whitespace-nowrap font-display text-sm tracking-[0.1em] text-stone-300">
               {attack.name}
             </span>
 
