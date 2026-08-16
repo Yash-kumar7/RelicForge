@@ -17,7 +17,6 @@ const ATTACKS = [
   {
     kind: "light" as const,
     name: "Quick attack",
-    button: "left click",
     /* The tactical half only. What leaning on it forges is behind the mark on
        the heading, since it is a consequence rather than a reason to press it. */
     blurb: "Ends before the boss can punish it.",
@@ -25,7 +24,6 @@ const ATTACKS = [
   {
     kind: "heavy" as const,
     name: "Strong attack",
-    button: "right click",
     blurb: "Staggers the boss, but commits you for longer than its wind-up lasts.",
   },
 ];
@@ -74,7 +72,7 @@ function AttackNotes() {
       {ATTACKS.map((attack) => (
         <span key={attack.kind} className="mt-1 block">
           <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-500">
-            {attack.button}
+            {attack.name}
           </span>{" "}
           <span className="text-stone-400">{attack.blurb}</span>
         </span>
@@ -101,12 +99,14 @@ function AttackBreakdown({ traits, dim = false }: { traits: RelicTraits; dim?: b
             what is left is the comparison, and a comparison reads better on one
             line anyway.
           */
+          /* No buttons named here. Which mouse button throws which attack is
+             something a player needs while fighting, and the briefing and the HUD
+             both say it; on the screen where a weapon is chosen it is answering a
+             question that has not been asked yet. What matters here is that one
+             attack does 30 and the other 72. */
           <span key={attack.kind} className="flex items-baseline gap-3">
             <span className="font-display text-sm tracking-[0.1em] text-stone-300">
               {attack.name}
-            </span>
-            <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-stone-700">
-              {attack.button}
             </span>
             {/* The unselected side stays legible but quiet, so which weapon is
                 in hand is still obvious at a glance. */}
