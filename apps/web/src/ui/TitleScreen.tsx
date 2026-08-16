@@ -257,7 +257,9 @@ export function TitleScreen() {
         its own instead, so text still sets to a readable measure.
       */}
       <div
-        className="mx-auto grid h-full w-full max-w-none items-center gap-12 lg:grid-cols-[1.05fr_1fr] xl:gap-20"
+        /* The figure takes the room the column gives back, rather than the page
+           spreading into margin on very wide screens. */
+        className="mx-auto grid h-full w-full max-w-none items-center gap-12 lg:grid-cols-[1.25fr_1fr] xl:gap-16"
       >
         {/* Left: the champion, as large as the viewport allows. */}
         {/*
@@ -343,7 +345,16 @@ export function TitleScreen() {
           place on every step, and the champion beside them is what should be
           using the height.
         */}
-        <div className="flex max-h-full max-w-2xl flex-col overflow-y-auto py-4 pr-2">
+        {/*
+          A measure, not the whole panel.
+
+          Uncapped, the column grew with the window: on a wide screen the rows
+          stretched past a thousand pixels while their text stayed at reading
+          size, so each one was a short sentence with a long empty tail. Capped
+          it keeps the shape it was designed at, and the space left over goes to
+          the champion rather than being distributed as margin.
+        */}
+        <div className="flex max-h-full max-w-3xl flex-col overflow-y-auto py-4 pr-2">
           {/*
             One decision at a time.
 
@@ -703,10 +714,11 @@ export function TitleScreen() {
                     gap between 80 and 130 is the length of the difference
                     rather than a fraction of some invisible ceiling.
                   */}
-                  {/* Capped at 16rem while the column runs past 1200px, so a bar
-                      meant to compare three numbers stopped a third of the way
-                      across and left the row looking unfinished. */}
-                  <span className="mt-2 flex max-w-md items-center gap-3">
+                  {/* Uncapped. It was 16rem, then 28, and both stopped short of
+                      the row's own edge, which left every card looking cut off
+                      and the mark in its corner stranded in empty space. The bar
+                      compares three numbers, so it should use the width it has. */}
+                  <span className="mt-2 flex items-center gap-3 pr-10">
                     <span className="font-mono text-[10px] tabular-nums text-bone-300">
                       {championStats(championFor(a.id)).health}
                       <span className="ml-1 text-[9px] uppercase tracking-[0.2em] text-brass-700">
