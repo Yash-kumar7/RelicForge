@@ -128,16 +128,25 @@ export function RelicRevealScreen({
             {name.toUpperCase()}
           </h1>
           {/*
-            "One of one" is collector jargon. It means nothing to anyone who has
-            not heard it, and the thing it is trying to say is the single most
-            important claim this screen makes, so it says it.
+            Says the true thing, not the flattering one.
+            
+            This read "no copy of it will ever be made", which is false and
+            falsifiable in about a minute: the cache key is a hash of the compiled
+            prompt, so two fights that produce the same DNA produce the same
+            relic, by design. That is what makes a demo replayable and level one
+            instant. Claiming uniqueness the system does not provide is worse than
+            claiming nothing, because the one thing this project is asking to be
+            believed is the link between a fight and a weapon.
+            
+            What is actually true is the interesting part anyway: nothing here was
+            picked from a list. Fight differently and a different weapon comes out.
           */}
           <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.3em] text-stone-500">
             Legendary {weaponClass}
           </p>
           <p className="mt-2 max-w-sm text-[13px] leading-relaxed text-stone-500">
-            This weapon did not exist before your fight and no copy of it will
-            ever be made.
+            Nothing about this was chosen from a list. It was built from the way
+            you fought, and fighting differently builds something else.
           </p>
 
           {/*

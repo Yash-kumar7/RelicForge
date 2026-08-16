@@ -120,7 +120,7 @@ export function LoadoutPanel() {
                       ["left click", `${damage.light} damage`],
                       ["right click", `${damage.heavy} damage`],
                       ["origin", "loot table"],
-                      ["copies", "eleven million"],
+                      ["made from", "nothing you did"],
                     ].map(([k, v]) => (
                       <div key={k} className="flex justify-between border-b border-ash-800/60 pb-1">
                         <dt className="uppercase tracking-[0.15em] text-stone-700">{k}</dt>
@@ -156,7 +156,7 @@ export function LoadoutPanel() {
                           ["element", earned.dna?.element ?? "-"],
                           ["temperament", earned.dna?.temperament ?? "-"],
                           ["condition", earned.dna?.condition ?? "-"],
-                          ["copies", "none, ever"],
+                          ["made from", "how you fought"],
                         ].map(([k, v]) => (
                           <div key={k} className="flex justify-between border-b border-ash-800/60 pb-1">
                             <dt className="uppercase tracking-[0.15em] text-stone-700">{k}</dt>
@@ -181,8 +181,8 @@ export function LoadoutPanel() {
                           </div>
                         ))}
                         <div className="flex justify-between border-b border-ash-800/60 pb-1">
-                          <dt className="uppercase tracking-[0.15em] text-stone-700">copies</dt>
-                          <dd className="text-stone-500">none, ever</dd>
+                          <dt className="uppercase tracking-[0.15em] text-stone-700">made from</dt>
+                          <dd className="text-stone-500">how you fight</dd>
                         </div>
                       </dl>
                     </>
