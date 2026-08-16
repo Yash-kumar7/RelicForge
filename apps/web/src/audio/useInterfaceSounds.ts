@@ -5,25 +5,28 @@ import { sfx, unlockAudio } from "./sfx";
  * Gives every screen outside the arena a voice, from one place.
  *
  * Every sound this game had answered something happening in the fight, and the
- * three screens in front of it were silent: a champion could be chosen, a weapon
+ * screens in front of it were silent: a champion could be chosen, a weapon
  * equipped and a boss picked without the game acknowledging any of it. Silence
- * reads as a click that did not register, which is why players press things
- * twice.
+ * reads as a press that did not register, which is why people click things twice.
  *
- * Delegated rather than wired per control. There are buttons on the title
- * screen, the champion step, the weapon step, the ladder, the loadout panel, the
- * briefing, the defeat screen and the reveal, and hanging a handler on each one
- * is both a lot of edits and a promise nobody keeps: the next button added would
- * be silent, and nothing would say so. One listener at the document covers
- * everything that exists and everything added later.
+ * Presses only. There was a hover sound, and it was a mistake for a reason worth
+ * keeping: pointerover fires when an element arrives under the cursor and does
+ * not care which of the two moved, so scrolling a page of buttons past a resting
+ * pointer fired it once per button and the interface rattled. That was patched
+ * with a scroll guard, a movement check and a repeat timer, three pieces of
+ * machinery to make a sound behave, none of which anybody asked for. A press is
+ * an unambiguous act by the player and needs none of them.
  *
- * A control opts into the heavier sound with data-sound="confirm". Everything
- * else is a select, which is the right default: most presses choose between
- * things rather than commit to them.
+ * Delegated from the document rather than wired per control. Buttons live on the
+ * title screen, three setup steps, the ladder, the loadout, the briefing, the
+ * defeat screen and the reveal, and hanging a handler on each is both a lot of
+ * edits and a promise nobody keeps: the next button added would be silent and
+ * nothing would say so.
+ *
+ * A control opts into a heavier sound with data-sound="confirm", or none at all
+ * with data-sound="none". Everything else is a select, which is the right
+ * default: most presses choose between things rather than commit to them.
  */
-
-/** How long a hover stays quiet after firing, so a shaking cursor is not a rattle. */
-const HOVER_QUIET_MS = 90;
 
 function soundable(target: EventTarget | null): HTMLElement | null {
   if (!(target instanceof Element)) return null;
@@ -33,38 +36,19 @@ function soundable(target: EventTarget | null): HTMLElement | null {
 
 export function useInterfaceSounds(): void {
   useEffect(() => {
-    let lastHoverAt = 0;
-    let lastHovered: HTMLElement | null = null;
-
     /*
      * Audio cannot start before a gesture, and the first gesture is usually the
      * one being sounded. Unlocking on pointerdown rather than on click means the
-     * context is ready by the time the click's own sound is asked for.
+     * context has begun resuming before the click's own sound is asked for.
      */
     const unlock = () => unlockAudio();
-
-    const onOver = (event: PointerEvent) => {
-      const el = soundable(event.target);
-      if (!el || el === lastHovered) return;
-      lastHovered = el;
-
-      // Nothing for a control that cannot be used: a hover is an invitation.
-      if (el.hasAttribute("disabled") || el.getAttribute("aria-disabled") === "true") return;
-
-      const now = performance.now();
-      if (now - lastHoverAt < HOVER_QUIET_MS) return;
-      lastHoverAt = now;
-      sfx.hover();
-    };
-
-    const onOut = (event: PointerEvent) => {
-      if (soundable(event.target) === lastHovered) lastHovered = null;
-    };
 
     const onClick = (event: MouseEvent) => {
       const el = soundable(event.target);
       if (!el) return;
 
+      // A control that cannot be used still answers. A button that says nothing
+      // when pressed is indistinguishable from one that is broken.
       if (el.hasAttribute("disabled") || el.getAttribute("aria-disabled") === "true") {
         sfx.denied();
         return;
@@ -78,14 +62,10 @@ export function useInterfaceSounds(): void {
     };
 
     window.addEventListener("pointerdown", unlock, { once: true });
-    document.addEventListener("pointerover", onOver);
-    document.addEventListener("pointerout", onOut);
     document.addEventListener("click", onClick);
 
     return () => {
       window.removeEventListener("pointerdown", unlock);
-      document.removeEventListener("pointerover", onOver);
-      document.removeEventListener("pointerout", onOut);
       document.removeEventListener("click", onClick);
     };
   }, []);

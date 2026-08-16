@@ -170,16 +170,15 @@ function emitNoise(duration: number, gain: number, filterHz: number, delay: numb
  * the smallest sounds in the game, still out of the way in a tenth of a second,
  * but present on laptop speakers, which is where this will be judged.
  *
+ * There is no hover cue. It existed, and it fired on scroll: pointerover does not
+ * care whether the cursor moved or the page did, so a column of buttons passing a
+ * resting pointer rattled. A press is unambiguous and needs no guarding.
+ *
  * They belong to the same family as the rest: struck metal, not a chime. Two
  * partials a fifth apart, low and short, so the interface sounds like the forge
  * it is attached to rather than like an operating system.
  */
 const UI = {
-  /** Passing over something choosable. The lightest sound in the game. */
-  hover: () => {
-    tone({ frequency: 760, duration: 0.06, type: "triangle", gain: 0.09 });
-  },
-
   /** Picking one thing out of several. */
   select: () => {
     tone({ frequency: 520, duration: 0.09, type: "triangle", gain: 0.24 });
