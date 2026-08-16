@@ -7,6 +7,7 @@ import { Group, Quaternion, Vector3 } from "three";
 import { normalizeRelic, type RelicDNA, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
 import { api } from "../lib/backend";
+import { relicHintForUrl } from "../game/orientationHints";
 
 /**
  * The relic, presented as a catalogued specimen rather than as a hero image.
@@ -59,8 +60,8 @@ function SpinningRelic({ modelUrl, weaponClass }: { modelUrl: string; weaponClas
   const model = useMemo(() => scene.clone(true), [scene]);
 
   const canonical = useMemo(
-    () => normalizeRelic(meshSampleFrom(model), weaponClass),
-    [model, weaponClass],
+    () => normalizeRelic(meshSampleFrom(model), weaponClass, relicHintForUrl(modelUrl)),
+    [model, weaponClass, modelUrl],
   );
   const quaternion = useMemo(() => {
     const [x, y, z, w] = canonical.quaternion;

@@ -6,6 +6,7 @@ import { attachRelic, normalizeRelic, weaponSway, type WeaponClass } from "@reli
 import { meshSampleFrom } from "../lib/meshSample";
 import { playerHandle } from "./Player";
 import { firstPersonSwingPose, swingProgress } from "./swing";
+import { relicHintForUrl } from "./orientationHints";
 
 /**
  * Mounts a generated relic in the player's hand.
@@ -34,10 +35,10 @@ export function WeaponSocket({ modelUrl, weaponClass }: WeaponSocketProps) {
 
   // Canonicalize once. The same function runs in Node against synthetic
   // geometry in the test suite, one implementation, two runtimes.
-  const canonical = useMemo(() => normalizeRelic(meshSampleFrom(model), weaponClass), [
-    model,
-    weaponClass,
-  ]);
+  const canonical = useMemo(
+    () => normalizeRelic(meshSampleFrom(model), weaponClass, relicHintForUrl(modelUrl)),
+    [model, weaponClass, modelUrl],
+  );
 
   const pose = useMemo(() => attachRelic(canonical, weaponClass), [canonical, weaponClass]);
 

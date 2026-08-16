@@ -6,6 +6,7 @@ import { normalizeRelic, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
 import { ARENA_RADIUS } from "./arenaGeometry";
 import { sfx } from "../audio/sfx";
+import { relicHintForUrl } from "./orientationHints";
 
 /**
  * The reveal.
@@ -29,8 +30,8 @@ export function RelicPedestal({
 
   const model = useMemo(() => scene.clone(true), [scene]);
   const canonical = useMemo(
-    () => normalizeRelic(meshSampleFrom(model), weaponClass),
-    [model, weaponClass],
+    () => normalizeRelic(meshSampleFrom(model), weaponClass, relicHintForUrl(modelUrl)),
+    [model, weaponClass, modelUrl],
   );
 
   const quaternion = useMemo(() => {

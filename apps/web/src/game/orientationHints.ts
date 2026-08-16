@@ -38,3 +38,33 @@ export const BOSS_WEAPON_HINTS: Record<string, OrientationHint> = {
 export function bossWeaponHint(slug: string): OrientationHint | undefined {
   return BOSS_WEAPON_HINTS[slug];
 }
+
+/**
+ * Relics whose ends the heuristic cannot separate, by id.
+ *
+ * A blade is told apart from its own grip by taper: the tip end is the thin one.
+ * That works until a weapon is close to symmetric, and Skyfall's Creed is, with
+ * a mean girth of 0.021 at one end against 0.028 at the other. Seven thousandths
+ * of a unit is not a decision, it is a coin toss, and this one came up wrong: the
+ * mesh arrives tip down and was normalized as though it were tip up.
+ *
+ * Keyed by id rather than by name, because a name is a display string and two
+ * relics can share one.
+ */
+export const RELIC_HINTS: Record<string, OrientationHint> = {
+  // Measured, not guessed: the thin end sits at the bottom of this mesh.
+  "c47e069f-7441-4eb5-9eeb-e9b49bfb5177": { flip: true },
+};
+
+/**
+ * The hint for a relic, found from the url it is loaded by.
+ *
+ * Resolved here rather than passed down from each caller, because a relic is
+ * drawn in six places, and the boss weapons already taught this lesson: fixing
+ * an orientation at one call site leaves it wrong at the others. Anything that
+ * decides how an asset is oriented has to travel with the asset.
+ */
+export function relicHintForUrl(url: string): OrientationHint | undefined {
+  const id = /\/relics\/([^/]+)\//.exec(url)?.[1];
+  return id ? RELIC_HINTS[id] : undefined;
+}

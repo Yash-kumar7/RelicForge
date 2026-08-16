@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Quaternion, Vector3, type Group } from "three";
 import { normalizeRelic, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
+import { relicHintForUrl } from "../game/orientationHints";
 
 /**
  * The relic, on a screen of its own.
@@ -37,8 +38,8 @@ function TurningRelic({ modelUrl, weaponClass }: { modelUrl: string; weaponClass
    * to the one the player is about to hold.
    */
   const canonical = useMemo(
-    () => normalizeRelic(meshSampleFrom(model), weaponClass),
-    [model, weaponClass],
+    () => normalizeRelic(meshSampleFrom(model), weaponClass, relicHintForUrl(modelUrl)),
+    [model, weaponClass, modelUrl],
   );
   const quaternion = useMemo(() => {
     const [x, y, z, w] = canonical.quaternion;

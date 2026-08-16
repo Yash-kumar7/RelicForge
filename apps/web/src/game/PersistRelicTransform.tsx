@@ -3,6 +3,7 @@ import { useGLTF } from "@react-three/drei";
 import type { WeaponClass, RelicTransform } from "@relic/core";
 import { normalizeRelic } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
+import { relicHintForUrl } from "./orientationHints";
 
 /**
  * Computes and persists a relic's canonical transform, once, invisibly.
@@ -29,8 +30,8 @@ export function PersistRelicTransform({
   const { scene } = useGLTF(modelUrl);
 
   const transform = useMemo(
-    () => normalizeRelic(meshSampleFrom(scene), weaponClass),
-    [scene, weaponClass],
+    () => normalizeRelic(meshSampleFrom(scene), weaponClass, relicHintForUrl(modelUrl)),
+    [scene, weaponClass, modelUrl],
   );
 
   useEffect(() => {

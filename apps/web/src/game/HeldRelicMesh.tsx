@@ -4,6 +4,7 @@ import { Quaternion, Vector3 } from "three";
 import { normalizeRelic, type OrientationHint, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
 import { relicScale } from "./weaponScale";
+import { relicHintForUrl } from "./orientationHints";
 
 /**
  * A generated relic in canonical held form, geometry only.
@@ -30,9 +31,19 @@ export function HeldRelicMesh({
   const { scene } = useGLTF(url);
   const model = useMemo(() => scene.clone(true), [scene]);
 
+  /*
+   * A hint the caller gave, or the one that belongs to this relic.
+   *
+   * Looked up from the url rather than threaded through six call sites. The boss
+   * weapons already taught this: an orientation fixed in one place stayed wrong
+   * everywhere else it was drawn, so what decides it has to travel with the
+   * asset.
+   */
+  const resolved = useMemo(() => hint ?? relicHintForUrl(url), [hint, url]);
+
   const canonical = useMemo(
-    () => normalizeRelic(meshSampleFrom(model), weaponClass, hint),
-    [model, weaponClass, hint],
+    () => normalizeRelic(meshSampleFrom(model), weaponClass, resolved),
+    [model, weaponClass, resolved],
   );
 
   const quaternion = useMemo(() => {

@@ -9,6 +9,7 @@ import { meshSampleFrom } from "../lib/meshSample";
 import { BOSSES } from "../game/bosses";
 import { championFor } from "../game/champions";
 import { api, asset } from "../lib/backend";
+import { relicHintForUrl } from "../game/orientationHints";
 
 /**
  * The title screen.
@@ -55,8 +56,8 @@ function FloatingRelic({ modelUrl, weaponClass }: { modelUrl: string; weaponClas
   const model = useMemo(() => scene.clone(true), [scene]);
 
   const canonical = useMemo(
-    () => normalizeRelic(meshSampleFrom(model), weaponClass),
-    [model, weaponClass],
+    () => normalizeRelic(meshSampleFrom(model), weaponClass, relicHintForUrl(modelUrl)),
+    [model, weaponClass, modelUrl],
   );
   const quaternion = useMemo(() => {
     const [x, y, z, w] = canonical.quaternion;

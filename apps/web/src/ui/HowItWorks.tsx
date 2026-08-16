@@ -6,6 +6,7 @@ import { Group, Quaternion, Vector3 } from "three";
 import { normalizeRelic, type RelicDNA, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
 import { api } from "../lib/backend";
+import { relicHintForUrl } from "../game/orientationHints";
 
 /**
  * The pipeline, walked one step at a time, using a single real relic.
@@ -60,8 +61,8 @@ function TurningRelic({ modelUrl, weaponClass }: { modelUrl: string; weaponClass
   const model = useMemo(() => scene.clone(true), [scene]);
 
   const canonical = useMemo(
-    () => normalizeRelic(meshSampleFrom(model), weaponClass),
-    [model, weaponClass],
+    () => normalizeRelic(meshSampleFrom(model), weaponClass, relicHintForUrl(modelUrl)),
+    [model, weaponClass, modelUrl],
   );
   const quaternion = useMemo(() => {
     const [x, y, z, w] = canonical.quaternion;
