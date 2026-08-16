@@ -29,7 +29,7 @@ Two players beat the same boss and walk away holding physically different weapon
 Relics are pre-generated for **every boss and every playstyle**, so replaying any
 of them resolves in ~33ms and spends nothing. Fight some other way and it
 generates for real, which is the honest path and stays the honest path: a demo
-just should not be one API hiccup away from an awkward silence.
+just should not be one network round-trip away from an awkward silence.
 
 ---
 
@@ -45,8 +45,8 @@ So RelicForge's first engineering task wasn't the boss fight or the API client. 
 
 ### What the measurement showed
 
-Before writing any geometry math, the spike measured how crooked meshy-7's
-output actually arrives. Twelve shapes, chosen to be awkward on purpose:
+Before writing any geometry math, the spike measured what orientation meshy-7's
+output actually arrives in. Twelve shapes, chosen to be awkward on purpose:
 
 | shape | raw angle | end confidence | grip | corpus |
 |---|---|---|---|---|
@@ -86,15 +86,23 @@ So RelicForge allows a persisted `OrientationHint` (authored in seconds via `/la
 
 ---
 
-## Three things the API taught us
+## Three things that cost credits to learn
 
-Each of these cost real credits to discover, and each changed the code.
+None of these are bugs. Each is a place where the obvious first attempt was mine
+to get wrong, and each changed the code.
 
-**1. `should_remesh` defaults to `false` on meshy-6/7.**
-`target_polycount` only takes effect when it's true, so a perfectly reasonable-looking request was silently ignored, and returned meshes of **1.5M-3.1M triangles, 37-116 MB**. Sending it explicitly brings the same weapon back at ~12,000 triangles.
+**1. `target_polycount` needs `should_remesh: true` to do anything.**
+It defaults to `false` on meshy-6/7, so my first requests looked complete and set
+a polycount that never applied, returning meshes of **1.5M-3.1M triangles, 37-116
+MB**. Sending both brings the same weapon back at ~12,000 triangles. Obvious once
+you know; worth writing down for anyone budgeting mesh size on a first pass.
 
-**2. The boss name was being drawn as a caption.**
-The first Gate 1 concept rendered `ASHEN WARDEN` in large lettering across the image, which then becomes real geometry and real texture in the 3D model. The composition contract gained explicit no-text clauses, and `PROMPT_VERSION` was bumped, which invalidated every cached relic automatically.
+**2. My concept prompt was asking for the boss name, so it got one.**
+The first Gate 1 concept rendered `ASHEN WARDEN` in large lettering across the
+image, which then becomes real geometry and real texture in the 3D model. Faithful
+execution of what I actually wrote. The composition contract gained explicit
+no-text clauses, and `PROMPT_VERSION` was bumped, which invalidated every cached
+relic automatically.
 
 **3. Textures dominate once geometry is fixed.**
 Three 4K PBR maps re-exported as PNG land at 12-22 MB. Generated GLBs pass through a gltf-transform stage (weld → dedup → prune → WebP @ 2K):
