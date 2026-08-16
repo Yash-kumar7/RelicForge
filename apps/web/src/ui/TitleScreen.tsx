@@ -242,7 +242,10 @@ export function TitleScreen() {
           champion that was supposed to fit it exactly. The padding moves onto
           the column that still needs it.
         */
-        "h-full overflow-hidden bg-ash-950 py-14 pl-0 pr-6"
+        /* py-14 top and bottom put the first line of a step a hundred pixels
+           down an otherwise empty column, and left the same again under the
+           button. The figure beside it is what should fill the height. */
+        "h-full overflow-hidden bg-ash-950 pb-8 pl-0 pr-6 pt-6"
       }
     >
       {/*
@@ -543,11 +546,14 @@ export function TitleScreen() {
               gets made; who carries it afterwards is a separate decision, and
               the two together are the only build this game has.
             */}
-            <p className="mt-3 max-w-lg text-[13px] leading-relaxed text-bone-400">
-              Each champion tends to earn a different kind of relic, and any of
-              them can carry any relic afterwards. Win it as Ember, wield it as
-              Frost.
-            </p>
+            {/*
+              The line goes with the panel it belonged to.
+
+              It said each champion tends to earn a different relic and any of
+              them can carry any of them afterwards, which is now the last two
+              sentences of every row's own mark. Kept here it was a third copy,
+              and the heading above it already asks the question the page is for.
+            */}
 
             {/*
               Full-width rows rather than three columns.
@@ -669,7 +675,10 @@ export function TitleScreen() {
                     gap between 80 and 130 is the length of the difference
                     rather than a fraction of some invisible ceiling.
                   */}
-                  <span className="mt-2 flex max-w-[16rem] items-center gap-3">
+                  {/* Capped at 16rem while the column runs past 1200px, so a bar
+                      meant to compare three numbers stopped a third of the way
+                      across and left the row looking unfinished. */}
+                  <span className="mt-2 flex max-w-md items-center gap-3">
                     <span className="font-mono text-[10px] tabular-nums text-bone-300">
                       {championStats(championFor(a.id)).health}
                       <span className="ml-1 text-[9px] uppercase tracking-[0.2em] text-brass-700">
