@@ -60,7 +60,7 @@ import { IRON, useLoadout } from "../state/useLoadout";
  * numbers for the blade in that box, and they change when the other one is
  * picked.
  */
-function AttackBreakdown({ traits }: { traits: RelicTraits }) {
+function AttackBreakdown({ traits, dim = false }: { traits: RelicTraits; dim?: boolean }) {
   const light = attackSpec("light", traits);
   const heavy = attackSpec("heavy", traits);
 
@@ -78,7 +78,14 @@ function AttackBreakdown({ traits }: { traits: RelicTraits }) {
                 {attack.button}
               </span>
             </span>
-            <span className="mt-0.5 block font-mono text-[10px] tabular-nums text-ember-300/80">
+            {/* The unselected side stays legible but quiet, so which weapon is
+                in hand is still obvious at a glance. */}
+            <span
+              className={[
+                "mt-0.5 block font-mono text-[10px] tabular-nums",
+                dim ? "text-stone-600" : "text-ember-300/80",
+              ].join(" ")}
+            >
               {spec.damage} damage
             </span>
             <span className="mt-1 block text-[10px] leading-relaxed text-stone-600">
@@ -236,7 +243,16 @@ export function ArmamentPanel() {
           <p className="mt-1 text-[11px] leading-relaxed text-stone-600">
             Forge-standard. One of eleven million.
           </p>
-          {ironChosen && <AttackBreakdown traits={ironTraits} />}
+          {/*
+            Shown on both cards, always.
+            
+            The breakdown used to appear only on the selected weapon, so the two
+            cards were different heights, the panel jumped when you switched, and
+            the one thing this screen exists for was impossible: you could not see
+            what you were giving up without giving it up first. A comparison needs
+            both sides on screen at once.
+          */}
+          <AttackBreakdown traits={ironTraits} dim={!ironChosen} />
         </button>
 
         <span className="absolute right-3 top-3">
@@ -282,7 +298,7 @@ export function ArmamentPanel() {
               <p className="mt-1 text-[11px] leading-relaxed text-stone-600">
                 {shown.dna.element} · {shown.dna.temperament} · {shown.dna.condition}
               </p>
-              {selected && <AttackBreakdown traits={traits} />}
+              <AttackBreakdown traits={traits} dim={!selected} />
             </>
           ) : (
             <>
