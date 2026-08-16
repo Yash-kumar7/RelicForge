@@ -821,7 +821,7 @@ export function TitleScreen() {
               carry.
             </p>
 
-            <div className="mt-4 flex flex-col gap-2">
+            <div className="mt-4 flex flex-col gap-1.5">
               {BOSSES.map((boss) => {
                 const cleared = isCleared(boss.level);
                 const selected = bossLevel === boss.level;
@@ -834,8 +834,12 @@ export function TitleScreen() {
                   <button
                     type="button"
                     onClick={() => chooseBossLevel(boss.level)}
+                    /* w-full, for the same reason the champion rows and the
+                       weapon cards needed it: a button is inline-block, so each
+                       row stopped at its own longest line and five rows came out
+                       five different widths. */
                     className={[
-                      "border text-left transition",
+                      "w-full border text-left transition",
                       selected
                         ? "border-ember-500/70 bg-ember-500/5 text-stone-200"
                         : "border-ash-700 text-stone-500 hover:border-stone-500",
@@ -854,11 +858,14 @@ export function TitleScreen() {
                       large view lives on the left now, and every row keeps its
                       portrait so the list stays scannable.
                     */}
-                    <span className="flex items-start gap-4 px-4 py-3">
+                    <span className="flex items-start gap-4 py-2.5 pl-4 pr-12">
                       <BossPortrait
                         title={boss.title}
                         locked={false}
-                        className="h-20 w-16 shrink-0 border border-ash-800"
+                        /* 80 pixels tall was a third of a row and five of them
+                           pushed the last boss off the screen. A thumbnail only
+                           has to tell one row from another. */
+                        className="h-14 w-12 shrink-0 border border-ash-800"
                       />
                       <span className="mt-0.5 w-7 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em]">
                         {boss.level.toString().padStart(2, "0")}
@@ -867,7 +874,11 @@ export function TitleScreen() {
                         <span className="block font-display text-base tracking-[0.1em]">
                           {boss.title}
                         </span>
-                        <span className="mt-0.5 block text-[11px] leading-relaxed text-stone-600">
+                        {/* Clamped to one line. It is repeated inside the mark in
+                            full, and a row that wraps to two lines on some bosses
+                            and not others is why the list was never the same
+                            height twice. */}
+                        <span className="mt-0.5 block truncate text-[11px] leading-relaxed text-stone-600">
                           {boss.blurb}
                         </span>
                       </span>
