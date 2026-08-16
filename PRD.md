@@ -2,6 +2,11 @@
 
 > **Every legendary is actually legendary.**
 
+> **Status:** this is the plan as written before the build, kept intact so the
+> reasoning stays legible. Four decisions in it did not survive contact with the
+> API — [§0.1](#01-what-changed-during-the-build-v2--as-built) records what
+> changed and why. Where the two disagree, the README describes what shipped.
+
 RelicForge is a game demo where *how* you defeat a boss determines the one-of-one legendary weapon Meshy-7 forges for you.
 
 Traditional loot: `boss dies → loot table → legendary_sword_04.glb`
@@ -32,6 +37,25 @@ Two players beat the same boss and hold physically different weapons, because th
 
 ---
 
+## 0.1 What changed during the build (v2 → as-built)
+
+Four decisions above are wrong about the finished product. They are left in place
+because the reasoning that produced them is the useful part; what follows is what
+replaced them.
+
+| Area | Planned above | Shipped | Why it changed |
+|---|---|---|---|
+| **Task updates** | Meshy webhook → our SSE, with a `POST /api/webhooks/meshy` receiver | Meshy's **native per-task SSE**, consumed server-side and re-emitted as domain events | Meshy exposes `/v1/{text-to-image,image-to-3d}/:id/stream` per task. Consuming it from the backend deletes the webhook receiver, the public tunnel for local development, and `MESHY_WEBHOOK_SECRET`. Strictly less infrastructure for the same result. |
+| **Player view** | First person, called load-bearing because it removes rigging and character animation | **Third person by default**, rigged champion, **V** toggles to first person | The rigging endpoint costs 5 credits and ships walking and idle clips. The cost that made first person load-bearing turned out to be roughly one credit per character, so the constraint dissolved. Choosing a champion and never seeing it makes the choice pointless. |
+| **Rigging / animation** | Cut and staying cut | Bosses and champions **rigged via Meshy**, walk and idle wired up | Same reason. Meshy recommends t-pose input and these were generated in a-pose, so one character was rigged as a 5-credit test rather than regenerating the cast for ~350. It worked first try. |
+| **Generated bosses/characters** | Explicitly out of scope | **Generated ahead of time** by scripts, shipped as assets | Out of scope meant *at runtime*, and it still is: only the weapon is generated while you play. Generating the cast offline is Meshy used the ordinary way, as a content tool, and it is what makes the arena not look like placeholder capsules. |
+
+Everything else in this document describes what was built. Gate 0, the
+area-weighted PCA normalizer, the fallback ladder, the versioned cache key and
+the state machine all shipped as specified.
+
+---
+
 ## 1. Verified API facts (checked live, 2026-08-10)
 
 Confirmed against the live API and current docs — not assumed:
@@ -43,7 +67,7 @@ Confirmed against the live API and current docs — not assumed:
 - `target_polycount` — 100 to 15,000, default 4,000.
 - `symmetry_mode` — deprecated, no longer affects output. Do not use.
 - Also available: `should_texture`, `enable_pbr`, `texture_prompt`, `texture_image_url`, `texture_resolution`.
-- **Webhooks exist.** Prefer webhook → SSE over a polling loop.
+- **Webhooks exist.** Prefer webhook → SSE over a polling loop. *(Superseded: per-task SSE streams also exist and need no inbound route — see §0.1.)*
 
 ### Credit budget
 
@@ -259,7 +283,7 @@ Explicit machine, not boolean soup. The cinematic sequence is far easier to make
 
 ## 7. Latency posture
 
-meshy-7 textured + ultra takes minutes, not seconds. The Forge sequence must hold 2–5 minutes of live generation without feeling broken — thematic stage copy (`TEMPERING…`, `SHAPING…`, `BINDING…`, `AWAKENING…`) driven by real webhook events where possible.
+meshy-7 textured + ultra takes minutes, not seconds. The Forge sequence must hold 2–5 minutes of live generation without feeling broken — thematic stage copy (`TEMPERING…`, `SHAPING…`, `BINDING…`, `AWAKENING…`) driven by real task progress where possible.
 
 The ≤15s demo story is served by the cache. Both paths are real.
 
@@ -275,8 +299,11 @@ GET  /api/relics/:id
 GET  /api/relics/:id/status
 GET  /api/relics/:id/events   → SSE
 POST /api/relics/:id/retry    (optional)
-POST /api/webhooks/meshy      → Meshy webhook receiver, fans out to SSE
 ```
+
+> **As built:** there is no webhook receiver. The backend subscribes to Meshy's
+> per-task SSE stream and re-emits domain events on `/api/relics/:id/events`,
+> so no inbound route from Meshy exists and local development needs no tunnel.
 
 SSE events: `dna.ready`, `concept.generating`, `concept.ready`, `mesh.generating`, `mesh.progress`, `mesh.ready`, `relic.complete`, `relic.failed`.
 
@@ -301,13 +328,18 @@ Meshy API key lives on the backend only. Never in the browser.
 | Validation | Zod (telemetry, DNA, API I/O, Meshy responses, env) |
 | Cache/DB | JSON file → SQLite + Drizzle if schema settles |
 | Storage | Backend static dir → R2 only if split deploy |
-| Updates | Meshy webhook → SSE |
+| Updates | Meshy per-task SSE → our SSE (see §0.1) |
 | Tests | Vitest |
 | Package manager | pnpm workspaces |
 
 **Cut and staying cut:** Rapier, R2-on-day-one, Drizzle-on-day-one, Mixamo rigging, humanoid animation state machine, Redux, component libraries, MCP server as a runtime dependency.
 
-First-person view is load-bearing: it removes rigging, hand/body animation, and most camera work at once — and puts the one-of-one relic across a large share of the frame, which is the shot that matters.
+First-person view was planned as load-bearing: it removes rigging, hand/body
+animation, and most camera work at once — and puts the one-of-one relic across a
+large share of the frame, which is the shot that matters. **It did not stay load-bearing.**
+Meshy's rigging endpoint made character animation cheap enough that third person
+became the default and first person became a toggle, so the framing argument
+survives as an option rather than a constraint. See §0.1.
 
 ### Repo layout
 
@@ -330,7 +362,7 @@ Meshy access is confined to `apps/api/src/services/meshy/` — `meshy.client.ts`
 
 1. **Gate 0** — concept → Meshy-7 → GLB → R3F → automatic orientation/scale/grip, across 5–10 varied weapon shapes. Blocking.
 2. **relic-core** — telemetry → DNA → prompt → generation config → versioned cache key. Pure functions, Vitest-covered.
-3. **Generation backend** — Fastify → text-to-image → Meshy-7 → webhook → file cache → SSE.
+3. **Generation backend** — Fastify → text-to-image → Meshy-7 → task SSE → file cache → SSE.
 4. **Thin game shell** — arena, boss HP, player HP, simple attacks, victory detection. Deliberately minimal; this is setup, not product.
 5. **Forge sequence** — majority of visual polish lands here.
 6. **Hero outputs** — two or three excellent contrasting relics, cached, then record.
@@ -353,14 +385,17 @@ Steps 1–3 are the actual project. Step 4 is set dressing.
 
 ## 12. Explicitly out of scope
 
-Multiplayer, open world, NPCs, procedural dungeons, marketplace, accounts, trading, crafting trees, full inventory, generated bosses, generated characters, a Meshy runtime SDK, world transformation. Those are other projects.
+Multiplayer, open world, NPCs, procedural dungeons, marketplace, accounts, trading, crafting trees, full inventory, **runtime** generation of anything but the weapon, a Meshy runtime SDK, world transformation. Those are other projects.
+
+Bosses and champions are generated, but ahead of time by scripts and shipped as
+assets. The runtime claim belongs to the relic alone.
 
 ## 13. Environment
 
 ```
 MESHY_API_KEY=
 DATABASE_URL=
-MESHY_WEBHOOK_SECRET=
+# MESHY_WEBHOOK_SECRET — dropped, no webhook receiver was needed (§0.1)
 # only if split deploy:
 R2_ACCOUNT_ID=
 R2_ACCESS_KEY_ID=
