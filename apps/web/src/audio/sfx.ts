@@ -265,7 +265,7 @@ function buildAmbience(): void {
   const bed = audio.createGain();
   bed.gain.setValueAtTime(0.0001, audio.currentTime);
   // Four seconds to arrive, so it is never the thing that made you look up.
-  bed.gain.exponentialRampToValueAtTime(0.5, audio.currentTime + 4);
+  bed.gain.exponentialRampToValueAtTime(0.14, audio.currentTime + 4);
   bed.connect(master);
 
   /*
@@ -284,9 +284,22 @@ function buildAmbience(): void {
   coals.buffer = buffer;
   coals.loop = true;
 
+  /*
+   * Bounded at both ends, which is the difference between a fire and a rocket.
+   *
+   * This was a lowpass alone, and a lowpass alone is not a band: everything below
+   * the cutoff passes, so the loudest thing in the bed was sub-bass with no mid
+   * above it. That is the exact spectrum of thrust. Fire lives in a band and
+   * crackles over the top of it; a roar with the top cut off and nothing under it
+   * held back is an engine, however quietly it is played.
+   */
+  const floorCut = audio.createBiquadFilter();
+  floorCut.type = "highpass";
+  floorCut.frequency.value = 60;
+
   const filter = audio.createBiquadFilter();
   filter.type = "lowpass";
-  filter.frequency.value = 180;
+  filter.frequency.value = 150;
   filter.Q.value = 0.7;
 
   /*
@@ -298,14 +311,37 @@ function buildAmbience(): void {
   breath.type = "sine";
   breath.frequency.value = 1 / FORGE_BREATH_SECONDS;
   const breathDepth = audio.createGain();
-  breathDepth.gain.value = 90;
+  /* Shallow. At 90 against a 180 cutoff this swept half the band every eleven
+     seconds, which is a throttle, not a breath. */
+  breathDepth.gain.value = 26;
   breath.connect(breathDepth);
   breathDepth.connect(filter.frequency);
   breath.start();
 
-  coals.connect(filter);
+  coals.connect(floorCut);
+  floorCut.connect(filter);
   filter.connect(bed);
   coals.start();
+
+  /*
+   * Crackle, which is what makes the low end read as coals rather than exhaust.
+   *
+   * A burning thing is not continuous. The roar is the bed and the ear takes it
+   * for machinery until something irregular happens on top: tiny bright ticks,
+   * far too short to have pitch, at random spacing so they never become a rhythm.
+   * These cost almost nothing and they are the entire difference.
+   */
+  let crackleTimer = 0;
+  const scheduleCrackle = () => {
+    crackleTimer = window.setTimeout(
+      () => {
+        noise(0.012 + Math.random() * 0.02, 0.012 + Math.random() * 0.014, 4200);
+        scheduleCrackle();
+      },
+      90 + Math.random() * 520,
+    );
+  };
+  scheduleCrackle();
 
   /*
    * Somebody working, in the next room.
@@ -333,6 +369,7 @@ function buildAmbience(): void {
   ambience = {
     stop: () => {
       window.clearTimeout(strikeTimer);
+      window.clearTimeout(crackleTimer);
       const now = audio.currentTime;
       bed.gain.cancelScheduledValues(now);
       bed.gain.setValueAtTime(Math.max(0.0001, bed.gain.value), now);
