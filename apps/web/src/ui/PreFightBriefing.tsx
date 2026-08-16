@@ -286,10 +286,16 @@ export function PreFightBriefing() {
                   },
                   {
                     group: "Fight",
+                    /*
+                      "Left" and "Right" on their own are arrow keys as readily as
+                      mouse buttons, and this is the one column where guessing
+                      wrong costs a fight. "2 left" also put the word left in a
+                      column that already had a key called Left.
+                    */
                     keys: [
-                      ["Left", "quick"],
-                      ["Right", "strong"],
-                      ["Q", "heal, 2 left"],
+                      ["Left click", "quick"],
+                      ["Right click", "strong"],
+                      ["Q", "heal, twice"],
                     ],
                   },
                   {
@@ -312,7 +318,7 @@ export function PreFightBriefing() {
                         <div key={key} className="flex items-baseline gap-2">
                           {/* Set as a key rather than as a word, so the eye can
                               find the one it wants without reading the line. */}
-                          <dt className="min-w-[3.2rem] border border-ash-700 px-1.5 py-0.5 text-center font-mono text-[9px] uppercase tracking-[0.1em] text-stone-300">
+                          <dt className="min-w-[4.6rem] shrink-0 border border-ash-700 px-1.5 py-0.5 text-center font-mono text-[9px] uppercase tracking-[0.1em] text-stone-300">
                             {key}
                           </dt>
                           <dd className="font-mono text-[10px] text-stone-600">{action}</dd>
