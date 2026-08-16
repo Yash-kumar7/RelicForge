@@ -212,7 +212,20 @@ export function ArmamentPanel() {
    * the champion on top would be quietly wrong for every champion but one.
    */
   const affinity = useGameStore((s) => s.affinity);
-  const traits = useMemo(() => combinedTraits(selected?.dna, affinity), [selected, affinity]);
+  /*
+   * The relic on the card, not the one in hand.
+   *
+   * This read from `selected`, which is null whenever the iron sword is
+   * equipped, so combinedTraits fell back to a neutral weapon and the relic card
+   * quietly displayed the iron sword's damage. Both cards showed 25 and 60, both
+   * bars filled to the same place, and choosing the relic was the only way to
+   * find out what it did, on the screen whose entire purpose is deciding that
+   * beforehand.
+   *
+   * `shown` is what the card is actually rendering, so it is what the card's
+   * numbers come from.
+   */
+  const traits = useMemo(() => combinedTraits(shown?.dna, affinity), [shown, affinity]);
 
   // The iron blade is neutral, so it differs only by the champion holding it.
   const ironTraits = useMemo(() => combinedTraits(null, affinity), [affinity]);
@@ -240,6 +253,16 @@ export function ArmamentPanel() {
       ),
     [ironTraits, traits, shown],
   );
+
+  /*
+   * Headroom above the strongest weapon on screen.
+   *
+   * Scaled to the exact maximum, the better weapon's bar was always full and the
+   * only thing that ever moved was the weaker one. A bar that is pinned at the
+   * end of its track cannot show that a stronger relic exists, and the next one
+   * along would look identical.
+   */
+  const scale = ceiling * 1.15;
 
   const relicNotes = useMemo(
     () => (shown ? describeTraits(relicTraits(shown.dna)) : []),
@@ -343,7 +366,7 @@ export function ArmamentPanel() {
             what you were giving up without giving it up first. A comparison needs
             both sides on screen at once.
           */}
-          <AttackBreakdown traits={ironTraits} ceiling={ceiling} dim={!ironChosen} />
+          <AttackBreakdown traits={ironTraits} ceiling={scale} dim={!ironChosen} />
         </button>
 
         <span className="absolute right-3 top-3">
@@ -398,7 +421,7 @@ export function ArmamentPanel() {
               <p className="mt-1 text-[11px] capitalize leading-relaxed text-stone-600">
                 {shown.dna.element} · {shown.dna.temperament} · {shown.dna.condition}
               </p>
-              <AttackBreakdown traits={traits} ceiling={ceiling} dim={!selected} />
+              <AttackBreakdown traits={traits} ceiling={scale} dim={!selected} />
             </>
           ) : (
             <>
