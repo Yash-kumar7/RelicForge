@@ -565,8 +565,20 @@ export function TitleScreen() {
             */}
             <div className="mt-5 flex flex-col gap-1">
               {AFFINITIES.map((a) => (
+                /*
+                  A mark per row, in the corner rather than in the card.
+
+                  The detail lived in one panel under all three, which meant the
+                  answer to "what is Frost like" was somewhere else and only ever
+                  about whichever row was already selected: to read about a
+                  champion you had to choose it first. Now each row explains
+                  itself where it is.
+
+                  Outside the button because a button inside a button is invalid
+                  markup and its click would select the champion underneath.
+                */
+                <div key={a.id} className="relative">
                 <button
-                  key={a.id}
                   type="button"
                   /*
                     Selecting does not advance.
@@ -580,7 +592,7 @@ export function TitleScreen() {
                   */
                   onClick={() => chooseAffinity(a.id)}
                   className={[
-                    "group flex items-center gap-4 overflow-hidden border-l-2 py-3 pl-4 pr-4 text-left transition",
+                    "group flex w-full items-center gap-4 overflow-hidden border-l-2 py-3 pl-4 pr-4 text-left transition",
                     affinity === a.id
                       ? `${a.accent} bg-gradient-to-r from-white/[0.04] to-transparent`
                       : "border-transparent text-stone-500 hover:border-ash-700 hover:bg-white/[0.02]",
@@ -679,56 +691,32 @@ export function TitleScreen() {
                   </span>
                   </span>
                 </button>
+
+                <span className="absolute right-3 top-3">
+                  <InfoTip label={a.name}>
+                    <span className="block text-stone-300">{championFor(a.id).blurb}</span>
+                    <span className="mt-2 block border-t border-ash-800 pt-2 text-stone-500">
+                      {championFor(a.id).forges}
+                    </span>
+                    <span className="mt-2 block text-stone-600">
+                      Only a tendency. The weapon comes from the fight you actually have, so
+                      anyone can forge anything by fighting against type.
+                    </span>
+                  </InfoTip>
+                </span>
+                </div>
               ))}
             </div>
 
             {/*
-              Detail for the one champion being chosen.
+              No detail panel under the rows.
 
-              Every row carried a trade line, a forging line and a stat, so
-              picking between three meant reading nine paragraphs before the
-              first click. A player compares by identity and by one number, then
-              wants the detail on whichever they are leaning toward, so the rows
-              keep the comparison and this carries the reasons.
+              It carried how the selected champion fights and what it forges,
+              which is the same pair each row now explains for itself. Keeping
+              both meant three sentences existed twice, and the panel could only
+              ever describe the champion already chosen: the one a player had
+              stopped needing to read about.
             */}
-            <div className="mt-6 border-t border-brass-800 pt-5">
-              {/*
-                Labelled to match the line under it.
-
-                One had a label and the other did not, so they read as unrelated
-                sentences rather than as two answers about the same champion.
-                Fights and forges are the two things a champion does, and they
-                are the two questions this screen exists to answer: how it plays,
-                and what it leaves you holding.
-              */}
-              {/*
-                One of these is the choice, the other is its consequence.
-                
-                How a champion fights is what a player is deciding between right
-                now, so it stays on the page. What it tends to forge is a
-                downstream effect of fighting that way, true and worth knowing and
-                not needed to press the button: a second paragraph of it turned
-                the panel into reading, which is what the mark is for.
-              */}
-              <p className="flex max-w-lg items-start gap-2 text-[13px] leading-relaxed text-bone-200/80">
-                <span className="mt-[3px] shrink-0 font-mono text-[9px] uppercase tracking-[0.25em] text-brass-700">
-                  fights
-                </span>
-                <span>{championFor(affinity).blurb}</span>
-                <InfoTip label={`what ${championFor(affinity).name} forges`}>
-                  <span className="block text-stone-500">
-                    Fighting this way tends to leave a particular kind of weapon behind.
-                  </span>
-                  <span className="mt-2 block text-stone-300">
-                    {championFor(affinity).forges}
-                  </span>
-                  <span className="mt-2 block text-stone-600">
-                    Only a tendency. The weapon comes from the fight you actually have, so
-                    anyone can forge anything by fighting against type.
-                  </span>
-                </InfoTip>
-              </p>
-            </div>
           </section>
           )}
 
