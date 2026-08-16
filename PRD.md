@@ -1,104 +1,68 @@
-# RelicForge — PRD v2
+# RelicForge
 
 > **Every legendary is actually legendary.**
 
-> **Status:** this is the plan as written before the build, kept intact so the
-> reasoning stays legible. Four decisions in it did not survive contact with the
-> API — [§0.1](#01-what-changed-during-the-build-v2--as-built) records what
-> changed and why. Where the two disagree, the README describes what shipped.
+RelicForge is a game demo where *how* you defeat a boss determines the one-of-one
+weapon that gets forged for you.
 
-RelicForge is a game demo where *how* you defeat a boss determines the one-of-one legendary weapon Meshy-7 forges for you.
+```
+boss dies → read the fight → Relic DNA → concept image → meshy-7 → GLB → equipped in-game
+```
 
-Traditional loot: `boss dies → loot table → legendary_sword_04.glb`
-RelicForge: `boss dies → analyze victory → Relic DNA → concept image → Meshy-7 → GLB → equipped in-game`
+Two players beat the same boss and hold physically different weapons, because
+they fought differently.
 
-Two players beat the same boss and hold physically different weapons, because they fought differently.
+**The criterion that outranks all others:** remove Meshy from the architecture
+and the central mechanic is gone.
 
-**Success criterion that outranks all others:** removing Meshy from the architecture destroys the central mechanic.
-
----
-
-## 0. What changed from v1
-
-| Area | v1 | v2 |
-|---|---|---|
-| Player view | Third-person humanoid | **First-person / over-shoulder** |
-| Physics | Rapier | Distance/radius checks in `useFrame` |
-| Storage | Cloudflare R2 | Backend static dir; R2 only if split deploy |
-| DB | SQLite + Drizzle | JSON file cache; SQLite when schema settles |
-| Meshy runtime | Generic wrapper / MCP | **Direct REST from Fastify**, no MCP dependency |
-| Task updates | Polling | **Meshy webhook → our SSE** |
-| First task | Boss/game shell | **GLB normalization spike (Gate 0)** |
-| Weapon attach | Fixed per-class transform | Auto-orient + normalize + inferred grip |
-| Cache key | DNA hash | DNA + prompt version + full generation config |
-| Model usage | Meshy-7 everywhere | Cheap iteration; Meshy-7 Ultra for finalists |
-
-**Revised technical thesis:** the hard part isn't calling Meshy. It's turning unpredictable generated geometry into reliable runtime game content, automatically, with no manual 3D cleanup.
+**The technical thesis:** the hard part is not calling an API. It is turning
+generated geometry, which varies, into reliable runtime game content,
+automatically, with no manual 3D cleanup.
 
 ---
 
-## 0.1 What changed during the build (v2 → as-built)
+## 1. API facts this is built on
 
-Four decisions above are wrong about the finished product. They are left in place
-because the reasoning that produced them is the useful part; what follows is what
-replaced them.
+- `ai_model: "meshy-7"` is accepted on Image to 3D, Multi-Image to 3D and Retexture.
+- Text to 3D (v2) rejects meshy-7. Its enum is `[meshy-4, meshy-5, meshy-6, latest]`,
+  and there is no v1 or v3 route. This is why the hero path is text-to-image then
+  image-to-3d rather than text-to-3d.
+- `ultra_mode` is a real boolean on `CreateImageTo3DRequest`, meshy-7 and `latest` only.
+- `target_formats: ["glb"]` is always set. Requesting fewer formats reduces task time.
+- `target_polycount` accepts 100 to 15,000 and defaults to 4,000. It only applies
+  when `should_remesh` is also true, which defaults to false.
+- `symmetry_mode` is deprecated and does not affect output.
+- `input_task_id` lets image-to-3d consume a completed text-to-image task directly,
+  so the concept image never needs public hosting.
+- Per-task SSE exists at `/v1/{text-to-image,image-to-3d}/:id/stream`. The backend
+  subscribes to it and re-emits domain events, so there is no webhook receiver and
+  no public tunnel for local development.
 
-| Area | Planned above | Shipped | Why it changed |
-|---|---|---|---|
-| **Task updates** | Meshy webhook → our SSE, with a `POST /api/webhooks/meshy` receiver | Meshy's **native per-task SSE**, consumed server-side and re-emitted as domain events | Meshy exposes `/v1/{text-to-image,image-to-3d}/:id/stream` per task. Consuming it from the backend deletes the webhook receiver, the public tunnel for local development, and `MESHY_WEBHOOK_SECRET`. Strictly less infrastructure for the same result. |
-| **Player view** | First person, called load-bearing because it removes rigging and character animation | **Third person by default**, rigged champion, **V** toggles to first person | The rigging endpoint costs 5 credits and ships walking and idle clips. The cost that made first person load-bearing turned out to be roughly one credit per character, so the constraint dissolved. Choosing a champion and never seeing it makes the choice pointless. |
-| **Rigging / animation** | Cut and staying cut | Bosses and champions **rigged via Meshy**, walk and idle wired up | Same reason. Meshy recommends t-pose input and these were generated in a-pose, so one character was rigged as a 5-credit test rather than regenerating the cast for ~350. It worked first try. |
-| **Generated bosses/characters** | Explicitly out of scope | **Generated ahead of time** by scripts, shipped as assets | Out of scope meant *at runtime*, and it still is: only the weapon is generated while you play. Generating the cast offline is Meshy used the ordinary way, as a content tool, and it is what makes the arena not look like placeholder capsules. |
-
-Everything else in this document describes what was built. Gate 0, the
-area-weighted PCA normalizer, the fallback ladder, the versioned cache key and
-the state machine all shipped as specified.
-
----
-
-## 1. Verified API facts (checked live, 2026-08-10)
-
-Confirmed against the live API and current docs — not assumed:
-
-- `ai_model: "meshy-7"` accepted on **Image to 3D**, **Multi-Image to 3D**, **Retexture**.
-- **Text to 3D (v2) rejects meshy-7.** Enum is `[meshy-4, meshy-5, meshy-6, latest]`. There is no v1 or v3 text-to-3d route (404). This is why the hero path is text-to-image → image-to-3d.
-- `ultra_mode` (boolean) — real field on `CreateImageTo3DRequest`, meshy-7 / `latest` only.
-- `target_formats: ["glb"]` — docs state requesting fewer formats reduces task completion time. Always set it.
-- `target_polycount` — 100 to 15,000, default 4,000.
-- `symmetry_mode` — deprecated, no longer affects output. Do not use.
-- Also available: `should_texture`, `enable_pbr`, `texture_prompt`, `texture_image_url`, `texture_resolution`.
-- **Webhooks exist.** Prefer webhook → SSE over a polling loop. *(Superseded: per-task SSE streams also exist and need no inbound route — see §0.1.)*
-
-### Credit budget
-
-Balance at planning time: **8060**.
+### Credit cost
 
 | Operation | Credits |
 |---|---|
 | Text to Image (nano-banana) | 3 |
 | Text to Image (nano-banana-2 / pro) | 6 / 9 |
-| Image to 3D — meshy-7, textured | 30 |
-| Image to 3D — meshy-7, textured + ultra | 35 |
-| Image to 3D — meshy-t2 smart-topology, textured | 15 |
+| Image to 3D, meshy-7, textured | 30 |
+| Image to 3D, meshy-7, textured + ultra | 35 |
+| Image to 3D, meshy-t2 smart-topology, textured | 15 |
 | Retexture | 10 |
+| Rigging (includes walking and running clips) | 5 |
 
-Full hero relic ≈ **35–44 credits** → roughly **180–230 complete runs** in budget.
+A full hero relic costs 35 to 44 credits.
 
-**Spend policy:**
-- Prompt/composition iteration → nano-banana (3).
-- Geometry/normalization debugging → `topology: smart-topology`, `ai_model: meshy-t2` (15 textured).
-- Meshy-7 + `ultra_mode` reserved for outputs that appear on screen.
-- Gate 0 spike (5–10 concepts) budgeted at ~200–300 credits. Acceptable.
+**Spend policy.** Prompt iteration uses nano-banana at 3. Geometry debugging uses
+`meshy-t2` with smart topology at 15. meshy-7 with `ultra_mode` is reserved for
+output that appears on screen.
 
 ---
 
-## 2. Gate 0 — Normalization spike (blocking)
+## 2. Normalization
 
-**Nothing else gets built until this passes.** A gorgeous sword returned sideways, off-origin, or gripped at the blade makes the forge→equip moment read as broken. This risk outranks latency.
-
-### Input
-
-5–10 **deliberately varied** concepts, not one lucky sword: greatsword, spear, warhammer, curved blade, asymmetric axe, ornate pommel, thin dagger. Variety is the test.
+A gorgeous sword returned sideways, off-origin, or gripped at the blade makes the
+forge-to-equip moment read as broken. This risk outranks latency, so it was
+settled before anything else was built.
 
 ### Pipeline
 
@@ -116,19 +80,26 @@ Generated GLB
 
 ### Why area-weighted PCA, not AABB, not vertex PCA
 
-- **AABB fails on tilt.** A sword lying 35° off-axis inside its own local coordinates has no dominant X/Y/Z extent — largest-extent heuristics pick the wrong axis.
-- **Vertex PCA fails on density.** Meshy tessellates unevenly; an ornate pommel carrying 3× the vertices of the blade drags the principal axis off the weapon line. Weighting triangle centroids by triangle area is density-invariant and is ~10 lines of code.
+**AABB fails on tilt.** A sword lying 35 degrees off-axis inside its own local
+coordinates has no dominant X/Y/Z extent, so largest-extent heuristics pick the
+wrong axis.
 
-### Tip/pommel disambiguation
+**Vertex PCA fails on density.** Tessellation is uneven, and an ornate pommel
+carrying three times the vertices of the blade drags the principal axis off the
+weapon line. Weighting triangle centroids by triangle area is density-invariant
+and costs about ten lines of code.
 
-Do not assume orientation. Measure it:
+### Tip and pommel disambiguation
 
-1. Project all vertices onto the principal axis, slice into ~64 bins.
-2. Per bin, compute mean radial distance from the axis → a radius profile.
-3. **Tip** = the end whose terminal bins taper toward ~0.
-4. **Guard** = sharp local maximum in the radius profile near the opposite end.
-5. **Grip** = just inboard of the guard peak.
-6. **Fallback** when no clear peak (warhammers, spears, staves): 15% up from the pommel end.
+Orientation is measured, never assumed:
+
+1. Project all vertices onto the principal axis and slice into 64 bins.
+2. Per bin, compute mean radial distance from the axis, giving a radius profile.
+3. **Tip** is the end whose terminal bins taper toward zero.
+4. **Guard** is a sharp local maximum near the opposite end.
+5. **Grip** sits just inboard of the guard peak.
+6. **Fallback** when no clear peak exists (warhammers, spears, staves): 15 percent
+   up from the pommel end.
 
 ### Per-class canonical lengths
 
@@ -140,35 +111,44 @@ const CANONICAL_LENGTH = {
 } as const; // world units, longest dimension after alignment
 ```
 
-### Measure this first, before writing any math
+### What the measurement showed
 
-Image-to-3D tends to align output to the input view's framing. On the first 5 spikes, **log raw angular error between the principal axis and canonical +Y before any correction is applied.**
+Twelve shapes, chosen to be awkward on purpose, measured for raw angular error
+before any correction:
 
-- Consistently under ~15° → the hard version of this problem does not exist. PCA is a small correction, not blind discovery. Stop optimizing and move to step 2.
-- Wildly varying → the ladder below is live.
+| shape | raw angle | end confidence | grip | corpus |
+|---|---|---|---|---|
+| spear | 0.0° | 0.67 | 0.04 | core |
+| ringed staff | 0.0° | 0.74 | 0.08 | stress |
+| twin-headed maul | 0.0° | 1.00 | 0.13 | stress |
+| greatsword | 0.1° | 0.55 | 0.20 | core |
+| warhammer | 0.1° | 0.09 | 0.12 | core |
+| glaive | 0.3° | 0.44 | 0.07 | core |
+| crystalline shard-blade | 0.9° | 0.30 | 0.18 | stress |
+| curved saber | 1.2° | 0.46 | 0.20 | core |
+| chained flail | 2.4° | 0.51 | 0.20 | stress |
+| asymmetric axe | 10.8° | 0.06 | 0.12 | core |
+| dagger | 25.8° | 0.72 | 0.35 | core |
+| ornate longsword | 50.3° | 0.56 | 0.25 | core |
 
-This measurement costs nothing and may delete the entire risk. Do it before anything else.
+Median raw angle is 0.9 degrees, because every concept is generated under a fixed
+composition contract and image-to-3d preserves that framing. But the dagger
+arrives 26 degrees off and the ornate longsword 50 degrees off. On those two the
+PCA is the only reason they end up upright, so two of eight core shapes need real
+correction and the normalizer is load-bearing rather than decorative.
 
-### Pass criteria (measurable, not vibes)
+### Guarantees
 
-- ≥ 8 of 10 varied concepts auto-orient correctly with no per-asset intervention.
-- Grip point within ~5% of visually correct along the weapon axis.
-- Deterministic: same GLB in → identical transform out, every run.
-- Total normalization cost < 100ms for a 15k-poly mesh.
-- Correction transform serializes and reloads without drift.
+- Deterministic: the same GLB in produces an identical transform out, every run.
+- Normalization costs under 100ms for a 15k-poly mesh.
+- The correction transform serializes and reloads without drift.
 
-### Fallback ladder — this is the landmine, so it gets an exit ramp
+### Orientation hints
 
-Auto-normalization is **not** a solved problem. Reliably answering "which way does this arbitrary generated weapon point, and where is the handle" across varied shapes is genuinely hard, and chasing a perfect solution can consume the entire timeline. It is not allowed to.
-
-Descend this ladder on a clock. Each tier still ships a working demo.
-
-| Tier | Approach | Trigger |
-|---|---|---|
-| 0 | Raw output already near-canonical; tiny correction only | Measured angular error < 15° |
-| 1 | Area-weighted PCA + radius-profile grip inference | Default implementation |
-| 2 | **Narrow the weapon classes** to long thin objects (greatsword, spear) where the principal axis is unambiguous | PCA unreliable on ≥3 of 10 |
-| 3 | **Orientation hint** — per-relic override, authored in seconds via debug sliders, persisted on the relic record | Tier 2 still failing |
+Hand-editing a GLB in Blender is never acceptable, because it contradicts the
+thesis that generated geometry becomes runtime content automatically. A persisted
+override is acceptable, because an automatic pipeline with a structured
+human-in-the-loop override is what every real content pipeline has.
 
 ```ts
 interface OrientationHint {
@@ -178,31 +158,33 @@ interface OrientationHint {
 }
 ```
 
-Default `null`. When present, it overrides the corresponding auto-derived value and nothing else.
+Hints default to null, are authored in seconds via `/lab`, and override only the
+corresponding auto-derived value. **No shipped relic currently uses one.**
 
-**Warhammer is the hard case** — mass concentrated at one end, short shaft, weak axis dominance. If time is tight it drops to P1 and the demo ships greatsword + spear. Two contrasting relics is all the hero comparison needs.
-
-### What the ladder does and does not cost
-
-- **Hand-editing a GLB in Blender is never acceptable** — it contradicts the thesis that generated geometry becomes runtime content automatically.
-- **A stored orientation hint is acceptable and honest.** The system is automatic with a human-in-the-loop override — which is what every real content pipeline has. The correction transform is already persisted per relic; Tier 3 only makes it writable. Document it plainly in the README; stating the limitation reads as engineering maturity, not as a gap.
-- Hero relics are cached anyway, so a hint authored once on a hero relic costs nothing at demo time while the live path stays fully automatic.
-
-**Hard timebox: if Tier 0/1 is not passing by end of day 1, drop to Tier 2 or 3 and move to step 2.** Perfect normalization does not ship the demo. A wielded relic does.
+**Two weapon classes ship:** greatsword and spear. Warhammer is implemented and
+sits in the test corpus, but its end-resolution confidence is 0.09, so it stays
+behind a flag.
 
 ---
 
 ## 3. Concept image composition contract
 
-The concept image is the *only* control over output geometry orientation. Lock it in the prompt compiler, not per-relic:
+The concept image is the only control over output geometry orientation, so it is
+locked in the prompt compiler rather than authored per relic:
 
 - single isolated weapon, full object visible
 - vertical, tip up, pommel down
-- 3/4 view, centered composition
+- three-quarter view, centered composition
 - neutral background, no character, no hands, no environment
+- no text, no lettering, no captions
 - strong readable silhouette, production-quality game concept art
 
-This is also a user-facing feature — the concept image is revealed during the Forge sequence, not hidden as implementation detail.
+The no-text clauses exist because an early concept rendered `ASHEN WARDEN` across
+the image in large lettering, which then becomes real geometry and real texture in
+the 3D model.
+
+This contract is also a user-facing feature. The concept image is revealed during
+the forge sequence rather than hidden as an implementation detail.
 
 ---
 
@@ -231,24 +213,25 @@ interface RelicDNA {
 }
 ```
 
-### Mapping rules (deterministic — the causal link must be legible)
+Mapping is deterministic, because the causal link has to be legible to the player.
+Randomness here would turn the mechanic into a slot machine wearing a story.
 
 | Signal | Range | Result |
 |---|---|---|
-| Health remaining | 0–20% | `battle-worn`, cracked, desperate |
-| | 21–70% | battle-tested |
-| | 71–100% | `pristine`, refined |
-| Heavy-attack usage high | — | `brutal`, oversized, thick silhouette |
-| Dodge count high / precision | — | `elegant`, narrow, sharp silhouette |
-| Affinity fire | — | molten, scorched, volcanic |
-| Affinity ice | — | crystalline, frost, translucent |
-| Affinity storm | — | conductive, fractured, electrical |
+| Health remaining | 0 to 20% | `shattered`, cracked, desperate |
+| | 21 to 70% | `battle-worn` |
+| | 71 to 100% | `pristine`, refined |
+| Heavy-attack ratio | 0.6 and above | `brutal`, oversized, thick silhouette |
+| Dodges 4+, heavy ratio 0.35 or below | | `elegant`, narrow, sharp silhouette |
+| Affinity fire | | molten, scorched, volcanic |
+| Affinity ice | | crystalline, frost, translucent |
+| Affinity storm | | conductive, fractured, electrical |
 
-Naming: deterministic templates first (Stormfang, Ashen Oath, Winter's Judgment). LLM naming/lore is P1 and must never block generation.
+Naming uses deterministic templates (Stormfang, Ashen Oath, Winter's Judgment).
 
 ---
 
-## 5. Cache key — hash the whole generation config
+## 5. Cache key
 
 ```ts
 hash({
@@ -262,9 +245,15 @@ hash({
 })
 ```
 
-Keying on DNA alone means editing the prompt compiler silently serves stale relics and you lose an afternoon wondering why nothing changed. `PROMPT_VERSION` is a bumped constant in `relic-core`.
+The key hashes the DNA **and the entire generation config**. Keying on DNA alone
+is the classic trap: you edit the prompt compiler, regenerate, receive the
+previously cached sword, and lose an afternoon to it. `PROMPT_VERSION` is a bumped
+constant in `relic-core`, so changing it invalidates every cached relic
+automatically.
 
-Two levels: in-memory for the dev loop, persistent (JSON file → SQLite later) keyed by the hash above. Live generation always stays functional; known demo DNA resolves instantly. That's production architecture, not cheating.
+Two levels: in-memory for the dev loop, and a persistent JSON index keyed by the
+hash above. Live generation always stays functional while known DNA resolves
+instantly.
 
 ---
 
@@ -275,39 +264,52 @@ FIGHTING → VICTORY → ANALYZING → DNA_READY → GENERATING_CONCEPT
   → CONCEPT_READY → FORGING_3D → MODEL_READY → REVEAL → EQUIPPED
 ```
 
-Explicit machine, not boolean soup. The cinematic sequence is far easier to make reliable when each stage is a named state.
+An explicit machine rather than boolean soup, because a cinematic sequence is far
+easier to make reliable when each stage is a named state.
 
-**Failure handling:** the experience never breaks. Show `THE FORGE RESISTS…`, retry, then fall back to a cached relic of the same archetype. Raw `500 Internal Server Error` never appears inside the cinematic — debug mode only.
+**Failure handling.** The experience never breaks. It shows `THE FORGE RESISTS…`,
+retries, then falls back to a cached relic of the same archetype. A raw
+`500 Internal Server Error` never appears inside the cinematic, only in debug mode.
 
 ---
 
-## 7. Latency posture
+## 7. Latency
 
-meshy-7 textured + ultra takes minutes, not seconds. The Forge sequence must hold 2–5 minutes of live generation without feeling broken — thematic stage copy (`TEMPERING…`, `SHAPING…`, `BINDING…`, `AWAKENING…`) driven by real task progress where possible.
+| stage | time |
+|---|---|
+| concept (nano-banana-pro) | 17 to 20 s |
+| mesh (meshy-7 + ultra) | 86 to 115 s |
+| optimize | ~500 ms |
+| **total, live** | **~100 to 135 s** |
+| **total, cached** | **33 ms** |
 
-The ≤15s demo story is served by the cache. Both paths are real.
+The forge sequence holds that latency with named stages (`TEMPERING…`, `SHAPING…`,
+`BINDING…`, `AWAKENING…`) driven by real task progress, and reveals the concept
+image early as a payoff in its own right. `Loading 47%` makes waiting feel like a
+defect. Naming the work makes it feel like a forge.
 
 ---
 
 ## 8. API shape
 
-Frontend never learns Meshy's endpoint structure.
+The frontend never learns Meshy's endpoint structure.
 
 ```
 POST /api/relics              → { relicId, name, dna, status }
 GET  /api/relics/:id
 GET  /api/relics/:id/status
 GET  /api/relics/:id/events   → SSE
-POST /api/relics/:id/retry    (optional)
+POST /api/relics/:id/retry
+GET  /api/debug/relics        → prompts, task ids, timings, cache hits
 ```
 
-> **As built:** there is no webhook receiver. The backend subscribes to Meshy's
-> per-task SSE stream and re-emits domain events on `/api/relics/:id/events`,
-> so no inbound route from Meshy exists and local development needs no tunnel.
+SSE events: `dna.ready`, `concept.generating`, `concept.ready`, `mesh.generating`,
+`mesh.progress`, `mesh.ready`, `relic.complete`, `relic.failed`.
 
-SSE events: `dna.ready`, `concept.generating`, `concept.ready`, `mesh.generating`, `mesh.progress`, `mesh.ready`, `relic.complete`, `relic.failed`.
+There is no inbound route from Meshy. The backend consumes per-task SSE and
+re-emits domain events on `/api/relics/:id/events`.
 
-Meshy API key lives on the backend only. Never in the browser.
+The Meshy API key lives on the backend only, never in the browser.
 
 ---
 
@@ -319,95 +321,118 @@ Meshy API key lives on the backend only. Never in the browser.
 | Frontend | React + Vite |
 | 3D | React Three Fiber + Three.js |
 | Helpers | @react-three/drei |
-| Postprocessing | @react-three/postprocessing (bloom, vignette — restrained) |
-| Physics | **none** — distance/radius checks in `useFrame` |
-| State | Zustand (`useGameStore`, `useCombatStore`, `useForgeStore`) |
+| Postprocessing | @react-three/postprocessing (bloom, vignette, restrained) |
+| Physics | none, distance and radius checks in `useFrame` |
+| State | Zustand |
 | UI | Tailwind + Framer Motion |
-| Audio | Howler.js |
+| Audio | Web Audio API, synthesized at runtime, no sample files |
 | Backend | Node + Fastify + Pino |
 | Validation | Zod (telemetry, DNA, API I/O, Meshy responses, env) |
-| Cache/DB | JSON file → SQLite + Drizzle if schema settles |
-| Storage | Backend static dir → R2 only if split deploy |
-| Updates | Meshy per-task SSE → our SSE (see §0.1) |
-| Tests | Vitest |
+| Cache | JSON index |
+| Storage | Backend static dir |
+| Updates | Meshy per-task SSE, re-emitted as domain SSE |
+| Tests | Vitest, 205 tests |
 | Package manager | pnpm workspaces |
 
-**Cut and staying cut:** Rapier, R2-on-day-one, Drizzle-on-day-one, Mixamo rigging, humanoid animation state machine, Redux, component libraries, MCP server as a runtime dependency.
+**Not used:** Rapier, R2, Drizzle, Mixamo, Redux, component libraries, an MCP
+server as a runtime dependency.
 
-First-person view was planned as load-bearing: it removes rigging, hand/body
-animation, and most camera work at once — and puts the one-of-one relic across a
-large share of the frame, which is the shot that matters. **It did not stay load-bearing.**
-Meshy's rigging endpoint made character animation cheap enough that third person
-became the default and first person became a toggle, so the framing argument
-survives as an option rather than a constraint. See §0.1.
+### View
+
+Third person is the default, showing a rigged champion swinging the real
+generated weapon, because choosing a champion and never seeing it makes the choice
+pointless. **V** switches to first person, where armoured gauntlets hold the blade
+in view and the relic occupies a large share of the frame.
 
 ### Repo layout
 
 ```
 relic-forge/
 ├── apps/
-│   ├── web/     # game, forge, components
-│   └── api/     # fastify, meshy services, generation, cache
+│   ├── web/          # game, forge, lab. Never sees Meshy.
+│   └── api/          # fastify, meshy services, generation, cache
 ├── packages/
-│   └── relic-core/   # telemetry.ts, dna.ts, prompt.ts, normalize.ts, types.ts
+│   └── relic-core/   # dna.ts, prompt.ts, normalize.ts, cacheKey.ts, types.ts
 ├── pnpm-workspace.yaml
 └── README.md
 ```
 
-Meshy access is confined to `apps/api/src/services/meshy/` — `meshy.client.ts`, `meshy.image.ts`, `meshy.imageTo3d.ts`, `meshy.tasks.ts`, `meshy.types.ts`. No stray `fetch("https://api.meshy...")` anywhere else.
+Meshy access is confined to `apps/api/src/services/meshy/`. No stray
+`fetch("https://api.meshy...")` exists anywhere else.
+
+`relic-core` is pure with no I/O, which is what lets the normalizer be unit-tested
+in Node against synthetic geometry and also run in the browser at equip time. One
+implementation, one test suite, two runtimes.
 
 ---
 
-## 10. Build order
+## 10. Generated content
 
-1. **Gate 0** — concept → Meshy-7 → GLB → R3F → automatic orientation/scale/grip, across 5–10 varied weapon shapes. Blocking.
-2. **relic-core** — telemetry → DNA → prompt → generation config → versioned cache key. Pure functions, Vitest-covered.
-3. **Generation backend** — Fastify → text-to-image → Meshy-7 → task SSE → file cache → SSE.
-4. **Thin game shell** — arena, boss HP, player HP, simple attacks, victory detection. Deliberately minimal; this is setup, not product.
-5. **Forge sequence** — majority of visual polish lands here.
-6. **Hero outputs** — two or three excellent contrasting relics, cached, then record.
+Only the weapon is generated while you play. Bosses and champions are also
+Meshy-generated, but ahead of time by scripts in `apps/api/scripts/`, and they
+ship as assets. The runtime claim belongs to the relic alone.
 
-On a **3-day clock**: day 1 is Gate 0 + relic-core (ladder-capped, no overtime on normalization), day 2 is backend + thin game shell with hero candidates generating in the background, day 3 is Forge polish + recording. The debug panel from step 1 doubles as the Tier 3 hint authoring UI — build it once, use it for both.
+Characters are rigged through the rigging endpoint, which ships walking and
+running clips for 5 credits. Meshy recommends t-pose input and these were
+generated in a-pose, so one character was rigged as a test rather than
+regenerating the whole cast in t-pose for roughly 350 credits. It worked on the
+first attempt.
 
-**Discipline rule:** start generating hero candidates the moment step 3 works. Meshy generation is external latency — burn it in parallel while building the arena and Forge, not serially at the end.
+Only the walking clip is loaded. Running is the same skeleton faster, so
+`timeScale` covers it instead of downloading a second six-megabyte file.
 
-Steps 1–3 are the actual project. Step 4 is set dressing.
+Rigged output gets a texture-only optimizer, because the standard
+weld/dedup/prune pass is exactly the surgery that breaks skin weights and
+animation channels. That took 24 rigged files from 150 MB to 37 MB without
+touching a vertex.
+
+Three levels of degradation, because a fight must never depend on an asset being
+present: the rigged walk if it exists, the static mesh if only that does, and a
+primitive fallback underneath. Approach, telegraph and strike stay whole-body
+transforms in all three, so behaviour never changes with the asset.
 
 ---
 
 ## 11. Definition of done
 
-- A player fights, wins, and receives a visibly unique Meshy-generated weapon derived from their gameplay — no developer intervention.
-- The meshy-7 GLB loads into the running game and is equipped with **zero manual asset editing**.
-- The Forge makes generation latency feel intentional.
-- Two runs against the same boss produce clearly different relics: `SAME BOSS. DIFFERENT STORY. DIFFERENT RELIC.`
+- A player fights, wins, and receives a visibly unique generated weapon derived
+  from their gameplay, with no developer intervention.
+- The GLB loads into the running game and is equipped with zero manual asset editing.
+- The forge makes generation latency feel intentional.
+- Two runs against the same boss produce clearly different relics.
 - A game developer reads the repo and starts imagining it in their own game.
 
-## 12. Explicitly out of scope
+## 12. Out of scope
 
-Multiplayer, open world, NPCs, procedural dungeons, marketplace, accounts, trading, crafting trees, full inventory, **runtime** generation of anything but the weapon, a Meshy runtime SDK, world transformation. Those are other projects.
+Multiplayer, open world, NPCs, procedural dungeons, marketplace, accounts,
+trading, crafting trees, full inventory, runtime generation of anything but the
+weapon, a Meshy runtime SDK, world transformation. Those are other projects.
 
-Bosses and champions are generated, but ahead of time by scripts and shipped as
-assets. The runtime claim belongs to the relic alone.
+Losing forfeits the relic, because a weapon forged from a defeat would stop being
+a record of how you won.
 
 ## 13. Environment
 
 ```
 MESHY_API_KEY=
-DATABASE_URL=
-# MESHY_WEBHOOK_SECRET — dropped, no webhook receiver was needed (§0.1)
-# only if split deploy:
-R2_ACCOUNT_ID=
-R2_ACCESS_KEY_ID=
-R2_SECRET_ACCESS_KEY=
-R2_BUCKET=
-R2_PUBLIC_URL=
-# P1, naming/lore only:
-OPENAI_API_KEY=
+PORT=8787
+LOG_LEVEL=info
+STORAGE_DIR=./storage
+CACHE_DIR=./cache
+CREDIT_FLOOR=100
+CLIENT_ORIGIN=
 ```
 
-Ship `.env.example`. Never commit secrets — note that `.mcp.json` currently holds a live key in plaintext and must be gitignored before `git init`.
+`CREDIT_FLOOR` is a runaway-bug backstop rather than a budget. Generation refuses
+below it, which catches retry loops. `CLIENT_ORIGIN` is only needed when the
+client is hosted apart from this server; the single-origin deployment leaves it
+empty because Fastify serves the built client itself.
+
+Secrets are never committed. `.mcp.json` holds a live key in plaintext and is
+gitignored.
 
 ---
 
-**Governing rule:** sophisticated engineering underneath *one* simple product story. Everything exists to serve — fight → victory becomes DNA → Meshy-7 forges a unique weapon → wield it.
+**Governing rule:** sophisticated engineering underneath one simple product
+story. Everything exists to serve fight, victory becomes DNA, a unique weapon is
+forged, you wield it.
