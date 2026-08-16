@@ -326,9 +326,21 @@ export function AnimatedCharacter({
   /*
    * The weapon arm, damped against the walk clip.
    *
-   * Runs at priority 1 so it lands after the mixer has written this frame's pose,
-   * which is the only order in which an override means anything: at the default
-   * priority it would be overwritten by the animation it is trying to correct.
+   * It has to run after the mixer has written this frame's pose, or it corrects a
+   * pose that is about to be overwritten and does nothing at all.
+   *
+   * Not by frame priority, which was the obvious way and is a trap. R3F treats
+   * any priority above zero as "this subscription is taking over rendering" and
+   * switches automatic rendering off entirely:
+   *
+   *   if (!state.internal.priority && state.gl.render) state.gl.render(...)
+   *
+   * One damping callback at priority 1 would therefore have frozen the canvas the
+   * moment a rigged character loaded.
+   *
+   * Ordering comes from subscription order instead. Equal priorities keep the
+   * order they were registered in, and useAnimations subscribes above this hook,
+   * so the mixer has always written before this runs.
    *
    * The rest pose is captured on the first frame rather than read from the bind
    * pose, because these rigs arrive through an FBX pipeline whose bind pose is
@@ -347,7 +359,7 @@ export function AnimatedCharacter({
       const target = rest.current?.[i];
       if (target) bone.quaternion.slerp(target, CARRY_DAMPING);
     });
-  }, 1);
+  });
 
   useEffect(() => {
     const first = names[0];
