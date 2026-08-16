@@ -6,6 +6,7 @@ import { themeFor } from "../game/theme";
 import { bossAt } from "../game/bosses";
 import { rankFor, useProgress } from "../state/useProgress";
 import { carriedDamage } from "../game/equipped";
+import { championFor } from "../game/champions";
 
 /**
  * Loadout, hold TAB.
@@ -100,8 +101,17 @@ export function LoadoutPanel() {
               <div className="grid gap-4 md:grid-cols-2">
                 {/* Slot 1, what you brought. */}
                 <div className="border border-ash-800 bg-ash-900/70 p-5">
+                  {/*
+                    Named, because the numbers below it are not the weapon's.
+                    
+                    A champion multiplies what it carries, so the same relic
+                    reads 36 in Ember's hands and 24 in Frost's. Shown without
+                    saying whose hands, that looks like the weapon changing by
+                    itself, which is the one thing it must never look like on the
+                    screen that exists to compare weapons.
+                  */}
                   <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-600">
-                    equipped
+                    equipped · as {championFor(affinity).name}
                   </p>
                   <h3 className="mt-2 font-display text-2xl tracking-[0.1em] text-stone-300">
                     Iron Arming Sword
