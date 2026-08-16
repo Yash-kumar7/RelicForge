@@ -146,7 +146,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   const onHitBoss = useCallback(
     (kind: "light" | "heavy", damage: number) => {
       boss.current?.hit(kind);
-      sfx.hitBoss();
+      sfx.hitBoss(kind);
       // Impact arrives on four channels at once: sound, a staggering boss,
       // a floating number, and a shaken camera. Any one alone reads as weak.
       registerHit(damage, kind);

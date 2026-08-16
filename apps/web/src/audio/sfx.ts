@@ -79,6 +79,24 @@ function whenRunning(play: () => void): void {
   });
 }
 
+/**
+ * Dips everything for a moment, so an impact owns the frame it lands in.
+ *
+ * Sidechain ducking, which is what a mix does when one sound has to be the only
+ * thing that matters for a tenth of a second. Without it a heavy landing competes
+ * with the drone, the embers and its own whoosh, and arrives smaller than the
+ * screen shake happening beside it.
+ */
+function duck(amount: number, ms: number): void {
+  const audio = ctx();
+  if (!audio || !master) return;
+  const now = audio.currentTime;
+  master.gain.cancelScheduledValues(now);
+  master.gain.setValueAtTime(master.gain.value, now);
+  master.gain.linearRampToValueAtTime(amount, now + 0.012);
+  master.gain.linearRampToValueAtTime(1, now + ms / 1000);
+}
+
 export function setVolume(value: number): void {
   if (master) master.gain.value = Math.max(0, Math.min(1, value));
 }
@@ -386,13 +404,45 @@ export const sfx = {
     tone({ frequency: 150, sweepTo: 46, duration: 0.36, type: "sawtooth", gain: 0.3 });
   },
 
-  hitBoss: () => {
-    tone({ frequency: 160, sweepTo: 70, duration: 0.2, type: "square", gain: 0.27 });
-    noise(0.12, 0.33, 3200);
+  /**
+   * An impact in three layers, which is how these are built.
+   *
+   * A transient, a body and a tail, each owning a different part of the
+   * spectrum so they stack rather than compete: the bright metal on top, the
+   * weight in the low mids, the rumble underneath. This was two layers in the
+   * same octave and read as a click rather than as a blow landing.
+   *
+   * Light and heavy are different sounds rather than one sound at two volumes.
+   * A player has to hear which attack they threw without looking at the number
+   * that floated off the boss, and a heavy is the one that gets the sub and the
+   * duck.
+   */
+  hitBoss: (kind: "light" | "heavy" = "light") => {
+    if (kind === "heavy") {
+      // Transient: the edge arriving. Short, bright, gone before it is heard.
+      noise(0.045, 0.5, 7000);
+      // Body: struck plate, and the part that says how heavy the weapon is.
+      tone({ frequency: 190, sweepTo: 62, duration: 0.26, type: "square", gain: 0.34 });
+      tone({ frequency: 96, sweepTo: 44, duration: 0.34, type: "sawtooth", gain: 0.26, delay: 0.01 });
+      // Tail: the room answering, under everything else.
+      noise(0.42, 0.16, 420, 0.03);
+      tone({ frequency: 52, duration: 0.5, type: "sine", gain: 0.3, delay: 0.02 });
+      duck(0.55, 150);
+      return;
+    }
+
+    noise(0.03, 0.42, 8200);
+    tone({ frequency: 320, sweepTo: 140, duration: 0.14, type: "square", gain: 0.26 });
+    noise(0.18, 0.1, 900, 0.02);
   },
 
+  /* Taking a hit is the one sound that must never be mistaken for landing one,
+     so it is dull where an impact is bright: no transient, all body and tail. */
   playerHurt: () => {
     tone({ frequency: 110, sweepTo: 48, duration: 0.5, type: "sawtooth", gain: 0.36 });
+    tone({ frequency: 58, duration: 0.6, type: "sine", gain: 0.32, delay: 0.01 });
+    noise(0.3, 0.14, 500);
+    duck(0.6, 180);
   },
 
   dodge: () => {
