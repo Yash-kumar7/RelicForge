@@ -29,6 +29,32 @@ export function unlockAudio(): void {
   void ctx();
 }
 
+/**
+ * Runs a cue once the context is actually running.
+ *
+ * Browsers start an AudioContext suspended and resume() is asynchronous, so a
+ * sound asked for in the same gesture that unlocks the audio is scheduled
+ * against a clock that is not moving yet and is simply lost. On every screen
+ * after the first that is invisible, because something has already woken the
+ * context. On the first screen it is the whole experience: the title screen has
+ * exactly one button, so its click is usually the first gesture of the session,
+ * and it was the one press guaranteed to be silent.
+ *
+ * A resume takes a few milliseconds, which is inside the window where a sound
+ * still reads as belonging to the press that caused it.
+ */
+function whenRunning(play: () => void): void {
+  const audio = ctx();
+  if (!audio || !master) return;
+  if (audio.state === "running") {
+    play();
+    return;
+  }
+  void audio.resume().then(play, () => {
+    /* An autoplay policy refused it. The interface is silent, not broken. */
+  });
+}
+
 export function setVolume(value: number): void {
   if (master) master.gain.value = Math.max(0, Math.min(1, value));
 }
@@ -43,7 +69,11 @@ interface ToneOptions {
   delay?: number;
 }
 
-function tone({ frequency, duration, type = "sine", gain = 0.3, sweepTo, delay = 0 }: ToneOptions) {
+function tone(options: ToneOptions) {
+  whenRunning(() => emitTone(options));
+}
+
+function emitTone({ frequency, duration, type = "sine", gain = 0.3, sweepTo, delay = 0 }: ToneOptions) {
   const audio = ctx();
   if (!audio || !master) return;
 
@@ -67,6 +97,10 @@ function tone({ frequency, duration, type = "sine", gain = 0.3, sweepTo, delay =
 }
 
 function noise(duration: number, gain = 0.2, filterHz = 1200, delay = 0) {
+  whenRunning(() => emitNoise(duration, gain, filterHz, delay));
+}
+
+function emitNoise(duration: number, gain: number, filterHz: number, delay: number) {
   const audio = ctx();
   if (!audio || !master) return;
 
