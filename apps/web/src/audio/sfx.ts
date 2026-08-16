@@ -237,43 +237,25 @@ const UI = {
 let ambience: { stop: () => void } | null = null;
 
 /**
- * The title motif: a minor arpeggio, low and slow.
+ * One thing, and it is a forge.
  *
- * A room tone alone says a place exists. A theme says a game does, and the
- * landing page is where somebody decides whether this is a project or a product.
+ * The first version was two: a pair of detuned oscillators held under a slow
+ * minor arpeggio. Both were synthesized from bare waveforms, and that is what
+ * they sounded like. A sustained sine is a test tone however low it is pitched,
+ * the beating between the two detuned voices is the "uuuu" underneath
+ * everything, and a melody made of triangle waves sits on top of it as a second,
+ * unrelated instrument. Two cheap sounds do not add up to atmosphere; they add up
+ * to two cheap sounds.
  *
- * Four notes, rising then falling back, in A minor because the whole palette is
- * already ash and ember and a minor third is what that sounds like. Sparse on
- * purpose: it plays under a page that people read, so it is closer to a bell in
- * another room than to music.
+ * What is left has no pitched material at all. Filtered noise is a room, because
+ * that is physically what a room is, and a lowpass drifting slowly across it is
+ * air moving over coals. The only events are the forge being worked, far enough
+ * off to be someone else's work.
+ *
+ * The test is the same one as before: it should be noticed on leaving rather than
+ * on arriving. A drone fails that by being audible as itself.
  */
-const MOTIF: { frequency: number; at: number; duration: number; gain: number }[] = [
-  { frequency: 220.0, at: 0, duration: 2.6, gain: 0.2 }, // A3
-  { frequency: 261.63, at: 1.7, duration: 2.6, gain: 0.17 }, // C4
-  { frequency: 329.63, at: 3.4, duration: 3.0, gain: 0.14 }, // E4
-  { frequency: 293.66, at: 6.2, duration: 3.4, gain: 0.13 }, // D4
-  { frequency: 164.81, at: 9.0, duration: 4.2, gain: 0.16 }, // E3, the floor
-];
-
-/** How long between plays. Long enough that it never becomes a loop you notice. */
-const MOTIF_EVERY_MS = 22_000;
-
-export function startAmbience(): void {
-  if (ambience) return;
-  /*
-   * Waits for the context, rather than giving up on it.
-   *
-   * This checked whether the context was already running and returned if it was
-   * not, which is exactly the state it is in when this is called: the first
-   * gesture unlocks the audio and starts an asynchronous resume, and this ran a
-   * moment later against a context still coming up. It gave up, and because the
-   * unlock listener fires once, nothing ever asked again. The room tone has never
-   * played.
-   *
-   * whenRunning already exists for precisely this and is what every cue uses.
-   */
-  whenRunning(() => buildAmbience());
-}
+const FORGE_BREATH_SECONDS = 11;
 
 function buildAmbience(): void {
   if (ambience) return;
@@ -283,26 +265,20 @@ function buildAmbience(): void {
   const bed = audio.createGain();
   bed.gain.setValueAtTime(0.0001, audio.currentTime);
   // Four seconds to arrive, so it is never the thing that made you look up.
-  bed.gain.exponentialRampToValueAtTime(0.16, audio.currentTime + 4);
+  bed.gain.exponentialRampToValueAtTime(0.5, audio.currentTime + 4);
   bed.connect(master);
 
-  const drones = [54, 81].map((frequency, i) => {
-    const osc = audio.createOscillator();
-    osc.type = i === 0 ? "sine" : "triangle";
-    osc.frequency.value = frequency;
-    // Detuned a few cents apart so the two beat slowly against each other,
-    // which is what stops a held tone sounding like a test signal.
-    osc.detune.value = i === 0 ? -6 : 7;
-    osc.connect(bed);
-    osc.start();
-    return osc;
-  });
-
-  /* Coals, rather than static: a lowpass this steep leaves only the rumble. */
+  /*
+   * Four seconds of noise on a loop, filtered hard.
+   *
+   * Long enough that the loop point is not a rhythm, and the filter is doing the
+   * work: everything above a couple of hundred hertz is hiss, and everything left
+   * is the low roar of something burning.
+   */
   const frames = Math.floor(audio.sampleRate * 4);
   const buffer = audio.createBuffer(1, frames, audio.sampleRate);
   const data = buffer.getChannelData(0);
-  for (let i = 0; i < frames; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+  for (let i = 0; i < frames; i++) data[i] = (Math.random() * 2 - 1) * 0.6;
 
   const coals = audio.createBufferSource();
   coals.buffer = buffer;
@@ -310,68 +286,77 @@ function buildAmbience(): void {
 
   const filter = audio.createBiquadFilter();
   filter.type = "lowpass";
-  filter.frequency.value = 220;
+  filter.frequency.value = 180;
+  filter.Q.value = 0.7;
 
-  const coalGain = audio.createGain();
-  coalGain.gain.value = 0.35;
+  /*
+   * The cutoff breathes, which is the whole difference between a fire and a
+   * hiss. Held noise reads as static; noise that opens and closes reads as
+   * something alive, and eleven seconds is slow enough that nobody counts it.
+   */
+  const breath = audio.createOscillator();
+  breath.type = "sine";
+  breath.frequency.value = 1 / FORGE_BREATH_SECONDS;
+  const breathDepth = audio.createGain();
+  breathDepth.gain.value = 90;
+  breath.connect(breathDepth);
+  breathDepth.connect(filter.frequency);
+  breath.start();
 
   coals.connect(filter);
-  filter.connect(coalGain);
-  coalGain.connect(bed);
+  filter.connect(bed);
   coals.start();
 
   /*
-   * Struck once when the page opens, then at a distance.
+   * Somebody working, in the next room.
    *
-   * The first pass is delayed a beat so it lands after the drone has faded up,
-   * which makes it read as something in the room rather than as the page
-   * announcing itself.
+   * The only events in the whole ambience, and they are struck metal rather than
+   * notes: a short ring with a body under it, quiet, and never on a beat. This is
+   * the forge the page is about, so it should be heard being used.
    */
-  const playMotif = () => {
-    for (const note of MOTIF) {
-      tone({
-        frequency: note.frequency,
-        duration: note.duration,
-        type: "triangle",
-        gain: note.gain,
-        delay: note.at,
-      });
-      // A fifth above, quieter and a touch late, so each note has a body rather
-      // than being a bare oscillator.
-      tone({
-        frequency: note.frequency * 1.5,
-        duration: note.duration * 0.7,
-        type: "sine",
-        gain: note.gain * 0.35,
-        delay: note.at + 0.05,
-      });
-    }
+  const strike = () => {
+    tone({ frequency: 430 + Math.random() * 90, duration: 0.5, type: "triangle", gain: 0.05 });
+    tone({ frequency: 128, sweepTo: 96, duration: 0.4, type: "sine", gain: 0.07, delay: 0.005 });
+    noise(0.06, 0.05, 2600);
   };
 
-  const opening = window.setTimeout(playMotif, 600);
-  const repeat = window.setInterval(playMotif, MOTIF_EVERY_MS);
-
-  /* Coals shifting, every few seconds, never on a beat anyone could count. */
-  const crackle = window.setInterval(() => {
-    noise(0.09 + Math.random() * 0.14, 0.13, 900 + Math.random() * 700);
-  }, 2600);
+  let strikeTimer = 0;
+  const scheduleStrike = () => {
+    // Between four and eleven seconds, so the ear never predicts one.
+    strikeTimer = window.setTimeout(() => {
+      strike();
+      scheduleStrike();
+    }, 4000 + Math.random() * 7000);
+  };
+  scheduleStrike();
 
   ambience = {
     stop: () => {
-      window.clearTimeout(opening);
-      window.clearInterval(repeat);
-      window.clearInterval(crackle);
+      window.clearTimeout(strikeTimer);
       const now = audio.currentTime;
       bed.gain.cancelScheduledValues(now);
       bed.gain.setValueAtTime(Math.max(0.0001, bed.gain.value), now);
       bed.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
       // Stopped after the fade, or the tail is cut off mid-breath.
       window.setTimeout(() => {
-        drones.forEach((osc) => osc.stop());
         coals.stop();
+        breath.stop();
       }, 1400);
     },
   };
+}
+
+/**
+ * Starts the room tone, waiting for the context rather than giving up on it.
+ *
+ * This once checked whether the context was already running and returned if it
+ * was not, which is exactly its state when called: the first gesture begins an
+ * asynchronous resume and this ran a moment later. It gave up, and since the
+ * unlock listener fires once, nothing ever asked again.
+ */
+export function startAmbience(): void {
+  if (ambience) return;
+  whenRunning(() => buildAmbience());
 }
 
 export function stopAmbience(): void {
