@@ -48,28 +48,21 @@ So RelicForge's first engineering task wasn't the boss fight or the API client. 
 Before writing any geometry math, the spike measured what orientation meshy-7's
 output actually arrives in. Twelve shapes, chosen to be awkward on purpose:
 
-| shape | raw angle | end confidence | grip | corpus |
-|---|---|---|---|---|
-| spear | 0.0° | 0.67 | 0.04 | core |
-| ringed staff | 0.0° | 0.74 | 0.08 | stress |
-| twin-headed maul | 0.0° | 1.00 | 0.13 | stress |
-| greatsword | 0.1° | 0.55 | 0.20 | core |
-| warhammer | 0.1° | 0.09 | 0.12 | core |
-| glaive | 0.3° | 0.44 | 0.07 | core |
-| crystalline shard-blade | 0.9° | 0.30 | 0.18 | stress |
-| curved saber | 1.2° | 0.46 | 0.20 | core |
-| chained flail | 2.4° | 0.51 | 0.20 | stress |
-| asymmetric axe | 10.8° | 0.06 | 0.12 | core |
-| dagger | 25.8° | 0.72 | 0.35 | core |
-| ornate longsword | 50.3° | 0.56 | 0.25 | core |
+| | raw angle off canonical |
+|---|---|
+| best 8 of 12 | **0.0° to 1.2°** |
+| asymmetric axe | 10.8° |
+| dagger | **25.8°** |
+| ornate longsword | **50.3°** |
+
+*Full twelve-shape results, with grip and end-confidence scores: [PRD.md §2](PRD.md#2-normalization).*
 
 **Median raw angle: 0.9°.** Most shapes arrive essentially canonical, because
 every concept is generated under a fixed composition contract, *vertical, tip
 up, pommel down, three-quarter view*, and image-to-3d preserves that framing.
 
-But look at the bottom of the table. The dagger arrives 26° off and the ornate
-longsword **50° off**. On those two, the PCA is not confirming a lucky result,
-it is the only reason they end up upright at all.
+But look at the last two rows. On those, the PCA is not confirming a lucky
+result, it is the only reason they end up upright at all.
 
 That distinction matters, and an earlier version of this README got it wrong.
 Measured on three shapes, the median was 0.1° and the conclusion looked like
@@ -82,7 +75,9 @@ hand.
 
 An automatic pipeline with a structured human override is a real production system. One that needs a person to open Blender every time an AI generates a sword is not, the runtime-generation story would be fiction.
 
-So RelicForge allows a persisted `OrientationHint` (authored in seconds via `/lab`, stored on the relic record) and does **not** allow hand-editing a GLB. In the current build no hint is used by any shipped relic.
+So RelicForge allows a persisted orientation hint, authored in seconds via `/lab` and stored on the relic record, and does **not** allow hand-editing a GLB. No shipped relic currently uses one.
+
+*Pipeline internals, the hint's shape, and why area-weighted PCA beats the alternatives: [PRD.md §2](PRD.md#2-normalization).*
 
 ---
 
@@ -214,16 +209,9 @@ recommends t-pose input and these were generated in a-pose, so one character was
 rigged first as a 5-credit test rather than regenerating the whole cast in t-pose
 for roughly 350. It worked on the first attempt.
 
-Only the walking clip is loaded; running is the same skeleton faster, so
-`timeScale` covers it instead of downloading a second six-megabyte file. Rigged
-output gets a **texture-only** optimizer, because the standard weld/dedup/prune
-pass is exactly the surgery that breaks skin weights and animation channels.
-That took 24 rigged files from 150 MB to 37 MB without touching a vertex.
-
-Three levels of degradation, because a fight must never depend on an asset being
-present: the rigged walk if it exists, the static mesh if only that does, and a
-primitive fallback underneath. Approach, telegraph and strike stay whole-body
-transforms in all three, so behaviour never changes with the asset.
+Rigged output needs a different optimizer from static meshes, and assets are
+loaded through three levels of degradation so a fight never depends on one being
+present. *Both covered in [PRD.md §10](PRD.md#10-generated-content).*
 
 ## How you play
 
@@ -259,8 +247,6 @@ pnpm dev                  # web :5173 · api :8787
 | `pnpm test` | relic-core suite (205 tests) |
 | `pnpm typecheck` | strict, all workspaces |
 | `pnpm lint` | ESLint flat config, all workspaces |
-| `pnpm spike -- --wave 0` | generate the Gate 0 corpus (~130 credits) |
-| `pnpm --filter @relic/api exec tsx scripts/seed-hero-relics.ts` | promote Gate 1 output into the live cache |
 
 Add `?mode=dev` to the game URL to use the cheap generation config (one concept, no ultra) while iterating.
 
@@ -306,6 +292,3 @@ Once a game can generate assets from its own state, the same architecture covers
 
 The broader point: generative 3D can turn game state into **content**, not just help studios produce assets before launch.
 
----
-
-*Built with the Meshy API. Remove Meshy and the central mechanic is gone, which is the whole idea.*
