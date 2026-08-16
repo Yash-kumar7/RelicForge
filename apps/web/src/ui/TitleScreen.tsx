@@ -641,7 +641,7 @@ export function TitleScreen() {
             {/* The heading is set in a display face at up to 2.5rem with
                 leading-none, so it has almost no room under it of its own: mt-6
                 put the first champion within a few pixels of the descenders. */}
-            <div className="mt-10 flex flex-col gap-6">
+            <div className="mt-10 flex flex-col gap-5">
               {AFFINITIES.map((a) => (
                 /*
                   A mark per row, in the corner rather than in the card.
@@ -699,7 +699,13 @@ export function TitleScreen() {
                         brightness rather than a drain of colour, and every
                         portrait is lifted enough to survive being small.
                       */
-                      "relative h-16 w-14 shrink-0 overflow-hidden transition",
+                      /* 64 pixels was chosen when three rows had to share a
+                         page with a detail panel and a paragraph. The panel and
+                         the paragraph are both gone and the column now ends two
+                         thirds of the way down the window, so the portraits can
+                         be the size the character select of a game about
+                         characters should have. */
+                      "relative h-28 w-24 shrink-0 overflow-hidden transition",
                       affinity === a.id
                         ? "opacity-100 brightness-125"
                         : "opacity-80 brightness-110",
@@ -713,7 +719,9 @@ export function TitleScreen() {
                          56 pixels wide is still mostly torso, and torsos are
                          what these three have in common; the helmets are what
                          tells them apart. */
-                      className="absolute left-1/2 -top-1 h-[17rem] w-auto max-w-none -translate-x-1/2 object-contain"
+                      /* Scaled with the frame, so the crop still lands on the
+                         helm and shoulders rather than pulling back to a torso. */
+                      className="absolute left-1/2 -top-2 h-[28rem] w-auto max-w-none -translate-x-1/2 object-contain"
                     />
                   </span>
 
