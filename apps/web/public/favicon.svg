@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!--
+    A relic in the canonical pose.
+
+    This is the same orientation the normalizer resolves every generated mesh
+    into before it can be equipped: principal axis on +Y, tip up, grip at the
+    origin. The one shape the whole pipeline exists to produce, drawn by hand at
+    the one size where it has to survive being 16 pixels wide.
+
+    Which it did not, at first. The first version was drawn at a comfortable
+    scale and checked afterwards: a 3-unit blade and a 2.9-unit guard are one and
+    a half pixels each at 16, and both disappeared into an ember glow that was
+    the widest and brightest thing in the frame. It read as an orange dot.
+
+    So it is drawn for 16 and allowed to look slightly heavy at 256, which is the
+    correct way round. Every stroke is at least four units, nothing relies on
+    taper to be understood, and the ember is pushed low and dimmed so the blade
+    is always light-on-black at its widest point. Contrast carries a small mark;
+    detail does not.
+  -->
+  <defs>
+    <radialGradient id="coals" cx="50%" cy="84%" r="46%">
+      <stop offset="0%" stop-color="#ff8c42" stop-opacity="0.85" />
+      <stop offset="60%" stop-color="#ff6b1a" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ff6b1a" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fffaf2" />
+      <stop offset="70%" stop-color="#d6cfc4" />
+      <stop offset="100%" stop-color="#a89e8f" />
+    </linearGradient>
+  </defs>
+
+  <rect width="32" height="32" rx="6" fill="#0a0908" />
+
+  <!-- The forge, pushed to the floor of the frame. It was centred and 13 units
+       wide, which put its brightest part directly behind the blade and killed
+       the only contrast the mark has. -->
+  <ellipse cx="16" cy="30" rx="15" ry="11" fill="url(#coals)" />
+
+  <!-- Blade. Nine units at the shoulder, so it is still four and a half pixels
+       at a 16px render, and the taper is a detail rather than the silhouette. -->
+  <path d="M16 2.4 20.5 12v5.5h-9V12z" fill="url(#steel)" />
+
+  <!-- Crossguard. The widest thing in the mark and the reason it survives small:
+       an upright alone has no silhouette, a cross is unmistakable at any size. -->
+  <rect x="4.5" y="17.5" width="23" height="4" rx="1" fill="#7d6b55" />
+  <rect x="4.5" y="17.5" width="23" height="1.6" rx="0.8" fill="#a89e8f" />
+
+  <!-- Grip and pommel, sized to hold together as one dark mass when they stop
+       being separable. -->
+  <rect x="13.6" y="21.5" width="4.8" height="6" fill="#453b30" />
+  <rect x="11.6" y="26.6" width="8.8" height="3.2" rx="1.6" fill="#6b5c4a" />
+</svg>

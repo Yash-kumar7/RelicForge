@@ -6,6 +6,22 @@
     <title>RelicForge · Your weapon is made from how you fight</title>
 
     <!--
+      A relic in the canonical pose, which is the same orientation the normalizer
+      resolves every generated mesh into before it can be held.
+
+      SVG rather than a bitmap, so one file covers the tab, the bookmark bar and
+      a retina pin without three exports that drift apart. The theme colour is
+      the arena's own background, so the browser chrome on mobile stops being a
+      white bar over a near-black game.
+    -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#0a0908" />
+    <meta
+      name="description"
+      content="Defeat a boss and the way you fought is compiled into a one-of-one weapon, generated at runtime."
+    />
+
+    <!--
       Cinzel was declared as the display face from the first commit and never
       loaded, so every heading in the game has been rendering as Georgia. It is
       an inscriptional Roman face, cut for stone and metal, which is why it was
