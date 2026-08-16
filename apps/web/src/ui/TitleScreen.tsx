@@ -11,6 +11,7 @@ import { BossPreview } from "./BossPreview";
 import { ArmamentPanel } from "./ArmamentPanel";
 import { PendingForgePanel } from "./PendingForgePanel";
 import { RankSigil } from "./RankSigil";
+import { InfoTip } from "./InfoTip";
 import { SpecimenPlate } from "./SpecimenPlate";
 import { TitleHero } from "./TitleHero";
 import { HowItWorks } from "./HowItWorks";
@@ -447,8 +448,15 @@ export function TitleScreen() {
               the figures and the bar sit under it as one group.
             */}
             <span className="block w-[14rem] shrink-0 whitespace-nowrap">
-              <span className="block font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
+              <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
                 rank
+                {/* Nothing on screen has ever said what a rank is for. It is for
+                    nothing, deliberately, and that is worth one sentence. */}
+                <InfoTip label="rank">
+                  Experience is a record of what you have fought, not a currency. Rank buys no
+                  damage and unlocks no weapon: every relic is earned in a single fight, by how
+                  that fight went.
+                </InfoTip>
               </span>
 
               <span className="mt-1.5 flex items-center gap-2.5">
@@ -846,18 +854,21 @@ export function TitleScreen() {
                   shape the weapon the forge makes for you.
                 </p>
                 {/*
-                  Says what moves you inside the range.
+                  What moves you inside the range, on request.
 
                   Each row above offers a span rather than a number, which is
-                  honest and, on its own, unanswerable: a player reading 60 to 260
-                  has no way to tell what puts them at either end, so the figure
-                  reads as luck. The same four things that shape the weapon decide
-                  it, which is worth saying once here rather than leaving anyone to
-                  infer it from two fights that paid differently.
+                  honest and unanswerable on its own: a player reading 60 to 260
+                  cannot tell what puts them at either end, so it reads as luck.
+                  That was a second paragraph here, and a second paragraph is how a
+                  screen for picking a fight turns into a page to be read first.
+                  The answer sits behind the question instead.
                 */}
-                <p className="mt-2 text-[11px] leading-relaxed text-stone-700">
-                  The low number is a win and nothing more. You earn the rest by finishing hurt,
-                  never healing, dodging often, and claiming the relic.
+                <p className="mt-2 flex items-center gap-2 text-[11px] leading-relaxed text-stone-700">
+                  <InfoTip label="experience">
+                    The lower number is a win and nothing more. You earn the rest by finishing
+                    hurt, never healing, dodging often, and claiming the relic.
+                  </InfoTip>
+                  How the experience on each row is earned
                 </p>
               </>
             )}
