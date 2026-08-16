@@ -81,7 +81,24 @@ function AttackNotes() {
   );
 }
 
-function AttackBreakdown({ traits, dim = false }: { traits: RelicTraits; dim?: boolean }) {
+function AttackBreakdown({
+  traits,
+  ceiling,
+  dim = false,
+}: {
+  traits: RelicTraits;
+  /**
+   * The largest figure on the screen, so both cards share one scale.
+   *
+   * Measured against the heaviest blow either weapon can throw rather than from
+   * zero, exactly as the champion health bars are measured against the toughest
+   * champion. A bar drawn against its own maximum would fill on both cards and
+   * say nothing, which is the failure mode of every stat bar that compares a
+   * thing to itself.
+   */
+  ceiling: number;
+  dim?: boolean;
+}) {
   const light = attackSpec("light", traits);
   const heavy = attackSpec("heavy", traits);
 
@@ -104,15 +121,34 @@ function AttackBreakdown({ traits, dim = false }: { traits: RelicTraits; dim?: b
              both say it; on the screen where a weapon is chosen it is answering a
              question that has not been asked yet. What matters here is that one
              attack does 30 and the other 72. */
-          <span key={attack.kind} className="flex items-baseline gap-3">
-            <span className="font-display text-sm tracking-[0.1em] text-stone-300">
+          <span key={attack.kind} className="flex items-center gap-3">
+            <span className="w-28 shrink-0 font-display text-sm tracking-[0.1em] text-stone-300">
               {attack.name}
             </span>
+
+            {/*
+              A bar, for the same reason health has one.
+
+              Two numbers in a column are a comparison a player has to do; two
+              bars are one they can see. It also puts quick against strong on the
+              same scale, so the trade the whole step is about, less damage for a
+              swing that ends sooner, is visible without reading anything.
+            */}
+            <span className="block h-[3px] flex-1 bg-ash-800">
+              <span
+                className={[
+                  "block h-[3px] transition-all duration-500",
+                  dim ? "bg-stone-600" : "bg-ember-500",
+                ].join(" ")}
+                style={{ width: `${Math.round((spec.damage / Math.max(1, ceiling)) * 100)}%` }}
+              />
+            </span>
+
             {/* The unselected side stays legible but quiet, so which weapon is
                 in hand is still obvious at a glance. */}
             <span
               className={[
-                "ml-auto font-mono text-[11px] tabular-nums",
+                "w-20 shrink-0 text-right font-mono text-[11px] tabular-nums",
                 dim ? "text-stone-600" : "text-ember-300/80",
               ].join(" ")}
             >
@@ -182,6 +218,22 @@ export function ArmamentPanel() {
    * this note explains what the weapon brings, and a champion multiplier applied
    * to every weapon equally explains nothing about choosing between them.
    */
+  /*
+   * One scale for both cards: the heaviest blow on the screen.
+   *
+   * Without a shared ceiling each bar would be drawn against its own weapon and
+   * every card would look identical, which is the opposite of what a comparison
+   * is for.
+   */
+  const ceiling = useMemo(
+    () =>
+      Math.max(
+        attackSpec("heavy", ironTraits).damage,
+        shown ? attackSpec("heavy", traits).damage : 0,
+      ),
+    [ironTraits, traits, shown],
+  );
+
   const relicNotes = useMemo(
     () => (shown ? describeTraits(relicTraits(shown.dna)) : []),
     [shown],
@@ -284,7 +336,7 @@ export function ArmamentPanel() {
             what you were giving up without giving it up first. A comparison needs
             both sides on screen at once.
           */}
-          <AttackBreakdown traits={ironTraits} dim={!ironChosen} />
+          <AttackBreakdown traits={ironTraits} ceiling={ceiling} dim={!ironChosen} />
         </button>
 
         <span className="absolute right-3 top-3">
@@ -339,7 +391,7 @@ export function ArmamentPanel() {
               <p className="mt-1 text-[11px] capitalize leading-relaxed text-stone-600">
                 {shown.dna.element} · {shown.dna.temperament} · {shown.dna.condition}
               </p>
-              <AttackBreakdown traits={traits} dim={!selected} />
+              <AttackBreakdown traits={traits} ceiling={ceiling} dim={!selected} />
             </>
           ) : (
             <>
