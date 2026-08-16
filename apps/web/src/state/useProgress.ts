@@ -69,14 +69,35 @@ function bossNameFor(level: number): string {
   );
 }
 
-/** Rank thresholds. Widening gaps so early ranks arrive quickly. */
+/**
+ * Rank thresholds, one per rung of the ladder.
+ *
+ * These were picked to feel like a curve and were never checked against what the
+ * ladder can actually pay. Clearing every boss once with the best possible fight
+ * earns 1900, and the top rank asked for 2200: Legend-Made was unreachable
+ * without fighting something twice, which is exactly the grind this game argues
+ * against everywhere else. A player who beat everything, perfectly, was told they
+ * were not finished.
+ *
+ * So they are derived from the ladder instead. Best-case cumulative totals are
+ * 260, 580, 960, 1400 and 1900, and each threshold sits just under one of them,
+ * which gives every rank a meaning in a sentence: you reach it by clearing the
+ * next boss well. Clear all five that way and you are Legend-Made, exactly, with
+ * nothing left over and nothing to repeat.
+ *
+ * Fighting badly still climbs, just slower: a full clear with no bonuses at all
+ * pays 900 and lands mid-ladder, so rank says how far you have gone and how well
+ * you went, which is more than a distance.
+ *
+ * A test asserts both ends of that, so the two can never drift apart again.
+ */
 export const RANKS = [
   { at: 0, name: "Unproven" },
-  { at: 150, name: "Ashbearer" },
-  { at: 400, name: "Warden-Slayer" },
-  { at: 800, name: "Relic-Bound" },
-  { at: 1400, name: "Forgesworn" },
-  { at: 2200, name: "Legend-Made" },
+  { at: 240, name: "Ashbearer" },
+  { at: 560, name: "Warden-Slayer" },
+  { at: 940, name: "Relic-Bound" },
+  { at: 1380, name: "Forgesworn" },
+  { at: 1880, name: "Legend-Made" },
 ] as const;
 
 export function rankFor(xp: number): { name: string; index: number; next: number | null; into: number; span: number } {

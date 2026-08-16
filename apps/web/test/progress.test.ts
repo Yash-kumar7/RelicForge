@@ -132,3 +132,45 @@ describe("the award breakdown", () => {
     expect(useProgress.getState().lastAward?.rankUp).toBeNull();
   });
 });
+
+describe("the ladder and the ranks", () => {
+  /** The best a rung can pay: near death, unhealed, well dodged, relic claimed. */
+  const bestAt = (bossLevel: number) =>
+    xpFor({ bossLevel, healthRemaining: 8, dodges: 7, healingUsed: 0, forgedRelic: true });
+
+  /** A win and nothing else. */
+  const worstAt = (bossLevel: number) =>
+    xpFor({ bossLevel, healthRemaining: 50, dodges: 0, healingUsed: 1, forgedRelic: false });
+
+  const total = (pay: (level: number) => number) =>
+    [1, 2, 3, 4, 5].reduce((sum, level) => sum + pay(level), 0);
+
+  it("can be finished by clearing every boss once, well", () => {
+    /*
+     * The thresholds were picked to feel like a curve and never checked against
+     * what the ladder pays. A perfect run of all five earned 1900 against a top
+     * rank asking 2200, so the last rank could only be reached by fighting
+     * something a second time, which is the grind this game argues against
+     * everywhere else.
+     */
+    expect(total(bestAt)).toBeGreaterThanOrEqual(RANKS[RANKS.length - 1]!.at);
+  });
+
+  it("does not hand the top rank to a sloppy run", () => {
+    // Winning five times with no bonuses at all should leave a player mid-ladder,
+    // or rank measures distance travelled and nothing about how it was travelled.
+    const rank = rankFor(total(worstAt));
+    expect(rank.index).toBeGreaterThan(0);
+    expect(rank.index).toBeLessThan(RANKS.length - 1);
+  });
+
+  it("moves a rank for each boss cleared well", () => {
+    // Every threshold sits under the cumulative best through that many bosses, so
+    // a good fight on each rung is worth exactly one rank.
+    let cumulative = 0;
+    for (let level = 1; level <= 5; level++) {
+      cumulative += bestAt(level);
+      expect(rankFor(cumulative).index).toBeGreaterThanOrEqual(level);
+    }
+  });
+});
