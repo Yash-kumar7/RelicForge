@@ -582,8 +582,32 @@ export function TitleScreen() {
               louder than anything else while the champion beside it filled the
               window.
             */}
-            <h2 className="font-display text-[clamp(1.75rem,2.6vw,2.5rem)] leading-none tracking-[0.12em] text-bone-200">
+            <h2 className="flex items-center gap-3 font-display text-[clamp(1.75rem,2.6vw,2.5rem)] leading-none tracking-[0.12em] text-bone-200">
               Choose your element
+              {/*
+                Element sounds like a colour, and it is the only choice on this
+                screen that changes a number.
+                
+                Fire, ice and lightning read as a skin: three versions of one
+                character in different palettes, which is what they were before
+                champions carried their own damage, health and dodge. They decide
+                how the fight goes now, and nothing on the page said so except
+                three health bars a player has to infer it from.
+              */}
+              <InfoTip label="what your element decides">
+                <span className="block text-stone-300">
+                  Your element is the champion you fight as, and the only choice here that
+                  changes numbers.
+                </span>
+                <span className="mt-2 block">
+                  It sets how hard you hit, how much punishment you survive, and how often you
+                  can dodge. Those three decide how a fight goes, and how a fight goes decides
+                  the weapon it forges.
+                </span>
+                <span className="mt-2 block text-stone-600">
+                  It also colours the relic, but that is the smallest thing it does.
+                </span>
+              </InfoTip>
             </h2>
             {/*
               Stated once rather than repeated in all three cards.
