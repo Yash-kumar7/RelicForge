@@ -10,11 +10,35 @@ import { create } from "zustand";
  * their own history at a glance.
  */
 
+/** One line of the award, so a player can see what they were paid for. */
+export interface XpLine {
+  label: string;
+  amount: number;
+}
+
+/**
+ * The last award, kept so the reveal can show it being earned.
+ *
+ * Experience was added silently and only ever seen later, as a larger number on
+ * a setup screen. That is the whole feature missing its point: the bar sitting
+ * on a menu is not the content, the moment it fills is, and a player who is never
+ * shown what they were paid for has no reason to care what the total says.
+ */
+export interface XpAward {
+  gained: number;
+  lines: XpLine[];
+  before: number;
+  after: number;
+  /** Set when the award crossed a threshold, which is the only rank that matters. */
+  rankUp: string | null;
+}
+
 export interface ProgressState {
   xp: number;
   fightsWon: number;
   fightsLost: number;
   relicsForged: number;
+  lastAward: XpAward | null;
   award: (event: XpEvent) => void;
   recordLoss: () => void;
   reset: () => void;
@@ -29,6 +53,21 @@ export interface XpEvent {
 }
 
 const STORAGE_KEY = "relicforge.progress.xp.v1";
+
+/**
+ * The boss's name, for the award line.
+ *
+ * Held here rather than imported, because bosses.ts already imports this module
+ * for xpRangeFor and the cycle would be real. Five strings against one import is
+ * the cheaper of the two, and a test asserts they match the ladder.
+ */
+function bossNameFor(level: number): string {
+  return (
+    ["The Ashen Warden", "The Drowned Choir", "The Gilded Husk", "The Rootbound King", "The Hollow Sovereign"][
+      level - 1
+    ] ?? "The boss"
+  );
+}
 
 /** Rank thresholds. Widening gaps so early ranks arrive quickly. */
 export const RANKS = [
@@ -146,14 +185,45 @@ function save(state: Stored): void {
 
 export const useProgress = create<ProgressState>((set, get) => ({
   ...load(),
+  /* Never persisted: it belongs to the fight that just ended, and a reload
+     showing the last award of a previous session would be a lie about now. */
+  lastAward: null,
 
   award: (event) =>
     set((state) => {
+      const gained = xpFor(event);
+      const after = state.xp + gained;
+
+      /*
+       * The same conditions xpFor pays on, named.
+       *
+       * Written out rather than derived from it, because xpFor is arithmetic and
+       * this is a sentence: it has to say why in words a player recognises from
+       * the fight they just had. A test asserts the lines sum to what xpFor pays,
+       * so the two cannot drift apart in silence.
+       */
+      const lines: XpLine[] = [{ label: `${bossNameFor(event.bossLevel)} fell`, amount: 60 * event.bossLevel }];
+      if (event.healthRemaining <= 20) lines.push({ label: "finished at death's door", amount: 80 });
+      else if (event.healthRemaining >= 71) lines.push({ label: "finished barely marked", amount: 30 });
+      if (event.healingUsed === 0) lines.push({ label: "never healed", amount: 40 });
+      if (event.dodges >= 6) lines.push({ label: "read every blow", amount: 30 });
+      if (event.forgedRelic) lines.push({ label: "relic forged", amount: 50 });
+
+      const before = rankFor(state.xp).index;
+      const crossed = rankFor(after).index;
+
       const next = {
-        xp: state.xp + xpFor(event),
+        xp: after,
         fightsWon: state.fightsWon + 1,
         fightsLost: state.fightsLost,
         relicsForged: state.relicsForged + (event.forgedRelic ? 1 : 0),
+        lastAward: {
+          gained,
+          lines,
+          before: state.xp,
+          after,
+          rankUp: crossed > before ? (RANKS[crossed]?.name ?? null) : null,
+        } satisfies XpAward,
       };
       save(next);
       return next;

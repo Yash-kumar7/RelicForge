@@ -1,10 +1,11 @@
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, useGLTF } from "@react-three/drei";
 import { motion } from "framer-motion";
 import { Quaternion, Vector3, type Group } from "three";
 import { normalizeRelic, type WeaponClass } from "@relic/core";
 import { meshSampleFrom } from "../lib/meshSample";
+import { rankFor, useProgress } from "../state/useProgress";
 import { relicHintForUrl } from "../game/orientationHints";
 
 /**
@@ -75,6 +76,33 @@ export interface RelicRevealProps {
   onClaim: () => void;
 }
 
+/** A number that arrives rather than appearing. */
+function CountUp({ to, delay }: { to: number; delay: number }) {
+  const [shown, setShown] = useState(0);
+
+  useEffect(() => {
+    let frame = 0;
+    const steps = 26;
+    const timer = setTimeout(() => {
+      const id = setInterval(() => {
+        frame += 1;
+        // Eased, so it lands rather than stopping dead on the final number.
+        setShown(Math.round(to * (1 - (1 - frame / steps) ** 3)));
+        if (frame >= steps) clearInterval(id);
+      }, 24);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [to, delay]);
+
+  return <span className="tabular-nums">{shown}</span>;
+}
+
+/** Where a total sits inside its own rank, as a percentage of that rank's span. */
+function barAt(xp: number): number {
+  const rank = rankFor(xp);
+  return rank.span > 0 ? Math.min(100, (rank.into / rank.span) * 100) : 100;
+}
+
 export function RelicRevealScreen({
   name,
   weaponClass,
@@ -84,6 +112,8 @@ export function RelicRevealScreen({
   accent,
   onClaim,
 }: RelicRevealProps) {
+  const award = useProgress((s) => s.lastAward);
+
   return (
     <div className="absolute inset-0 overflow-hidden bg-ash-950">
       {/* Its own light, in the element the fight was fought in. */}
@@ -166,6 +196,64 @@ export function RelicRevealScreen({
               </div>
             ))}
           </dl>
+
+          {/*
+            What the fight paid, and why.
+
+            The bar on the setup screen was the whole of this feature, and a bar
+            on a menu is not content: it is the receipt for a moment nobody was
+            shown. Experience was added silently and only ever seen later as a
+            larger number somewhere else, so it read as a counter that went up on
+            its own.
+
+            This is the moment. It names each condition the fight met, counts the
+            total up rather than printing it, and fills the rank bar from where it
+            was to where it is, which is the only time that bar means anything.
+          */}
+          {award && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 1.1 }}
+              className="mt-9 max-w-md border-t border-ash-800 pt-5"
+            >
+              <div className="flex items-baseline justify-between">
+                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-600">
+                  {award.rankUp ? `Rank up · ${award.rankUp}` : rankFor(award.after).name}
+                </span>
+                <span className="font-mono text-lg tabular-nums" style={{ color: accent }}>
+                  +<CountUp to={award.gained} delay={1300} /> XP
+                </span>
+              </div>
+
+              {/* Filled from where the bar was, not from zero: the distance
+                  travelled is the thing being shown. */}
+              <div className="mt-2 h-[3px] w-full bg-ash-800">
+                <motion.div
+                  className="h-[3px]"
+                  style={{ background: accent }}
+                  initial={{ width: `${barAt(award.before)}%` }}
+                  animate={{ width: `${barAt(award.after)}%` }}
+                  transition={{ duration: 1.4, delay: 1.3, ease: "easeOut" }}
+                />
+              </div>
+
+              <ul className="mt-3 space-y-1 font-mono text-[10px] uppercase tracking-[0.15em]">
+                {award.lines.map((line, i) => (
+                  <motion.li
+                    key={line.label}
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.35, delay: 1.5 + i * 0.18 }}
+                    className="flex items-baseline justify-between gap-4"
+                  >
+                    <span className="text-stone-600">{line.label}</span>
+                    <span className="tabular-nums text-stone-400">+{line.amount}</span>
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
 
           <button
             type="button"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RANKS, rankFor, xpFor } from "../src/state/useProgress";
+import { RANKS, rankFor, useProgress, xpFor, type XpEvent } from "../src/state/useProgress";
 
 /**
  * Rank and XP are cosmetic by design, but they must never contradict the relic.
@@ -79,5 +79,56 @@ describe("rankFor", () => {
   it("never divides by zero at max rank", () => {
     const top = RANKS[RANKS.length - 1]!;
     expect(rankFor(top.at).span).toBeGreaterThan(0);
+  });
+});
+
+describe("the award breakdown", () => {
+  /*
+   * The lines are written out in words rather than derived from xpFor, because
+   * one is arithmetic and the other is a sentence a player has to recognise from
+   * the fight they just had. That is a deliberate duplication, and this is what
+   * stops it drifting: whatever the two say, they must agree on the total.
+   */
+  it("adds up to exactly what the fight paid", () => {
+    const cases: XpEvent[] = [
+      { bossLevel: 1, healthRemaining: 8, dodges: 7, healingUsed: 0, forgedRelic: true },
+      { bossLevel: 3, healthRemaining: 85, dodges: 0, healingUsed: 2, forgedRelic: true },
+      { bossLevel: 5, healthRemaining: 50, dodges: 6, healingUsed: 0, forgedRelic: false },
+      { bossLevel: 2, healthRemaining: 20, dodges: 3, healingUsed: 1, forgedRelic: false },
+    ];
+
+    for (const event of cases) {
+      useProgress.getState().reset();
+      useProgress.getState().award(event);
+      const award = useProgress.getState().lastAward;
+
+      expect(award).not.toBeNull();
+      expect(award?.gained).toBe(xpFor(event));
+      expect(award?.lines.reduce((sum, line) => sum + line.amount, 0)).toBe(xpFor(event));
+    }
+  });
+
+  it("reports a rank up only when a threshold was actually crossed", () => {
+    useProgress.getState().reset();
+
+    // 260 on the first rung clears 150, so this is a genuine crossing.
+    useProgress.getState().award({
+      bossLevel: 1,
+      healthRemaining: 8,
+      dodges: 7,
+      healingUsed: 0,
+      forgedRelic: true,
+    });
+    expect(useProgress.getState().lastAward?.rankUp).toBe("Ashbearer");
+
+    // The next win lands inside the same rank, so nothing is announced.
+    useProgress.getState().award({
+      bossLevel: 1,
+      healthRemaining: 50,
+      dodges: 0,
+      healingUsed: 1,
+      forgedRelic: false,
+    });
+    expect(useProgress.getState().lastAward?.rankUp).toBeNull();
   });
 });
