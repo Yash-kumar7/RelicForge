@@ -324,24 +324,58 @@ function buildAmbience(): void {
   coals.start();
 
   /*
-   * Crackle, which is what makes the low end read as coals rather than exhaust.
+   * Embers, which is what makes the low end read as coals rather than exhaust.
    *
-   * A burning thing is not continuous. The roar is the bed and the ear takes it
-   * for machinery until something irregular happens on top: tiny bright ticks,
-   * far too short to have pitch, at random spacing so they never become a rhythm.
-   * These cost almost nothing and they are the entire difference.
+   * A burning thing is not continuous. The roar is the bed and the ear files any
+   * steady roar as machinery until something irregular happens over the top.
+   *
+   * These get their own emitter rather than the shared noise() helper, because
+   * that helper opens at full gain on the first sample. For an impact that is
+   * correct and is most of why a hit lands. For a twelve-millisecond ambient tick
+   * it is a step discontinuity in the waveform, which is the sound of a failing
+   * speaker, and eleven a second of it is a fault rather than a fire.
+   *
+   * So: a four-millisecond attack, dark enough to be across a room, and spaced in
+   * seconds rather than tenths.
    */
-  let crackleTimer = 0;
-  const scheduleCrackle = () => {
-    crackleTimer = window.setTimeout(
+  const ember = () => {
+    const now = audio.currentTime;
+    const seconds = 0.03 + Math.random() * 0.04;
+    const frames = Math.floor(audio.sampleRate * seconds);
+    const pop = audio.createBuffer(1, frames, audio.sampleRate);
+    const samples = pop.getChannelData(0);
+    for (let i = 0; i < frames; i++) samples[i] = Math.random() * 2 - 1;
+
+    const source = audio.createBufferSource();
+    source.buffer = pop;
+
+    const colour = audio.createBiquadFilter();
+    colour.type = "lowpass";
+    colour.frequency.value = 1500 + Math.random() * 700;
+
+    const env = audio.createGain();
+    const peak = 0.007 + Math.random() * 0.009;
+    env.gain.setValueAtTime(0.0001, now);
+    env.gain.exponentialRampToValueAtTime(peak, now + 0.004);
+    env.gain.exponentialRampToValueAtTime(0.0001, now + seconds);
+
+    source.connect(colour);
+    colour.connect(env);
+    env.connect(bed);
+    source.start(now);
+  };
+
+  let emberTimer = 0;
+  const scheduleEmber = () => {
+    emberTimer = window.setTimeout(
       () => {
-        noise(0.012 + Math.random() * 0.02, 0.012 + Math.random() * 0.014, 4200);
-        scheduleCrackle();
+        ember();
+        scheduleEmber();
       },
-      90 + Math.random() * 520,
+      700 + Math.random() * 2500,
     );
   };
-  scheduleCrackle();
+  scheduleEmber();
 
   /*
    * Somebody working, in the next room.
@@ -369,7 +403,7 @@ function buildAmbience(): void {
   ambience = {
     stop: () => {
       window.clearTimeout(strikeTimer);
-      window.clearTimeout(crackleTimer);
+      window.clearTimeout(emberTimer);
       const now = audio.currentTime;
       bed.gain.cancelScheduledValues(now);
       bed.gain.setValueAtTime(Math.max(0.0001, bed.gain.value), now);
