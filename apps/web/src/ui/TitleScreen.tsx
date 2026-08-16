@@ -245,7 +245,10 @@ export function TitleScreen() {
         /* py-14 top and bottom put the first line of a step a hundred pixels
            down an otherwise empty column, and left the same again under the
            button. The figure beside it is what should fill the height. */
-        "h-full overflow-hidden bg-ash-950 pb-8 pl-0 pr-6 pt-6"
+        /* Almost nothing at the top. The steps are the first thing on the page
+           and were being pushed down by three paddings in a row: this container,
+           the scrolling column inside it, and the sticky header's own. */
+        "h-full overflow-hidden bg-ash-950 pb-8 pl-0 pr-6 pt-2"
       }
     >
       {/*
@@ -354,7 +357,7 @@ export function TitleScreen() {
           it keeps the shape it was designed at, and the space left over goes to
           the champion rather than being distributed as margin.
         */}
-        <div className="flex max-h-full max-w-3xl flex-col overflow-y-auto py-4 pr-2">
+        <div className="flex max-h-full max-w-3xl flex-col overflow-y-auto pb-4 pr-2 pt-0">
           {/*
             One decision at a time.
 
@@ -395,7 +398,7 @@ export function TitleScreen() {
             saying where they were in the sequence. Sticky keeps them while the
             content moves under them.
           */}
-          <div className="sticky top-0 z-20 mb-5 bg-ash-950 pb-3 pt-1">
+          <div className="sticky top-0 z-20 mb-5 bg-ash-950 pb-3 pt-0">
           <ol className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em]">
             {steps.map((label, index) => {
               const reached = index <= step;
