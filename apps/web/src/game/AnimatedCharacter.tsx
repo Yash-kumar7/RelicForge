@@ -81,6 +81,30 @@ function findHand(root: Object3D, bone: HandBone): Object3D | null {
 const IDLE_TIME_SCALE = 0.18;
 
 /**
+ * Strips the turn out of a clip.
+ *
+ * Both of Meshy's clips animate Hips.rotation, which is root motion: the
+ * animation decides which way the character is facing. That is fine when one
+ * clip plays alone and wrong the moment two do, because the mixer blends the two
+ * hips rotations by weight and lands somewhere between them, and each clip is
+ * cycling, so the character turns left and right on the spot for as long as it
+ * stands there. Both figures did it, which is the tell: it is in the clips, not
+ * in either character.
+ *
+ * Facing belongs to the game. The player's comes from where the camera looks and
+ * the boss's from where the player is, and neither is a thing an animation is
+ * allowed a vote in. Translation is kept, so the body still rises and falls
+ * through a step.
+ */
+function withoutRootTurn(clip: AnimationClip): AnimationClip {
+  const stripped = clip.clone();
+  stripped.tracks = stripped.tracks.filter(
+    (track) => !/(^|\.)hips\.quaternion$/i.test(track.name),
+  );
+  return stripped;
+}
+
+/**
  * How quickly the weapon arm follows the clip. Low is a steady arm.
  *
  * Meshy ships one walk clip and it is an empty-handed walk: both arms swing
@@ -425,7 +449,10 @@ export function AnimatedCharacter({
    * standing inside its own reach.
    */
   const [idle, setIdle] = useState<AnimationClip | null>(null);
-  const clips = useMemo(() => (idle ? [...animations, idle] : animations), [animations, idle]);
+  const clips = useMemo(
+    () => (idle ? [...animations, idle] : animations).map(withoutRootTurn),
+    [animations, idle],
+  );
   const { actions, names } = useAnimations(clips, root);
   const hand = useMemo(() => findHand(scene, handBone), [scene, handBone]);
 
