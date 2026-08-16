@@ -101,7 +101,9 @@ function Reading({ field, value, delay }: { field: string; value: string; delay:
       <span className="block font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
         {field}
       </span>
-      <span className="mt-1 block font-display text-lg tracking-[0.12em] text-bone-200">
+      {/* Capitalised in the stylesheet, like every other place one of these is
+          read: the values are lowercase where they are stored and hashed. */}
+      <span className="mt-1 block font-display text-lg capitalize tracking-[0.12em] text-bone-200">
         {value}
       </span>
       <span className="mt-0.5 block font-mono text-[10px] leading-relaxed text-bone-400">

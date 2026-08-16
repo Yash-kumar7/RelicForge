@@ -44,29 +44,53 @@ export function InfoTip({
   const [at, setAt] = useState<{ left: number; top: number } | null>(null);
   const id = useId();
   const mark = useRef<HTMLButtonElement>(null);
+  const note = useRef<HTMLDivElement>(null);
 
   /**
-   * Positioned from the mark's rectangle, in viewport coordinates.
+   * Positioned from the mark's rectangle, against the note's real height.
    *
-   * Above it where there is room and below it where there is not, because these
-   * marks sit near the bottom of their panels as often as the top, and clamped
-   * horizontally so a note opening from the right edge stays on screen.
+   * The first version guessed: open upward whenever the mark was more than 150
+   * pixels down the page, which is right for a one-line note and wrong for the
+   * boss notes, which run to a blurb, four properties and a price list. The
+   * fifth boss sits low in a scrolling column, so its note opened downward off
+   * the bottom of the window with the half worth reading below the fold.
+   *
+   * It measures instead. The note is laid out first, so its height is known, and
+   * the side with room for it wins. If neither side has room the note is pinned
+   * to the viewport and stays whole, which is better than being correctly
+   * positioned and half invisible.
    */
   const place = useCallback(() => {
     const rect = mark.current?.getBoundingClientRect();
     if (!rect) return;
 
-    const room = rect.top;
+    const height = note.current?.offsetHeight ?? 0;
+    const above = rect.top - GAP;
+    const below = window.innerHeight - rect.bottom - GAP;
+
     const left = Math.min(
       Math.max(GAP, rect.left + rect.width / 2 - WIDTH / 2),
       window.innerWidth - WIDTH - GAP,
     );
 
-    setAt({ left, top: room > 150 ? rect.top - GAP : rect.bottom + GAP });
+    // Prefer above, which keeps the note clear of the thing it describes.
+    let top = height > 0 && above < height && below > above ? rect.bottom + GAP : rect.top - GAP - height;
+
+    top = Math.min(Math.max(GAP, top), Math.max(GAP, window.innerHeight - height - GAP));
+
+    setAt({ left, top });
   }, []);
 
+  /*
+   * Twice: once to put the note in the document so it can be measured, and again
+   * with its height known. The first pass has nothing to measure, so a note
+   * whose height decides its side has to be laid out before it can be placed.
+   */
   useLayoutEffect(() => {
-    if (open) place();
+    if (!open) return;
+    place();
+    const frame = requestAnimationFrame(place);
+    return () => cancelAnimationFrame(frame);
   }, [open, place]);
 
   useEffect(() => {
@@ -134,12 +158,11 @@ export function InfoTip({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.16 }}
-              style={{
-                left: at.left,
-                top: at.top,
-                width: WIDTH,
-                transform: at.top < 150 ? undefined : "translateY(-100%)",
-              }}
+              ref={note}
+              /* No transform. It used to be shifted up by its own height, which
+                 is a way of positioning something whose height you do not know;
+                 the height is measured now, so the top is simply correct. */
+              style={{ left: at.left, top: at.top, width: WIDTH }}
               /* Its own typography, not the label's. These open from nine-pixel
                  uppercase mono labels with wide tracking, and a note is not a
                  caption for the thing it opens from. */
