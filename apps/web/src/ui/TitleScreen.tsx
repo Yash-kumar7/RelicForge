@@ -375,7 +375,7 @@ export function TitleScreen() {
         */}
         {/* The setup column's own top offset, which moves the steps without
             moving the figure beside them. */}
-        <div className="flex h-full max-w-3xl flex-col overflow-y-auto pb-4 pr-2 pt-24">
+        <div className="flex h-full max-w-3xl flex-col overflow-y-auto pb-4 pr-2 pt-12">
           {/*
             One decision at a time.
 
