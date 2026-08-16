@@ -834,15 +834,25 @@ export function TitleScreen() {
                   <button
                     type="button"
                     onClick={() => chooseBossLevel(boss.level)}
-                    /* w-full, for the same reason the champion rows and the
-                       weapon cards needed it: a button is inline-block, so each
-                       row stopped at its own longest line and five rows came out
-                       five different widths. */
+                    /*
+                      The same shape a champion row has, because it is the same
+                      kind of decision.
+
+                      This was a boxed card with a border on four sides while the
+                      champions were rows with a coloured edge, so two lists that
+                      do the same job on consecutive steps looked like two
+                      different interfaces. The champion pattern is the better of
+                      the two: the accent marks the selection without drawing a
+                      container around every option that is not chosen.
+
+                      w-full because a button is inline-block, so each row stopped
+                      at its own longest line and five rows came out five widths.
+                    */
                     className={[
-                      "w-full border text-left transition",
+                      "w-full border-l-2 text-left transition",
                       selected
-                        ? "border-ember-500/70 bg-ember-500/5 text-stone-200"
-                        : "border-ash-700 text-stone-500 hover:border-stone-500",
+                        ? "border-ember-500/70 bg-gradient-to-r from-white/[0.04] to-transparent text-stone-200"
+                        : "border-transparent text-stone-500 hover:border-ash-700 hover:bg-white/[0.02]",
                     ].join(" ")}
                   >
                     {/*

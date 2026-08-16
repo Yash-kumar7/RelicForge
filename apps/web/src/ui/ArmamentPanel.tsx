@@ -257,11 +257,13 @@ export function ArmamentPanel() {
           /* A button is inline-block, so it shrank to its widest line while the
              mark in the corner stayed pinned to the column: a card ending at 420
              pixels with its own ⓘ eight hundred pixels away across empty space. */
+          /* Matches the champion and boss rows: an accent on the edge rather
+             than a box around every option. */
           className={[
-            "w-full border px-4 py-3 text-left transition",
+            "w-full border-l-2 py-3 pl-4 pr-4 text-left transition",
             ironChosen
-              ? "border-stone-500 bg-stone-500/5"
-              : "border-ash-700 hover:border-stone-600",
+              ? "border-stone-400 bg-gradient-to-r from-white/[0.04] to-transparent"
+              : "border-transparent hover:border-ash-700 hover:bg-white/[0.02]",
           ].join(" ")}
         >
           <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
@@ -310,12 +312,12 @@ export function ArmamentPanel() {
           disabled={owned.length === 0}
           onClick={() => owned[0] && select(owned[0].relicId)}
           className={[
-            "w-full px-4 py-3 text-left transition",
+            "w-full border-l-2 py-3 pl-4 pr-4 text-left transition",
             selected
-              ? "border border-ember-500/50 bg-ember-500/5"
+              ? "border-ember-500/70 bg-gradient-to-r from-white/[0.04] to-transparent"
               : owned.length > 0
-                ? "border border-ash-700 hover:border-ember-500/40"
-                : "cursor-not-allowed border border-dashed border-ash-700",
+                ? "border-transparent hover:border-ember-500/40 hover:bg-white/[0.02]"
+                : "cursor-not-allowed border-transparent",
           ].join(" ")}
         >
           <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
