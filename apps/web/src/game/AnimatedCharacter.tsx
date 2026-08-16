@@ -128,14 +128,33 @@ function withoutRootTurn(clip: AnimationClip): AnimationClip {
  */
 const CARRY_FOLLOW = 0.08;
 
-/** The chain that swings a hand: shoulder, upper arm, forearm. */
-const ARM_PATTERNS: Record<HandBone, RegExp[]> = {
-  RightHand: [/^rightshoulder$/i, /^rightarm$/i, /^rightforearm$/i],
-  LeftHand: [/^leftshoulder$/i, /^leftarm$/i, /^leftforearm$/i],
+/**
+ * Bones the filter holds steady: the weapon arm, and the torso.
+ *
+ * The arm is here because Meshy's walk is an empty-handed walk and swings a
+ * carried blade around.
+ *
+ * The torso is here because of what the Idle action turned out to be. Measured
+ * off the clip, it turns the head through 83 degrees and the hips through 79: it
+ * is a character looking around a room, which is a fine idle for someone who is
+ * not currently being hit by a boss, and reads as a fighter who cannot stand
+ * still. The spine, neck and head are steadied so the fidget averages out and
+ * the breathing underneath it survives.
+ */
+const STEADY_PATTERNS: Record<HandBone, RegExp[]> = {
+  RightHand: [
+    /^rightshoulder$/i,
+    /^rightarm$/i,
+    /^rightforearm$/i,
+    /^spine/i,
+    /^neck$/i,
+    /^head$/i,
+  ],
+  LeftHand: [/^leftshoulder$/i, /^leftarm$/i, /^leftforearm$/i, /^spine/i, /^neck$/i, /^head$/i],
 };
 
-function findArm(root: Object3D, bone: HandBone): Object3D[] {
-  const patterns = ARM_PATTERNS[bone];
+function findSteadied(root: Object3D, bone: HandBone): Object3D[] {
+  const patterns = STEADY_PATTERNS[bone];
   const found: Object3D[] = [];
   root.traverse((node) => {
     if (patterns.some((pattern) => pattern.test(node.name ?? ""))) found.push(node);
@@ -479,7 +498,7 @@ export function AnimatedCharacter({
    * costs a few frames of settling and needs no assumption about what any
    * particular frame contains.
    */
-  const arm = useMemo(() => findArm(scene, handBone), [scene, handBone]);
+  const arm = useMemo(() => findSteadied(scene, handBone), [scene, handBone]);
   const smoothed = useRef<Quaternion[] | null>(null);
 
   useFrame(() => {
