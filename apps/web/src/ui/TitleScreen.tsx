@@ -625,11 +625,16 @@ export function TitleScreen() {
               Space between the rows.
 
               At gap-1 three champions were one block with hairlines through it,
-              and the selected row's tint bled into its neighbours. These are
-              three separate choices and should sit apart enough to be counted at
-              a glance.
+              and the selected row's tint bled into its neighbours. At 3 they were
+              still reading as a table: the portraits are 64 pixels tall, so a
+              12 pixel gap is a fifth of a row and the eye groups them anyway.
+
+              These are three separate choices, each with a picture, a name, a
+              line and a bar, and they need enough air between them that the
+              selected one is obviously one of three rather than a highlighted
+              cell.
             */}
-            <div className="mt-5 flex flex-col gap-3">
+            <div className="mt-6 flex flex-col gap-6">
               {AFFINITIES.map((a) => (
                 /*
                   A mark per row, in the corner rather than in the card.
