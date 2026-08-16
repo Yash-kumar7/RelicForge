@@ -70,26 +70,24 @@ function bossNameFor(level: number): string {
 }
 
 /**
- * Rank thresholds, one per rung of the ladder.
+ * Rank thresholds: one per rung, and then one that is not.
  *
- * These were picked to feel like a curve and were never checked against what the
- * ladder can actually pay. Clearing every boss once with the best possible fight
- * earns 1900, and the top rank asked for 2200: Legend-Made was unreachable
- * without fighting something twice, which is exactly the grind this game argues
- * against everywhere else. A player who beat everything, perfectly, was told they
- * were not finished.
+ * These were picked to feel like a curve and never checked against the ladder,
+ * so the top rank asked for more than a perfect run could pay and was reachable
+ * only by luck of arithmetic. Deriving them from the ladder fixed that and
+ * overshot: every rank became one boss cleared well, and beating the game
+ * perfectly landed exactly on the last rank with nothing left to do. Finishing
+ * and mastering became the same act, which makes the final rank an attendance
+ * record.
  *
- * So they are derived from the ladder instead. Best-case cumulative totals are
- * 260, 580, 960, 1400 and 1900, and each threshold sits just under one of them,
- * which gives every rank a meaning in a sentence: you reach it by clearing the
- * next boss well. Clear all five that way and you are Legend-Made, exactly, with
- * nothing left over and nothing to repeat.
+ * Five of the six are the ladder, so each says one sentence: you reach it by
+ * clearing the next boss well. Best-case cumulative totals are 260, 580, 960,
+ * 1400 and 1900, and each threshold sits just under one of them.
  *
- * Fighting badly still climbs, just slower: a full clear with no bonuses at all
- * pays 900 and lands mid-ladder, so rank says how far you have gone and how well
- * you went, which is more than a distance.
- *
- * A test asserts both ends of that, so the two can never drift apart again.
+ * Legend-Made is not on that scale. It sits at 2400, past the 1900 a flawless
+ * single clear pays, so it is the only rank that cannot be reached by finishing:
+ * it asks for a few more fights fought well, which is a fair thing to ask of the
+ * word legend and costs nothing to ignore, because rank buys nothing.
  */
 export const RANKS = [
   { at: 0, name: "Unproven" },
@@ -97,7 +95,7 @@ export const RANKS = [
   { at: 560, name: "Warden-Slayer" },
   { at: 940, name: "Relic-Bound" },
   { at: 1380, name: "Forgesworn" },
-  { at: 1880, name: "Legend-Made" },
+  { at: 2400, name: "Legend-Made" },
 ] as const;
 
 export function rankFor(xp: number): { name: string; index: number; next: number | null; into: number; span: number } {

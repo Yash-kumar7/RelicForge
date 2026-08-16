@@ -145,15 +145,26 @@ describe("the ladder and the ranks", () => {
   const total = (pay: (level: number) => number) =>
     [1, 2, 3, 4, 5].reduce((sum, level) => sum + pay(level), 0);
 
-  it("can be finished by clearing every boss once, well", () => {
+  it("takes a player to the rank below the top for a flawless single clear", () => {
     /*
-     * The thresholds were picked to feel like a curve and never checked against
-     * what the ladder pays. A perfect run of all five earned 1900 against a top
-     * rank asking 2200, so the last rank could only be reached by fighting
-     * something a second time, which is the grind this game argues against
-     * everywhere else.
+     * Finishing and mastering should not be the same act. A perfect run of all
+     * five pays 1900 and lands on Forgesworn, one short of the end: every rank up
+     * to that point is a boss cleared well, and the last one is deliberately past
+     * anything a single clear can pay.
+     *
+     * The first version of this asked 2200 by accident and was unreachable in a
+     * way nobody had checked. This asks 2400 on purpose.
      */
-    expect(total(bestAt)).toBeGreaterThanOrEqual(RANKS[RANKS.length - 1]!.at);
+    const rank = rankFor(total(bestAt));
+    expect(rank.index).toBe(RANKS.length - 2);
+    expect(total(bestAt)).toBeLessThan(RANKS[RANKS.length - 1]!.at);
+  });
+
+  it("puts the last rank within reach of a few more good fights", () => {
+    // Past a full clear, but not a wall: three more strong fights on the upper
+    // rungs get there, which is what the word legend should cost.
+    const remaining = RANKS[RANKS.length - 1]!.at - total(bestAt);
+    expect(remaining).toBeLessThanOrEqual(bestAt(5) + bestAt(4));
   });
 
   it("does not hand the top rank to a sloppy run", () => {
@@ -164,11 +175,11 @@ describe("the ladder and the ranks", () => {
     expect(rank.index).toBeLessThan(RANKS.length - 1);
   });
 
-  it("moves a rank for each boss cleared well", () => {
-    // Every threshold sits under the cumulative best through that many bosses, so
-    // a good fight on each rung is worth exactly one rank.
+  it("moves a rank for each boss cleared well, up to the last one", () => {
+    // The first five thresholds are the ladder, so a good fight on each rung is
+    // worth exactly one rank. The sixth is not, by design.
     let cumulative = 0;
-    for (let level = 1; level <= 5; level++) {
+    for (let level = 1; level <= 4; level++) {
       cumulative += bestAt(level);
       expect(rankFor(cumulative).index).toBeGreaterThanOrEqual(level);
     }
