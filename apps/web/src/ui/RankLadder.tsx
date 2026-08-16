@@ -21,21 +21,17 @@ export function RankLadder({ xp }: { xp: number }) {
   return (
     <span className="block">
       {/*
-        Says what it is before what it is not.
+        One sentence, and it only says what this is.
         
-        This opened with "experience is a record of what you have fought, not a
-        currency", which is a definition and a denial: two abstractions before
-        anything a player recognises. It also spent its first breath explaining
-        that rank buys no damage and unlocks no weapon, which answers a worry
-        nobody has until you raise it.
-        
-        What it is, is a tally of what you have killed. That is worth saying, and
-        the fact that nothing spends it is one clause at the end rather than the
-        whole opening.
+        Three drafts, each shorter than the last, and each cut was the same kind
+        of thing: a denial. It opened as a definition against a currency, then
+        kept a clause saying nothing spends it. Both were answering a question
+        nobody asks until it is raised, and raising it is what makes a player
+        wonder whether they are missing a shop.
       */}
       <span className="block text-stone-500">
-        Every boss you put down adds to this. It is the tally of what you have killed and how
-        well you did it, and nothing ever spends it.
+        Every boss you put down adds to this: the tally of what you have killed and how well you
+        did it.
       </span>
 
       <span className="mt-3 block border-t border-ash-800 pt-2 font-mono text-[10px] uppercase tracking-[0.12em]">
