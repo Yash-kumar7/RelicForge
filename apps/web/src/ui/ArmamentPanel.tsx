@@ -86,7 +86,7 @@ function AttackBreakdown({ traits, dim = false }: { traits: RelicTraits; dim?: b
   const heavy = attackSpec("heavy", traits);
 
   return (
-    <span className="mt-3 block space-y-1.5 border-t border-ash-800 pt-3">
+    <span className="mt-3 block space-y-1.5 border-t border-ash-800 pt-3 pr-8">
       {ATTACKS.map((attack) => {
         const spec = attack.kind === "heavy" ? heavy : light;
         return (
@@ -254,8 +254,11 @@ export function ArmamentPanel() {
         <button
           type="button"
           onClick={() => select(IRON)}
+          /* A button is inline-block, so it shrank to its widest line while the
+             mark in the corner stayed pinned to the column: a card ending at 420
+             pixels with its own ⓘ eight hundred pixels away across empty space. */
           className={[
-            "border px-4 py-3 text-left transition",
+            "w-full border px-4 py-3 text-left transition",
             ironChosen
               ? "border-stone-500 bg-stone-500/5"
               : "border-ash-700 hover:border-stone-600",
@@ -307,7 +310,7 @@ export function ArmamentPanel() {
           disabled={owned.length === 0}
           onClick={() => owned[0] && select(owned[0].relicId)}
           className={[
-            "px-4 py-3 text-left transition",
+            "w-full px-4 py-3 text-left transition",
             selected
               ? "border border-ember-500/50 bg-ember-500/5"
               : owned.length > 0
