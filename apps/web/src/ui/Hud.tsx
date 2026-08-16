@@ -52,16 +52,20 @@ export function Hud() {
   const bossMaxHp = useGameStore((s) => s.bossMaxHp);
   const bossLevel = useGameStore((s) => s.bossLevel);
   const affinity = useGameStore((s) => s.affinity);
-  const forge = useGameStore((s) => s.forge);
   // A relic carried in from the loadout is in hand from the first frame, before
   // any forge has run this session.
   const carried = useLoadout((s) => s.equipped());
-  const inHand =
-    phase === "EQUIPPED" && forge.name
-      ? { name: forge.name, weaponClass: forge.dna?.weaponClass ?? null }
-      : carried
-        ? { name: carried.name, weaponClass: carried.dna.weaponClass }
-        : null;
+  /*
+   * Always the loadout, now that claiming returns to the ladder.
+   *
+   * There used to be a branch for the freshly forged relic, because claiming
+   * dropped the player back into the arena holding it before the loadout had
+   * been read again. That state is gone: a claimed relic is in the loadout, and
+   * the next fight is where it turns up.
+   */
+  const inHand = carried
+    ? { name: carried.name, weaponClass: carried.dna.weaponClass }
+    : null;
   /**
    * Every hook runs before the early return, without exception.
    *
@@ -77,7 +81,7 @@ export function Hud() {
 
   // Deliberately absent during VICTORY, FORGING and DEFEAT: bars and control
   // hints over a cinematic read as leftover interface.
-  if (phase !== "FIGHTING" && phase !== "EQUIPPED") return null;
+  if (phase !== "FIGHTING") return null;
 
   const fighting = phase === "FIGHTING";
   // Against the champion's own maximum, not the base constant: a Frost run has

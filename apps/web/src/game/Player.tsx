@@ -241,8 +241,8 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
     const now = performance.now();
     const fighting = phase === "FIGHTING" && combatActive;
     // Attack timing has to keep advancing after the fight, or a swing taken in
-    // EQUIPPED would start and never clear.
-    const swinging = phase === "EQUIPPED";
+    // The swing-only path existed for the post-claim arena, which is gone.
+    const swinging = false;
 
     // Look is allowed after victory too, so the player can watch the forge.
     camera.rotation.order = "YXZ";

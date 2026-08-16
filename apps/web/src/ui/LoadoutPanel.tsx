@@ -56,7 +56,7 @@ export function LoadoutPanel() {
     };
   }, []);
 
-  const inWorld = phase === "FIGHTING" || phase === "EQUIPPED" || phase === "FORGING";
+  const inWorld = phase === "FIGHTING" || phase === "FORGING";
   if (!inWorld) return null;
 
   // Narrowed into a concrete shape so the panel cannot render a half-forged

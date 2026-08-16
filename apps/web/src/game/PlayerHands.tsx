@@ -47,7 +47,7 @@ export function PlayerHands({ twoHanded = true }: { twoHanded?: boolean }) {
     group.rotateZ(-0.34 + roll);
   });
 
-  if (phase !== "FIGHTING" && phase !== "EQUIPPED") return null;
+  if (phase !== "FIGHTING") return null;
 
   const Gauntlet = ({ offset }: { offset: [number, number, number] }) => (
     <group position={offset}>

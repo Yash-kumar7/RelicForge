@@ -51,7 +51,6 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   const view = useGameStore((s) => s.view);
   const forge = useGameStore((s) => s.forge);
   const damageBoss = useGameStore((s) => s.damageBoss);
-  const setPhase = useGameStore((s) => s.setPhase);
   const reset = useGameStore((s) => s.reset);
   const { start, retry, persistTransform } = useForgeRun();
   const started = useRef(false);
@@ -197,8 +196,18 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
     const pending = usePendingForge.getState().pending;
     if (pending && pending.relicId === f.relicId) usePendingForge.getState().settle();
 
-    setPhase("EQUIPPED");
-  }, [setPhase]);
+    /*
+     * Straight back to choosing the next fight.
+     *
+     * Claiming used to drop the player into the arena holding the new weapon,
+     * on the reasoning that a relic you can only look at on a card is a picture.
+     * In practice it is a dead end: the boss is gone, there is nothing to hit,
+     * and the reveal has already done the celebrating, so the arena reads as the
+     * game having lost track of where it was. The weapon is in the loadout and
+     * goes into the next fight, which is where holding it means something.
+     */
+    reset();
+  }, [reset]);
 
   /* Clearing a boss unlocks the next rung and pays out rank experience. */
   useEffect(() => {
@@ -241,8 +250,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   }, [phase]);
 
   const relicReady = Boolean(forge.modelUrl && forge.dna);
-  const showPedestal = relicReady && forge.stage === "COMPLETE" && phase !== "EQUIPPED";
-  const showEquipped = relicReady && phase === "EQUIPPED";
+  const showPedestal = relicReady && forge.stage === "COMPLETE";
 
   /**
    * A relic equipped in the loadout is carried into the fight.
@@ -297,10 +305,6 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
               />
             </Suspense>
           )}
-          {showEquipped && view === "first" && (
-            <WeaponSocket modelUrl={forge.modelUrl!} weaponClass={forge.dna!.weaponClass} />
-          )}
-
           <Environment preset="night" />
         </Suspense>
 
@@ -325,9 +329,8 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
         <ForgeSequence
           onClaim={claim}
           onRetry={() => void retry()}
-          /* A failed forge has no relic to equip, so walking away returns to the
-             forge rather than dropping the player into EQUIPPED holding nothing
-             with a null name on screen. */
+          /* A failed forge has nothing to claim, so walking away goes back to
+             the ladder, the same place a successful claim goes. */
           onAbandon={() => {
             document.exitPointerLock?.();
             reset();
@@ -356,51 +359,6 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
       )}
       {phase === "DEFEAT" && <DefeatScreen />}
 
-      {phase === "EQUIPPED" && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
-          <p className="pointer-events-none font-display text-sm uppercase tracking-[0.35em] text-ember-300">
-            {forge.name}
-          </p>
-          {/*
-            Says what this is, then how to use it.
-
-            It opened with instructions, which answers a question nobody had
-            asked yet: a player who has just claimed a weapon and been put back
-            in an empty arena wants to know why they are standing there before
-            they want the controls. LMB is also the code's name for the button,
-            not the player's.
-          */}
-          <p className="pointer-events-none mt-1 text-[12px] text-stone-500">
-            It is yours. Swing it.
-          </p>
-          <p className="pointer-events-none mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
-            left click to swing · drag to look around
-          </p>
-          {/*
-            There was no route out of a finished run except reloading the page,
-            which matters more than it sounds: two runs back to back is the
-            entire comparison the project is built to show, and the relic is
-            already saved to the loadout by the time this appears.
-          */}
-          {/*
-            Named for where it goes, not for what it is hoped you do next.
-
-            "Forge another" describes an outcome two screens away and skips the
-            part the player actually does: pick a champion, pick a weapon, pick a
-            fight. Nothing is forged by pressing it.
-          */}
-          <button
-            type="button"
-            onClick={() => {
-              document.exitPointerLock?.();
-              reset();
-            }}
-            className="pointer-events-auto mt-5 border border-ember-500/50 px-8 py-2 text-xs uppercase tracking-[0.3em] text-ember-300 transition hover:bg-ember-500/10"
-          >
-            Choose your next fight
-          </button>
-        </div>
-      )}
     </div>
   );
 }

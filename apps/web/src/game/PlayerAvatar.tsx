@@ -35,21 +35,17 @@ const AVATAR_HEIGHT = 1.9;
 export function PlayerAvatar() {
   const [rigged, setRigged] = useState(false);
   const affinity = useGameStore((s) => s.affinity);
-  const phase = useGameStore((s) => s.phase);
   const theme = themeFor(affinity);
   const slug = affinity === "fire" ? "ember" : affinity === "ice" ? "frost" : "storm";
 
   const carried = useLoadout((s) => s.equipped());
-  const forgeRelic = useGameStore((s) => s.forge);
 
-  // After claiming, the freshly forged relic is what the avatar holds.
+  /* Whatever is in the loadout. A relic claimed at the end of the last fight is
+     already there, which is how it arrives in this one. */
   const held = useMemo(() => {
-    if (phase === "EQUIPPED" && forgeRelic.modelUrl && forgeRelic.dna) {
-      return { url: forgeRelic.modelUrl, weaponClass: forgeRelic.dna.weaponClass };
-    }
     if (carried) return { url: carried.modelUrl, weaponClass: carried.dna.weaponClass };
     return null;
-  }, [phase, forgeRelic, carried]);
+  }, [carried]);
 
   // A rig may not exist for every champion, so its absence must degrade to the
   // static mesh rather than fail.

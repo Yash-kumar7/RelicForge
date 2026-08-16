@@ -19,8 +19,7 @@ export type GamePhase =
   | "DEFEAT"
   | "FORGING"
   // No REVEAL phase: the pedestal reveal happens inside FORGING, driven by the
-  // forge stage, so a separate phase would be a second source of truth.
-  | "EQUIPPED";
+  // forge stage, so a separate phase would be a second source of truth.;
 
 export type ForgeStage =
   | "IDLE"
