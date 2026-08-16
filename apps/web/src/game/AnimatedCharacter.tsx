@@ -65,6 +65,37 @@ function findHand(root: Object3D, bone: HandBone): Object3D | null {
 const IDLE_TIME_SCALE = 0.18;
 
 /**
+ * How much of the walk's arm swing the weapon arm keeps.
+ *
+ * Meshy ships one walk clip and it is an empty-handed walk: both arms swing
+ * freely through the whole cycle. Put a sword in one of them and the blade goes
+ * back and forth with it, which is what a swinging arm does and not what anyone
+ * carrying a weapon does.
+ *
+ * Every engine solves this with layers, an override on the arm holding the
+ * weapon over the locomotion underneath. There is no second clip to layer here,
+ * so the arm is damped toward the pose it rests in instead: it keeps a little of
+ * the walk, so it is not a mannequin arm bolted to a moving body, and loses the
+ * travel that swings a blade around.
+ */
+const CARRY_DAMPING = 0.82;
+
+/** The chain that swings a hand: shoulder, upper arm, forearm. */
+const ARM_PATTERNS: Record<HandBone, RegExp[]> = {
+  RightHand: [/^rightshoulder$/i, /^rightarm$/i, /^rightforearm$/i],
+  LeftHand: [/^leftshoulder$/i, /^leftarm$/i, /^leftforearm$/i],
+};
+
+function findArm(root: Object3D, bone: HandBone): Object3D[] {
+  const patterns = ARM_PATTERNS[bone];
+  const found: Object3D[] = [];
+  root.traverse((node) => {
+    if (patterns.some((pattern) => pattern.test(node.name ?? ""))) found.push(node);
+  });
+  return found;
+}
+
+/**
  * How far the grip sits outside the hand bone, as a fraction of the character's
  * height.
  *
@@ -291,6 +322,32 @@ export function AnimatedCharacter({
   const fit = useMemo(() => fitCharacter(scene as Group, height), [scene, height]);
   const { actions, names } = useAnimations(animations, root);
   const hand = useMemo(() => findHand(scene, handBone), [scene, handBone]);
+
+  /*
+   * The weapon arm, damped against the walk clip.
+   *
+   * Runs at priority 1 so it lands after the mixer has written this frame's pose,
+   * which is the only order in which an override means anything: at the default
+   * priority it would be overwritten by the animation it is trying to correct.
+   *
+   * The rest pose is captured on the first frame rather than read from the bind
+   * pose, because these rigs arrive through an FBX pipeline whose bind pose is
+   * not always the pose the clip returns to.
+   */
+  const arm = useMemo(() => findArm(scene, handBone), [scene, handBone]);
+  const rest = useRef<Quaternion[] | null>(null);
+
+  useFrame(() => {
+    if (!arm.length) return;
+    if (!rest.current) {
+      rest.current = arm.map((bone) => bone.quaternion.clone());
+      return;
+    }
+    arm.forEach((bone, i) => {
+      const target = rest.current?.[i];
+      if (target) bone.quaternion.slerp(target, CARRY_DAMPING);
+    });
+  }, 1);
 
   useEffect(() => {
     const first = names[0];
