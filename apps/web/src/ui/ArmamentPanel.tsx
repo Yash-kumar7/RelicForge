@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { type RelicTraits } from "@relic/core";
+import { describeTraits, relicTraits, type RelicTraits } from "@relic/core";
 import { combinedTraits } from "../game/equipped";
 import { InfoTip } from "./InfoTip";
 import { useGameStore } from "../state/useGameStore";
@@ -140,6 +140,19 @@ export function ArmamentPanel() {
   // The iron blade is neutral, so it differs only by the champion holding it.
   const ironTraits = useMemo(() => combinedTraits(null, affinity), [affinity]);
 
+  /*
+   * The relic's own contribution, with the champion left out.
+   *
+   * combinedTraits folds the champion in, which is right for the damage figures
+   * on the card because those are what the fight will resolve. It is wrong here:
+   * this note explains what the weapon brings, and a champion multiplier applied
+   * to every weapon equally explains nothing about choosing between them.
+   */
+  const relicNotes = useMemo(
+    () => (shown ? describeTraits(relicTraits(shown.dna)) : []),
+    [shown],
+  );
+
 
   return (
     <section>
@@ -193,8 +206,17 @@ export function ArmamentPanel() {
         those descriptions are the only thing on this screen that explains why a
         player would use one attack over the other.
       */}
+      {/*
+        Each weapon carries its own mark, in the corner rather than in the card.
+
+        The card is a button, so nothing interactive can live inside it: a button
+        within a button is invalid markup and its click would select the weapon
+        underneath. Wrapping each in a relative container puts the mark beside the
+        target rather than in it, which is also where a player expects to find it.
+      */}
       <div className="mt-5 flex flex-col gap-5">
         {/* The blade you always have. Selecting it unequips the relic. */}
+        <div className="relative">
         <button
           type="button"
           onClick={() => select(IRON)}
@@ -217,7 +239,25 @@ export function ArmamentPanel() {
           {ironChosen && <AttackBreakdown traits={ironTraits} />}
         </button>
 
+        <span className="absolute right-3 top-3">
+          <InfoTip label="the iron arming sword">
+            <span className="block text-stone-500">
+              The blade every champion starts with, and the only one in the game that was not
+              earned.
+            </span>
+            <span className="mt-2 block">
+              It leans nothing. Every number it shows comes from the champion holding it, which
+              makes it the honest baseline: whatever a relic adds is visible against this.
+            </span>
+            <span className="mt-2 block text-stone-600">
+              It cannot be lost, so a fight is never unwinnable for want of a weapon.
+            </span>
+          </InfoTip>
+        </span>
+        </div>
+
         {/* Earned, or an honest empty state. */}
+        <div className="relative">
         <button
           type="button"
           disabled={owned.length === 0}
@@ -253,6 +293,55 @@ export function ArmamentPanel() {
             </>
           )}
         </button>
+
+        {/*
+          Only when there is a relic to explain. An empty slot has no reason for
+          numbers it does not have.
+        */}
+        {shown && (
+          <span className="absolute right-3 top-3">
+            <InfoTip label={shown.name}>
+              <span className="block text-stone-500">Why this weapon is the way it is.</span>
+
+              <span className="mt-2 block space-y-1">
+                <span className="flex justify-between gap-3">
+                  <span className="text-stone-600">forged from</span>
+                  <span className="text-stone-300">{shown.dna.bossInfluence}</span>
+                </span>
+                <span className="flex justify-between gap-3">
+                  <span className="text-stone-600">element</span>
+                  <span className="text-stone-300">{shown.dna.element}</span>
+                </span>
+                <span className="flex justify-between gap-3">
+                  <span className="text-stone-600">silhouette</span>
+                  <span className="text-stone-300">{shown.dna.temperament}</span>
+                </span>
+                <span className="flex justify-between gap-3">
+                  <span className="text-stone-600">condition</span>
+                  <span className="text-stone-300">{shown.dna.condition}</span>
+                </span>
+              </span>
+
+              {/*
+                What those four are actually worth, against a plain blade.
+                
+                The card shows the words and the damage, and nothing has ever
+                connected the two: a player could read "shattered" and "brutal"
+                for weeks without learning that one is worth a fifth more damage
+                and the other trades quick attacks for heavy ones.
+              */}
+              {relicNotes.length > 0 && (
+                <span className="mt-3 block border-t border-ash-800 pt-2">
+                  <span className="block text-stone-600">against a plain blade</span>
+                  <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.12em] text-stone-400">
+                    {relicNotes.join(" · ")}
+                  </span>
+                </span>
+              )}
+            </InfoTip>
+          </span>
+        )}
+        </div>
       </div>
 
       {/*
