@@ -242,20 +242,16 @@ export function TitleScreen() {
           champion that was supposed to fit it exactly. The padding moves onto
           the column that still needs it.
         */
-        /* py-14 top and bottom put the first line of a step a hundred pixels
-           down an otherwise empty column, and left the same again under the
-           button. The figure beside it is what should fill the height. */
         /*
-          A breath at the top, and no more.
+          No vertical padding here, and that is the point.
 
-          This was py-14, which stacked with the column's own padding and the
-          header's to push the steps fifty pixels down an empty panel. Cutting all
-          three to nothing went the other way and pinned them to the very edge of
-          the window, where they read as part of the browser rather than part of
-          the page. One step back from the edge is enough to sit them level with
-          the champion's head without touching it.
+          This wrapper holds both columns, so every adjustment made to move the
+          steps moved the champion by exactly the same amount. Five rounds of
+          nudging pt from 2 to 36 changed where the pair sat on the page and never
+          once changed the distance between them, which is the thing being aimed
+          at. The padding belongs to the column that needs it.
         */
-        "h-full overflow-hidden bg-ash-950 pb-8 pl-0 pr-6 pt-36"
+        "h-full overflow-hidden bg-ash-950 pb-8 pl-0 pr-6"
       }
     >
       {/*
@@ -377,7 +373,9 @@ export function TitleScreen() {
           it keeps the shape it was designed at, and the space left over goes to
           the champion rather than being distributed as margin.
         */}
-        <div className="flex h-full max-w-3xl flex-col overflow-y-auto pb-4 pr-2 pt-0">
+        {/* The setup column's own top offset, which moves the steps without
+            moving the figure beside them. */}
+        <div className="flex h-full max-w-3xl flex-col overflow-y-auto pb-4 pr-2 pt-24">
           {/*
             One decision at a time.
 
