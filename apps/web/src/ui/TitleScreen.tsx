@@ -503,7 +503,11 @@ export function TitleScreen() {
               say where you are in the sequence, and this says where you are in
               the game, so they read as two lines rather than two columns.
             */}
-            <span className="mt-3 block whitespace-nowrap">
+            {/* mt-3 read as a caption hanging off the steps. These are two
+                separate things, and the gap between them should say so as
+                clearly as the gap between the rank block and the heading below
+                it. */}
+            <span className="mt-7 block whitespace-nowrap">
               <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
                 rank
                 {/*
