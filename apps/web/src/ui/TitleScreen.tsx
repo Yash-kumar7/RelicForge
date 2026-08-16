@@ -1074,38 +1074,18 @@ export function TitleScreen() {
               </button>
             )}
             {/*
-              Only above Descend.
+              Nothing under the list any more.
 
-              It describes the fight, so on the element and weapon steps it was
-              answering a question nobody had asked yet. Here it is the last
-              thing read before the fight starts, which is when it means
-              something.
+              Two things lived here and both have been said better elsewhere. A
+              sentence explaining that how you swing, dodge and finish shapes the
+              weapon, which is the weapon step's heading mark and the first line
+              of the briefing. And a mark explaining how the experience on each
+              row is earned, which every row now carries itself, as a price list
+              with thresholds rather than the four judgements this one offered.
+
+              A duplicate of a better version is worse than nothing: it is one
+              more thing to read that teaches less than the thing beside it.
             */}
-            {section === 2 && (
-              <>
-                <p className="text-[11px] leading-relaxed text-stone-600">
-                  How hard you swing, how often you dodge, and how close to death you finish all
-                  shape the weapon the forge makes for you.
-                </p>
-                {/*
-                  What moves you inside the range, on request.
-
-                  Each row above offers a span rather than a number, which is
-                  honest and unanswerable on its own: a player reading 60 to 260
-                  cannot tell what puts them at either end, so it reads as luck.
-                  That was a second paragraph here, and a second paragraph is how a
-                  screen for picking a fight turns into a page to be read first.
-                  The answer sits behind the question instead.
-                */}
-                <p className="mt-2 flex items-center gap-2 text-[11px] leading-relaxed text-stone-700">
-                  <InfoTip label="experience">
-                    The lower number is a win and nothing more. You earn the rest by finishing
-                    hurt, never healing, dodging often, and claiming the relic.
-                  </InfoTip>
-                  How the experience on each row is earned
-                </p>
-              </>
-            )}
             {/*
               Descend belongs to the last step only.
 
