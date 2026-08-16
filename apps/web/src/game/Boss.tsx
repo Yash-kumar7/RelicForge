@@ -289,10 +289,18 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         (striking ? strikeT * 0.55 : -charge * 0.42) + stagger.current * 0.3;
       body.current.position.y = striking ? -strikeT * 0.5 : charge * 0.35;
       body.current.scale.setScalar(1 + charge * 0.12 - strikeT * 0.05);
-      body.current.rotation.z = striking ? Math.sin(strikeT * Math.PI) * 0.22 : charge * -0.12;
-      // A shoulder turn, so the swing comes from the body rather than the arm
-      // alone. Without it a huge armoured figure appears to flick its wrist.
-      body.current.rotation.y = striking ? -strikeT * 0.45 : charge * 0.3;
+      body.current.rotation.z = striking ? -Math.sin(strikeT * Math.PI) * 0.22 : charge * 0.12;
+      /*
+       * A shoulder turn, so the swing comes from the body rather than the arm
+       * alone. Without it a huge armoured figure appears to flick its wrist.
+       *
+       * Both signs were inverted against the weapon, exactly as the champion's
+       * were: the body yawed one way through the strike while the blade in its
+       * hand yawed the other, so the boss opened away from a blow it was
+       * delivering. It coils back through the wind-up and drives through the
+       * strike now, the same way round the weapon travels.
+       */
+      body.current.rotation.y = striking ? strikeT * 0.45 : charge * -0.3;
     }
 
     /**
