@@ -20,9 +20,22 @@ export function RankLadder({ xp }: { xp: number }) {
 
   return (
     <span className="block">
+      {/*
+        Says what it is before what it is not.
+        
+        This opened with "experience is a record of what you have fought, not a
+        currency", which is a definition and a denial: two abstractions before
+        anything a player recognises. It also spent its first breath explaining
+        that rank buys no damage and unlocks no weapon, which answers a worry
+        nobody has until you raise it.
+        
+        What it is, is a tally of what you have killed. That is worth saying, and
+        the fact that nothing spends it is one clause at the end rather than the
+        whole opening.
+      */}
       <span className="block text-stone-500">
-        Experience is a record of what you have fought, not a currency. Rank buys no damage and
-        unlocks no weapon: every relic is earned in one fight, by how that fight went.
+        Every boss you put down adds to this. It is the tally of what you have killed and how
+        well you did it, and nothing ever spends it.
       </span>
 
       <span className="mt-3 block border-t border-ash-800 pt-2 font-mono text-[10px] uppercase tracking-[0.12em]">
