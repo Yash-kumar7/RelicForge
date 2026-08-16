@@ -4,6 +4,7 @@ import { championFor, championStats } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { IRON, useLoadout } from "../state/useLoadout";
 import { BOSSES, bossAt, describeBoss, isCleared } from "../game/bosses";
+import { bossTraits, describeTraits } from "@relic/core";
 import { ChampionPreview } from "./ChampionPreview";
 import { TitleBackdrop } from "./TitleBackdrop";
 import { BossPortrait } from "./BossPortrait";
@@ -16,8 +17,7 @@ import { RankLadder } from "./RankLadder";
 import { SpecimenPlate } from "./SpecimenPlate";
 import { TitleHero } from "./TitleHero";
 import { HowItWorks } from "./HowItWorks";
-import { RANKS, rankFor } from "../state/useProgress";
-import { useProgress } from "../state/useProgress";
+import { RANKS, rankFor, useProgress, xpRangeFor } from "../state/useProgress";
 import { asset } from "../lib/backend";
 
 /**
@@ -825,9 +825,13 @@ export function TitleScreen() {
               {BOSSES.map((boss) => {
                 const cleared = isCleared(boss.level);
                 const selected = bossLevel === boss.level;
+                const lean = describeTraits(bossTraits(boss.name));
+                const pay = xpRangeFor(boss.level);
                 return (
+                  /* Wrapped, so the mark is a sibling of the button rather than
+                     a child of it: nesting one would select the boss underneath. */
+                  <div key={boss.level} className="relative">
                   <button
-                    key={boss.level}
                     type="button"
                     onClick={() => chooseBossLevel(boss.level)}
                     className={[
@@ -892,6 +896,46 @@ export function TitleScreen() {
                       </span>
                     </span>
                   </button>
+
+                  <span className="absolute right-3 top-3">
+                    <InfoTip label={boss.title}>
+                      <span className="block text-stone-300">{boss.blurb}</span>
+
+                      {/*
+                        What killing this one leaves behind.
+
+                        The ladder pays more for a harder rung and nothing said so:
+                        a player could own two relics differing by a fifth in
+                        damage with no way to learn the difference was which boss
+                        died. The first rung leans nothing, which is worth saying
+                        plainly rather than showing an empty list.
+                      */}
+                      <span className="mt-3 block border-t border-ash-800 pt-2">
+                        <span className="block text-stone-600">Its relic</span>
+                        <span className="mt-1 block text-stone-400">
+                          Forged from {boss.name}, and carries its name into the weapon.
+                        </span>
+                        {lean.length > 0 ? (
+                          <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.12em] text-stone-400">
+                            {lean.join(" · ")}
+                          </span>
+                        ) : (
+                          <span className="mt-1 block text-stone-600">
+                            The first rung, so it leans nothing. Everything above it hits harder.
+                          </span>
+                        )}
+                      </span>
+
+                      <span className="mt-3 block border-t border-ash-800 pt-2">
+                        <span className="block text-stone-600">Experience</span>
+                        <span className="mt-1 block text-stone-400">
+                          {pay.min} for the win. Up to {pay.max} by finishing hurt, never healing,
+                          dodging often, and claiming the relic.
+                        </span>
+                      </span>
+                    </InfoTip>
+                  </span>
+                  </div>
                 );
               })}
             </div>

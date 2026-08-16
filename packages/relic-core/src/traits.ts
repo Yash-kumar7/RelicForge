@@ -166,6 +166,19 @@ export function relicTraits(dna: RelicDNA | null | undefined): RelicTraits {
   );
 }
 
+/**
+ * What a boss alone is worth, with nothing else folded in.
+ *
+ * The ladder pays more for a harder rung, and until now that was invisible: a
+ * player could see two relics differing by twenty percent and have no way to
+ * learn the difference was which boss died. Exported so the enemy list can say
+ * what clearing each one leans, rather than leaving it to be discovered by
+ * owning two weapons and comparing them.
+ */
+export function bossTraits(bossInfluence: string): RelicTraits {
+  return combine(BY_BOSS[bossInfluence] ?? {});
+}
+
 /** Compact summary for the loadout screen, so the trade is visible before the fight. */
 export function describeTraits(traits: RelicTraits): string[] {
   const notes: string[] = [];
