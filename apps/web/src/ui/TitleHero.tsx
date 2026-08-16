@@ -501,22 +501,19 @@ export function TitleHero({ onEnter }: { onEnter: () => void }) {
               className="font-display text-xl tracking-[0.22em] text-ember-300 sm:text-2xl"
             >
               {/*
-                Labelled as an outcome, not as inventory.
+                No label above the name.
 
-                A visitor reads a weapon floating between two fighters as the
-                one they are holding, and a new player holds the iron sword and
-                nothing else. It is the opposite: the weapon is what beating that
-                boss produced.
+                It has been "what this fight made" and then "forged from this
+                kill", and both were trying to explain a weapon that is already
+                sitting between a champion and the boss it came from, on a page
+                whose headline says the weapon is made from how you fight. The
+                arrangement is the sentence; a caption on top of it is the same
+                claim made twice, in smaller type, by someone who did not trust
+                the picture.
 
-                It said "what this fight made", which left two questions open.
-                Which fight, given the two on screen have not fought yet, and
-                made how. Naming the kill answers both: this weapon exists
-                because that thing died.
+                A visitor who does not read it still understands the page. A
+                visitor who does was told nothing new.
               */}
-              <span className="mb-3 block font-mono text-[9px] uppercase tracking-[0.35em] text-brass-700">
-                forged from this kill
-              </span>
-
               {/*
                 The name only.
 
