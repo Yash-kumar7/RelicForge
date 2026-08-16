@@ -840,10 +840,26 @@ export function TitleScreen() {
               something.
             */}
             {section === 2 && (
-              <p className="text-[11px] leading-relaxed text-stone-600">
-                How hard you swing, how often you dodge, and how close to death you finish all
-                shape the weapon the forge makes for you.
-              </p>
+              <>
+                <p className="text-[11px] leading-relaxed text-stone-600">
+                  How hard you swing, how often you dodge, and how close to death you finish all
+                  shape the weapon the forge makes for you.
+                </p>
+                {/*
+                  Says what moves you inside the range.
+
+                  Each row above offers a span rather than a number, which is
+                  honest and, on its own, unanswerable: a player reading 60 to 260
+                  has no way to tell what puts them at either end, so the figure
+                  reads as luck. The same four things that shape the weapon decide
+                  it, which is worth saying once here rather than leaving anyone to
+                  infer it from two fights that paid differently.
+                */}
+                <p className="mt-2 text-[11px] leading-relaxed text-stone-700">
+                  The low number is a win and nothing more. You earn the rest by finishing hurt,
+                  never healing, dodging often, and claiming the relic.
+                </p>
+              </>
             )}
             {/*
               Descend belongs to the last step only.
