@@ -384,7 +384,7 @@ export function TitleScreen() {
             saying where they were in the sequence. Sticky keeps them while the
             content moves under them.
           */}
-          <div className="sticky top-0 z-20 mb-5 flex items-baseline justify-between gap-6 bg-ash-950 pb-3 pt-1">
+          <div className="sticky top-0 z-20 mb-5 bg-ash-950 pb-3 pt-1">
           <ol className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em]">
             {steps.map((label, index) => {
               const reached = index <= step;
@@ -461,7 +461,17 @@ export function TitleScreen() {
               being read as a score or a timer. The label names it, and the sigil,
               the figures and the bar sit under it as one group.
             */}
-            <span className="block w-[14rem] shrink-0 whitespace-nowrap">
+            {/*
+              A row of its own, under the steps.
+
+              It sat opposite them, squeezed into fourteen rem while the column
+              ran past a thousand pixels: a name, two figures and a bar crammed
+              into a corner, with the bar too short to show anything and the gap
+              between the two blocks doing nothing. They are not a pair. The steps
+              say where you are in the sequence, and this says where you are in
+              the game, so they read as two lines rather than two columns.
+            */}
+            <span className="mt-3 block whitespace-nowrap">
               <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
                 rank
                 {/*
