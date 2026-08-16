@@ -97,8 +97,22 @@ export function useForgeRun() {
     [stopWatchdog],
   );
 
+  /**
+   * Identifies the run in progress, so a paced sequence can tell whether it is
+   * still the one on screen.
+   *
+   * A cached forge is a chain of timers rather than a stream, and the player can
+   * walk out of it: claim, abandon, or start another fight. Without a token the
+   * timers keep firing into a store that has moved on, and stages from a finished
+   * run appear over a new one.
+   */
+  const runToken = useRef(0);
+
   const start = useCallback(
     async (mode: "dev" | "hero" = "hero") => {
+      const token = ++runToken.current;
+      const alive = () => runToken.current === token;
+      const beat = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
       // Close any stream still open from a previous run. Overwriting the handle
       // without this leaks an EventSource, and the orphan keeps pushing events
       // into the store for a relic nobody is looking at any more.
@@ -120,18 +134,56 @@ export function useForgeRun() {
           stage: "DNA_READY",
         });
 
-        // A cache hit arrives complete. Still play the sequence, the beats are
-        // the product, and skipping them because the asset was ready would make
-        // the fast path feel like a different, lesser experience.
+        /*
+         * A cache hit arrives complete, and is paced anyway.
+         *
+         * This comment used to say the sequence still plays. It did not: the code
+         * below it went straight to COMPLETE, so a cached relic skipped every
+         * beat and the reveal simply appeared. Level one is fully cached, which
+         * means the fight the most people see was the one that showed least of
+         * what the game does.
+         *
+         * The beats are the product. A player has to watch the reading of their
+         * fight turn into a design, the design turn into a drawing, and the
+         * drawing turn into a weapon, or the weapon is just something the game
+         * handed over. Roughly five seconds is enough to be a moment and short
+         * enough that nobody waits.
+         *
+         * Deliberately not faked as progress: the percentage runs because a real
+         * one does, but it is over in a couple of seconds rather than pretending
+         * to take ninety.
+         */
         if (relic.cached && relic.modelUrl) {
+          await beat(700);
+          if (!alive()) return;
+          patchForge({ stage: "GENERATING_CONCEPT" });
+
+          await beat(900);
+          if (!alive()) return;
+          patchForge({ conceptUrl: relic.conceptUrl, stage: "CONCEPT_READY" });
+
+          await beat(1200);
+          if (!alive()) return;
+          patchForge({ stage: "FORGING_3D", meshPercent: 0 });
+
+          for (const percent of [18, 44, 71, 93, 100]) {
+            await beat(320);
+            if (!alive()) return;
+            patchForge({ meshPercent: percent });
+          }
+
+          await beat(400);
+          if (!alive()) return;
           patchForge({
-            conceptUrl: relic.conceptUrl,
             modelUrl: relic.modelUrl,
             transform: relic.transform,
             totalMs: relic.totalMs,
-            meshPercent: 100,
-            stage: "COMPLETE",
+            stage: "MODEL_READY",
           });
+
+          await beat(900);
+          if (!alive()) return;
+          patchForge({ stage: "COMPLETE" });
           return;
         }
 
