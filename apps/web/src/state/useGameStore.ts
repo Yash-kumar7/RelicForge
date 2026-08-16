@@ -37,6 +37,30 @@ export const PLAYER_MAX_HP = 100;
 /** Base value; the live maximum is scaled by difficulty and boss level. */
 export const BOSS_MAX_HP = 1000;
 
+/**
+ * Cuts every boss to a tenth of its health, with ?easy.
+ *
+ * Not a difficulty setting. The forge is the end of a fight that takes a minute
+ * or two to win, which makes the part of this game that most needs looking at the
+ * part that is hardest to reach: every check of how a relic comes out has to be
+ * paid for with a full fight first.
+ *
+ * A flag rather than an edited constant, because a constant gets changed to try
+ * something and then shipped by whoever forgets to change it back. This one is
+ * off unless it is asked for in the URL, and it is read once at boot rather than
+ * per fight, so it cannot be turned on mid-run.
+ *
+ * Telemetry is untouched. Health remaining, dodges and heavy ratio all read
+ * exactly as they would in a real fight, so the relic a shortened fight forges is
+ * the relic that fight would have forged.
+ */
+const EASY_MODE =
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("easy") !== null;
+
+/** A tenth, which is one or two exchanges rather than a fight. */
+const EASY_BOSS_HP = 0.1;
+
 export interface ForgeState {
   stage: ForgeStage;
   relicId: string | null;
@@ -182,7 +206,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       // slider would scale the same numbers while changing nothing about the
       // weapon you earn, whereas each rung changes bossInfluence and therefore
       // the relic itself.
-      const maxHp = Math.round(BOSS_MAX_HP * bossAt(state.bossLevel ?? 1).hp);
+      const maxHp = Math.round(
+        BOSS_MAX_HP * bossAt(state.bossLevel ?? 1).hp * (EASY_MODE ? EASY_BOSS_HP : 1),
+      );
       const playerMaxHp = Math.round(PLAYER_MAX_HP * championFor(state.affinity).traits.maxHp);
       return {
       phase: "FIGHTING" as GamePhase,

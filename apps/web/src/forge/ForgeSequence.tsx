@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
 import { STAGE_HEADLINE, forgeLabelFor } from "./forgeCopy";
 import { bossAt } from "../game/bosses";
+import { themeFor } from "../game/theme";
+import { RelicRevealScreen } from "./RelicRevealScreen";
 
 /**
  * The cinematic overlay.
@@ -52,6 +54,36 @@ export function ForgeSequence({
 
   const showTelemetry = forge.stage !== "IDLE" && forge.stage !== "ANALYZING";
   const headline = STAGE_HEADLINE[forge.stage];
+
+  /*
+   * A finished relic gets a screen, not a caption.
+   *
+   * Everything above this point is a progress cinematic laid over the arena,
+   * which is right while there is nothing to show yet. The moment there is, the
+   * arena stops being a backdrop worth keeping: the weapon rises off a forge
+   * eleven metres from the camera, and the reveal was a name in large type in
+   * front of a room still lit for a fight.
+   */
+  if (forge.stage === "COMPLETE" && forge.name && forge.modelUrl && forge.dna) {
+    return (
+      <RelicRevealScreen
+        name={forge.name}
+        weaponClass={forge.dna.weaponClass}
+        modelUrl={forge.modelUrl}
+        bossName={boss.name}
+        accent={themeFor(affinity).forge}
+        readings={[
+          { label: "element", value: forge.dna.element },
+          { label: "silhouette", value: forge.dna.temperament },
+          { label: "condition", value: forge.dna.condition },
+          { label: "health left", value: `${Math.round(playerHp)}%` },
+          { label: "final blow", value: telemetry.finishingAttack },
+          { label: "dodges", value: `${telemetry.dodges}` },
+        ]}
+        onClaim={onClaim}
+      />
+    );
+  }
 
   /**
    * How much of the arena to hide, by stage.
@@ -216,40 +248,6 @@ export function ForgeSequence({
               <p className="mt-2 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-stone-700">
                 meshy-7 usually takes 90 to 120 seconds
               </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Claim */}
-        <AnimatePresence>
-          {forge.stage === "COMPLETE" && forge.name && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.4 }}
-              className="pointer-events-auto text-center"
-            >
-              <h1 className="font-display text-6xl tracking-[0.14em] text-ember-300 drop-shadow-[0_0_30px_rgba(255,107,26,0.5)]">
-                {forge.name.toUpperCase()}
-              </h1>
-              <p className="mt-3 text-xs uppercase tracking-[0.3em] text-stone-400">
-                Legendary {forge.dna?.weaponClass}
-              </p>
-              <p className="mt-2 text-sm text-stone-500">
-                Forged from your victory over {boss.name}
-              </p>
-              {forge.totalMs !== null && (
-                <p className="mt-1 font-mono text-[10px] text-stone-700">
-                  {forge.cached ? "cached" : `forged in ${(forge.totalMs / 1000).toFixed(0)}s`}
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={onClaim}
-                className="mt-8 border border-ember-500/60 px-10 py-3 text-xs uppercase tracking-[0.35em] text-ember-300 transition hover:bg-ember-500/10"
-              >
-                Claim Relic
-              </button>
             </motion.div>
           )}
         </AnimatePresence>
