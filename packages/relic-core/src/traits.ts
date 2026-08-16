@@ -102,20 +102,67 @@ function combine(...layers: Partial<RelicTraits>[]): RelicTraits {
 }
 
 /**
- * Element is deliberately absent.
+ * Element leans the weapon, on axes nothing else touches.
  *
- * Element comes from the affinity the player picks on the setup screen, before
- * they have fought anything. If it carried power, that screen would stop being
- * a choice about how the relic should look and become a choice about which one
- * is strongest, and every player would pick the same one. Everything that does
- * carry power here is earned by how the fight actually went.
+ * This used to be empty, and the comment explaining why said that element comes
+ * from the affinity picked before any fighting, so giving it power would turn
+ * that screen into a choice about which element is strongest. That was true when
+ * it was written and stopped being true when champions gained their own
+ * multipliers: the affinity screen already decides damage, health and how often
+ * you can dodge. Element was the only thing left pretending otherwise.
+ *
+ * What it left behind was worse than an inconsistency. Element is a third of the
+ * DNA, so two relics won the same way against different bosses were the same
+ * weapon in different colours, and a loadout full of them offered no reason to
+ * choose one. A player asking why they would ever swap is describing a screen
+ * with nothing on it.
+ *
+ * Each element takes a different axis, so none of them is simply better: fire
+ * trades reliability for a heavier blow, ice trades speed for reach, lightning
+ * trades weight for pace. They are also a real decision because relics are
+ * portable: a Frost champion carrying a fire relic is durable and hits hard, and
+ * that combination cannot be reached any other way.
  */
+const BY_ELEMENT: Record<RelicDNA["element"], Partial<RelicTraits>> = {
+  fire: { heavyDamage: 1.14, lightDamage: 0.94 },
+  ice: { reach: 1.12, lightDamage: 1.06, heavySpeed: 1.08 },
+  lightning: { lightSpeed: 0.88, heavySpeed: 0.92, lightDamage: 0.96 },
+};
+/**
+ * What the boss was worth, in the weapon it left behind.
+ *
+ * The ladder asks a player to fight something with 2.4 times the health of the
+ * first rung, and the relic that fell out of it was identical to one from the
+ * Warden if the two fights went the same way. Nothing about a harder fight
+ * reached the weapon, so climbing bought a different colour and a different name
+ * and no reason to bother.
+ *
+ * Matched on the name because that is what the DNA carries, and what the prompt
+ * already puts in front of Meshy. Anything unrecognised leans nothing, so a relic
+ * forged before this existed, or against a boss added later, is never made worse
+ * by a lookup that missed.
+ *
+ * Deliberately small. At the top it is a fifth more damage, which is felt across
+ * a fight without making the first four rungs pointless to own, and the ladder
+ * stays a choice about what you can survive rather than a queue to the only relic
+ * worth having.
+ */
+const BY_BOSS: Record<string, Partial<RelicTraits>> = {
+  "the Ashen Warden": {},
+  "the Drowned Choir": { lightDamage: 1.05, heavyDamage: 1.05 },
+  "the Gilded Husk": { lightDamage: 1.1, heavyDamage: 1.1 },
+  "the Rootbound King": { lightDamage: 1.15, heavyDamage: 1.15, reach: 1.04 },
+  "the Hollow Sovereign": { lightDamage: 1.2, heavyDamage: 1.2, reach: 1.06 },
+};
+
 export function relicTraits(dna: RelicDNA | null | undefined): RelicTraits {
   if (!dna) return { ...NEUTRAL };
   return combine(
     BY_TEMPERAMENT[dna.temperament] ?? {},
     BY_CLASS[dna.weaponClass] ?? {},
     BY_CONDITION[dna.condition] ?? {},
+    BY_ELEMENT[dna.element] ?? {},
+    BY_BOSS[dna.bossInfluence] ?? {},
   );
 }
 

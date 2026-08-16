@@ -43,14 +43,61 @@ describe("relicTraits", () => {
     );
   });
 
-  it("never lets element touch the numbers", () => {
-    // Element comes from the affinity picked before the fight. If it carried
-    // power that screen would stop being a choice about how the relic looks and
-    // become a choice about which one is strongest.
+  it("gives every element its own lean, and none of them a free one", () => {
+    /*
+     * Element used to touch nothing, on the reasoning that it is picked before
+     * any fighting and should not turn the affinity screen into a power choice.
+     * Champions have carried damage, health and dodge multipliers since, so that
+     * screen decides power either way, and element being inert only meant two
+     * relics won the same way were the same weapon in different colours.
+     *
+     * Each takes a different axis, so no element dominates: the test is that
+     * every one of them gives something up.
+     */
     const fire = relicTraits({ ...base, element: "fire" });
-    for (const element of ["ice", "lightning"] as const) {
-      expect(relicTraits({ ...base, element })).toEqual(fire);
-    }
+    const ice = relicTraits({ ...base, element: "ice" });
+    const lightning = relicTraits({ ...base, element: "lightning" });
+
+    expect(fire).not.toEqual(ice);
+    expect(ice).not.toEqual(lightning);
+
+    // Fire buys a heavier blow with a weaker quick one.
+    expect(fire.heavyDamage).toBeGreaterThan(ice.heavyDamage);
+    expect(fire.lightDamage).toBeLessThan(ice.lightDamage);
+
+    // Ice buys reach with a slower heavy.
+    expect(ice.reach).toBeGreaterThan(fire.reach);
+    expect(ice.heavySpeed).toBeGreaterThan(fire.heavySpeed);
+
+    // Lightning buys pace with a weaker quick attack.
+    expect(lightning.lightSpeed).toBeLessThan(fire.lightSpeed);
+    expect(lightning.lightDamage).toBeLessThan(ice.lightDamage);
+  });
+
+  it("pays more for a harder boss, without making the early ones worthless", () => {
+    /*
+     * A player climbing the ladder fights something with 2.4 times the health of
+     * the first rung. Before this the relic that fell out of it was identical to
+     * a Warden's if the two fights went the same way, so climbing bought a
+     * colour and a name.
+     *
+     * It stays small on purpose. A fifth more damage at the top is felt across a
+     * fight; several times more would turn the ladder into a queue to the only
+     * relic worth owning.
+     */
+    const warden = relicTraits({ ...base, bossInfluence: "the Ashen Warden" });
+    const sovereign = relicTraits({ ...base, bossInfluence: "the Hollow Sovereign" });
+
+    expect(sovereign.heavyDamage).toBeGreaterThan(warden.heavyDamage);
+    expect(sovereign.heavyDamage / warden.heavyDamage).toBeLessThan(1.3);
+  });
+
+  it("leans nothing for a boss it does not recognise", () => {
+    // Relics forged before this lookup existed carry names it may not know, and
+    // a miss must never make a weapon worse than the one it already was.
+    const unknown = relicTraits({ ...base, bossInfluence: "something else entirely" });
+    const warden = relicTraits({ ...base, bossInfluence: "the Ashen Warden" });
+    expect(unknown).toEqual(warden);
   });
 
   it("makes shattered a trade rather than a punishment", () => {
