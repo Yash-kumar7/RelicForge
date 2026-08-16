@@ -361,14 +361,33 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
           <p className="pointer-events-none font-display text-sm uppercase tracking-[0.35em] text-ember-300">
             {forge.name}
           </p>
-          <p className="pointer-events-none mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-600">
-            click the arena to look · LMB to swing
+          {/*
+            Says what this is, then how to use it.
+
+            It opened with instructions, which answers a question nobody had
+            asked yet: a player who has just claimed a weapon and been put back
+            in an empty arena wants to know why they are standing there before
+            they want the controls. LMB is also the code's name for the button,
+            not the player's.
+          */}
+          <p className="pointer-events-none mt-1 text-[12px] text-stone-500">
+            It is yours. Swing it.
+          </p>
+          <p className="pointer-events-none mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
+            left click to swing · drag to look around
           </p>
           {/*
             There was no route out of a finished run except reloading the page,
             which matters more than it sounds: two runs back to back is the
             entire comparison the project is built to show, and the relic is
             already saved to the loadout by the time this appears.
+          */}
+          {/*
+            Named for where it goes, not for what it is hoped you do next.
+
+            "Forge another" describes an outcome two screens away and skips the
+            part the player actually does: pick a champion, pick a weapon, pick a
+            fight. Nothing is forged by pressing it.
           */}
           <button
             type="button"
@@ -378,7 +397,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
             }}
             className="pointer-events-auto mt-5 border border-ember-500/50 px-8 py-2 text-xs uppercase tracking-[0.3em] text-ember-300 transition hover:bg-ember-500/10"
           >
-            Forge another
+            Choose your next fight
           </button>
         </div>
       )}
