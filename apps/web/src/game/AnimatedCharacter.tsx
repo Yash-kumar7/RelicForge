@@ -261,11 +261,14 @@ const SHOW_SOCKET =
 function HandFollower({
   root,
   bone,
+  hand,
   height,
   children,
 }: {
   root: RefObject<Group | null>;
   bone: Object3D;
+  /** Which hand this is, which decides which way "away from the body" points. */
+  hand: HandBone;
   height: number;
   children: ReactNode;
 }) {
@@ -302,7 +305,21 @@ function HandFollower({
      * into it. The forward component keeps the shaft in front of the fingers,
      * which is where a hand closed around a grip would put it.
      */
-    const outward = Math.sign(position.x) || 1;
+    /*
+     * Which side the weapon hand is on, from which hand it is.
+     *
+     * This was the sign of the hand's live x, read fresh every frame, and that is
+     * the 180 degree flip: an arm crosses the middle of the body constantly, in
+     * the walk, in the idle, and in every swing. The moment the hand passes x=0
+     * the sign flips, the carried roll mirrors, and the blade snaps through a
+     * half turn and back. It is not a rotation being animated, it is a constant
+     * changing sign under the animation.
+     *
+     * Which hand a character grips with does not change, so it is read from the
+     * bone name and stays put. These rigs put the right hand at negative x, which
+     * the measured sockets in handSockets.ts agree on for all eight characters.
+     */
+    const outward = hand === "RightHand" ? -1 : 1;
     const clearance = height * HAND_CLEARANCE;
     group.position.x += outward * clearance;
     group.position.z += clearance * 0.4;
@@ -513,7 +530,7 @@ export function AnimatedCharacter({
         its own size.
       */}
       {children && hand && (
-        <HandFollower root={root} bone={hand} height={height}>
+        <HandFollower root={root} bone={hand} hand={handBone} height={height}>
           {children}
         </HandFollower>
       )}
