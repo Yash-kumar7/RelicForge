@@ -260,9 +260,22 @@ export function TitleScreen() {
         its own instead, so text still sets to a readable measure.
       */}
       <div
-        /* The figure takes the room the column gives back, rather than the page
-           spreading into margin on very wide screens. */
-        className="mx-auto grid h-full w-full max-w-none items-center gap-12 lg:grid-cols-[1.25fr_1fr] xl:gap-16"
+        /*
+          Stretched, not centred.
+
+          items-center held each column in the middle of the row, so the setup
+          column floated regardless of what its own contents did: removing the
+          justify-center inside it changed nothing, because the block being
+          centred was the column itself. That is why the steps sat a hundred
+          pixels below the champion's head with nothing above them.
+
+          Stretched, both columns start at the top of the row and the steps line
+          up with the top of the figure beside them.
+
+          The figure also takes the room the column gives back, rather than the
+          page spreading into margin on very wide screens.
+        */
+        className="mx-auto grid h-full w-full max-w-none items-stretch gap-12 lg:grid-cols-[1.25fr_1fr] xl:gap-16"
       >
         {/* Left: the champion, as large as the viewport allows. */}
         {/*
@@ -357,7 +370,7 @@ export function TitleScreen() {
           it keeps the shape it was designed at, and the space left over goes to
           the champion rather than being distributed as margin.
         */}
-        <div className="flex max-h-full max-w-3xl flex-col overflow-y-auto pb-4 pr-2 pt-0">
+        <div className="flex h-full max-w-3xl flex-col overflow-y-auto pb-4 pr-2 pt-0">
           {/*
             One decision at a time.
 
