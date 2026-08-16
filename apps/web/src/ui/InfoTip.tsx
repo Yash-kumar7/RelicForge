@@ -79,9 +79,20 @@ export function InfoTip({
             transition={{ duration: 0.16 }}
             /* Above the mark, because these sit low on their own panels and a
                popover below one would open off the bottom of the screen. */
+            /*
+              block and whitespace-normal, both load-bearing.
+
+              This is a span, because it has to be legal inside the paragraph and
+              the label span it opens from, and a span inherits. The rank cluster
+              sets whitespace-nowrap so its own row cannot break, so the popover
+              laid three sentences out on one line, ran off the panel, and was
+              clipped by the column that scrolls: a bordered box with nothing
+              visible in it.
+            */
             className={[
-              "absolute bottom-6 z-30 w-64 border border-brass-800 bg-ash-950 p-3",
-              "text-[11px] leading-relaxed text-stone-400 shadow-[0_10px_40px_rgba(0,0,0,0.6)]",
+              "absolute bottom-6 z-30 block w-64 whitespace-normal border border-brass-800",
+              "bg-ash-950 p-3 text-left font-sans text-[11px] normal-case leading-relaxed",
+              "tracking-normal text-stone-400 shadow-[0_10px_40px_rgba(0,0,0,0.6)]",
               align === "right" ? "right-0" : "left-0",
             ].join(" ")}
           >
