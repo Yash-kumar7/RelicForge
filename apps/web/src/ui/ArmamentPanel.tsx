@@ -492,7 +492,9 @@ export function ArmamentPanel() {
               {relicNotes.length > 0 && (
                 <span className="mt-3 block border-t border-ash-800 pt-2">
                   <span className="block text-stone-600">Against a plain blade</span>
-                  <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.12em] text-stone-400">
+                  {/* Sentence case, matching the note it sits in rather than
+                      the labels elsewhere on the page. */}
+                  <span className="mt-1 block font-mono text-[10px] capitalize text-stone-400">
                     {relicNotes.join(" · ")}
                   </span>
                 </span>
