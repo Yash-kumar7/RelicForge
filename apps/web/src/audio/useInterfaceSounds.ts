@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { sfx, unlockAudio } from "./sfx";
+import { sfx, startAmbience, stopAmbience, unlockAudio } from "./sfx";
 
 /**
  * Gives every screen outside the arena a voice, from one place.
@@ -34,14 +34,23 @@ function soundable(target: EventTarget | null): HTMLElement | null {
   return el instanceof HTMLElement ? el : null;
 }
 
-export function useInterfaceSounds(): void {
+export function useInterfaceSounds({ ambience = false }: { ambience?: boolean } = {}): void {
   useEffect(() => {
     /*
      * Audio cannot start before a gesture, and the first gesture is usually the
      * one being sounded. Unlocking on pointerdown rather than on click means the
      * context has begun resuming before the click's own sound is asked for.
+     *
+     * The room tone starts here too, on whatever the player does first: a click,
+     * a key, a scroll. There is nothing to ask permission for, since browsers
+     * have no audio permission, only a rule that nothing plays before a gesture,
+     * and a dialog inviting someone to press a button to enable sound is just
+     * that rule with an extra step.
      */
-    const unlock = () => unlockAudio();
+    const unlock = () => {
+      unlockAudio();
+      if (ambience) window.setTimeout(startAmbience, 60);
+    };
 
     const onClick = (event: MouseEvent) => {
       const el = soundable(event.target);
@@ -62,11 +71,25 @@ export function useInterfaceSounds(): void {
     };
 
     window.addEventListener("pointerdown", unlock, { once: true });
+    /* Keyboard and wheel count as gestures too, and someone who arrives and
+       scrolls should not be met with silence for it. */
+    window.addEventListener("keydown", unlock, { once: true });
+    window.addEventListener("wheel", unlock, { once: true, passive: true });
     document.addEventListener("click", onClick);
 
     return () => {
       window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+      window.removeEventListener("wheel", unlock);
       document.removeEventListener("click", onClick);
     };
-  }, []);
+  }, [ambience]);
+
+  /* Held only while these screens are on. The arena has its own sound and does
+     not want a drone under it. */
+  useEffect(() => {
+    if (ambience) return undefined;
+    stopAmbience();
+    return undefined;
+  }, [ambience]);
 }

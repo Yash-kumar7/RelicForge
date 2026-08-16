@@ -203,6 +203,86 @@ const UI = {
   },
 } as const;
 
+/**
+ * A room tone for the screens outside the fight.
+ *
+ * The title screen shows a forge and makes no sound at all, which is the one
+ * place a game is allowed to set a mood before asking anything of the player.
+ * There is nothing to ask permission for, either: browsers have no audio
+ * permission, only a rule that nothing plays before a gesture, and no dialog
+ * waives it. So this starts on whatever the player does first and not before.
+ *
+ * Two detuned oscillators and a filtered noise bed, held very low. It is meant
+ * to be noticed on leaving rather than on arriving: the test of a room tone is
+ * that stopping it feels like something happened.
+ */
+let ambience: { stop: () => void } | null = null;
+
+export function startAmbience(): void {
+  if (ambience) return;
+  const audio = ctx();
+  if (!audio || !master || audio.state !== "running") return;
+
+  const bed = audio.createGain();
+  bed.gain.setValueAtTime(0.0001, audio.currentTime);
+  // Four seconds to arrive, so it is never the thing that made you look up.
+  bed.gain.exponentialRampToValueAtTime(0.055, audio.currentTime + 4);
+  bed.connect(master);
+
+  const drones = [54, 81].map((frequency, i) => {
+    const osc = audio.createOscillator();
+    osc.type = i === 0 ? "sine" : "triangle";
+    osc.frequency.value = frequency;
+    // Detuned a few cents apart so the two beat slowly against each other,
+    // which is what stops a held tone sounding like a test signal.
+    osc.detune.value = i === 0 ? -6 : 7;
+    osc.connect(bed);
+    osc.start();
+    return osc;
+  });
+
+  /* Coals, rather than static: a lowpass this steep leaves only the rumble. */
+  const frames = Math.floor(audio.sampleRate * 4);
+  const buffer = audio.createBuffer(1, frames, audio.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < frames; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+
+  const coals = audio.createBufferSource();
+  coals.buffer = buffer;
+  coals.loop = true;
+
+  const filter = audio.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 220;
+
+  const coalGain = audio.createGain();
+  coalGain.gain.value = 0.35;
+
+  coals.connect(filter);
+  filter.connect(coalGain);
+  coalGain.connect(bed);
+  coals.start();
+
+  ambience = {
+    stop: () => {
+      const now = audio.currentTime;
+      bed.gain.cancelScheduledValues(now);
+      bed.gain.setValueAtTime(Math.max(0.0001, bed.gain.value), now);
+      bed.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+      // Stopped after the fade, or the tail is cut off mid-breath.
+      window.setTimeout(() => {
+        drones.forEach((osc) => osc.stop());
+        coals.stop();
+      }, 1400);
+    },
+  };
+}
+
+export function stopAmbience(): void {
+  ambience?.stop();
+  ambience = null;
+}
+
 export const sfx = {
   ...UI,
 

@@ -43,7 +43,9 @@ export default function App() {
    * another is the kind of inconsistency that reads as a bug in the sound rather
    * than as a decision about which screens matter.
    */
-  useInterfaceSounds();
+  /* The forge hums on the screens before the fight, and stops when one starts:
+     the arena brings its own sound and does not want a drone under it. */
+  useInterfaceSounds({ ambience: phase === "TITLE" || phase === "CHOOSE_AFFINITY" });
 
   if (route.startsWith("/lab")) {
     return (
