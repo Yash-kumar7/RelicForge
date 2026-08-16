@@ -123,10 +123,18 @@ function AvatarBody({
      * while the enemy took damage. A shoulder turn is what sells a swing, so the
      * rotation is now large enough to see and the whole body dips into it.
      */
+    /*
+     * The shoulder turns the way a right hand cuts, which is to the left.
+     *
+     * This yawed negative while the weapon yawed positive, so the torso turned
+     * one way and the blade the other: the body opened away from the cut instead
+     * of driving it. A right-handed swing takes the right shoulder across the
+     * body, and with the model facing +Z that is a positive yaw.
+     */
     const swing = swingProgress(playerHandle.attacking);
     body.current.rotation.x = swing * 0.3;
-    body.current.rotation.y = swing * -0.55;
-    body.current.rotation.z = swing * 0.12;
+    body.current.rotation.y = swing * 0.55;
+    body.current.rotation.z = swing * -0.12;
 
     // Unrigged fallback socket only; the rigged path animates its own weapon.
     if (arm.current && !rigged) {
