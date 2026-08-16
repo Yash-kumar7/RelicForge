@@ -218,6 +218,28 @@ const UI = {
  */
 let ambience: { stop: () => void } | null = null;
 
+/**
+ * The title motif: a minor arpeggio, low and slow.
+ *
+ * A room tone alone says a place exists. A theme says a game does, and the
+ * landing page is where somebody decides whether this is a project or a product.
+ *
+ * Four notes, rising then falling back, in A minor because the whole palette is
+ * already ash and ember and a minor third is what that sounds like. Sparse on
+ * purpose: it plays under a page that people read, so it is closer to a bell in
+ * another room than to music.
+ */
+const MOTIF: { frequency: number; at: number; duration: number; gain: number }[] = [
+  { frequency: 220.0, at: 0, duration: 2.6, gain: 0.075 }, // A3
+  { frequency: 261.63, at: 1.7, duration: 2.6, gain: 0.06 }, // C4
+  { frequency: 329.63, at: 3.4, duration: 3.0, gain: 0.05 }, // E4
+  { frequency: 293.66, at: 6.2, duration: 3.4, gain: 0.045 }, // D4
+  { frequency: 164.81, at: 9.0, duration: 4.2, gain: 0.055 }, // E3, the floor
+];
+
+/** How long between plays. Long enough that it never becomes a loop you notice. */
+const MOTIF_EVERY_MS = 22_000;
+
 export function startAmbience(): void {
   if (ambience) return;
   const audio = ctx();
@@ -263,8 +285,47 @@ export function startAmbience(): void {
   coalGain.connect(bed);
   coals.start();
 
+  /*
+   * Struck once when the page opens, then at a distance.
+   *
+   * The first pass is delayed a beat so it lands after the drone has faded up,
+   * which makes it read as something in the room rather than as the page
+   * announcing itself.
+   */
+  const playMotif = () => {
+    for (const note of MOTIF) {
+      tone({
+        frequency: note.frequency,
+        duration: note.duration,
+        type: "triangle",
+        gain: note.gain,
+        delay: note.at,
+      });
+      // A fifth above, quieter and a touch late, so each note has a body rather
+      // than being a bare oscillator.
+      tone({
+        frequency: note.frequency * 1.5,
+        duration: note.duration * 0.7,
+        type: "sine",
+        gain: note.gain * 0.35,
+        delay: note.at + 0.05,
+      });
+    }
+  };
+
+  const opening = window.setTimeout(playMotif, 1800);
+  const repeat = window.setInterval(playMotif, MOTIF_EVERY_MS);
+
+  /* Coals shifting, every few seconds, never on a beat anyone could count. */
+  const crackle = window.setInterval(() => {
+    noise(0.09 + Math.random() * 0.14, 0.05, 900 + Math.random() * 700);
+  }, 2600);
+
   ambience = {
     stop: () => {
+      window.clearTimeout(opening);
+      window.clearInterval(repeat);
+      window.clearInterval(crackle);
       const now = audio.currentTime;
       bed.gain.cancelScheduledValues(now);
       bed.gain.setValueAtTime(Math.max(0.0001, bed.gain.value), now);
