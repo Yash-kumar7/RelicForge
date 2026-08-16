@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { type RelicTraits } from "@relic/core";
 import { combinedTraits } from "../game/equipped";
+import { InfoTip } from "./InfoTip";
 import { useGameStore } from "../state/useGameStore";
 import { attackSpec } from "../game/combat";
 
@@ -17,15 +18,15 @@ const ATTACKS = [
     kind: "light" as const,
     name: "Quick attack",
     button: "left click",
-    blurb:
-      "Ends before the boss can punish it. Lean on this and the forge reads you as elegant: a narrow, precise weapon.",
+    /* The tactical half only. What leaning on it forges is behind the mark on
+       the heading, since it is a consequence rather than a reason to press it. */
+    blurb: "Ends before the boss can punish it.",
   },
   {
     kind: "heavy" as const,
     name: "Strong attack",
     button: "right click",
-    blurb:
-      "Staggers the boss, but commits you for longer than its wind-up lasts. Lean on this and the forge reads you as brutal: an oversized, heavy weapon.",
+    blurb: "Staggers the boss, but commits you for longer than its wind-up lasts.",
   },
 ];
 
@@ -146,21 +147,43 @@ export function ArmamentPanel() {
         "Armament" is the state field's name, not a word a player would reach
         for. The panel is about the thing in your hands, so it says so.
       */}
-      <p className="text-[11px] uppercase tracking-[0.4em] text-stone-600">Your weapon</p>
+      <p className="flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-stone-600">
+        Your weapon
+        {/*
+          The whole explanation, in one place, on request.
+
+          It was a paragraph here and half a sentence under each attack, saying
+          the same thing twice in two registers: relics come from the fight, and
+          also, leaning on this attack makes the forge read you a certain way. A
+          player choosing a weapon needs neither to press the button.
+          
+          On the heading rather than in the cards, because the cards are buttons
+          and a button inside a button is invalid and would fire the selection.
+        */}
+        <InfoTip label="how a relic is decided">
+          <span className="block text-stone-500">Two things about your fight shape it.</span>
+          <span className="mt-2 block">
+            <span className="text-stone-300">How much health you have left</span> when the boss
+            falls decides its condition: finish comfortably and it comes out flawless, finish
+            nearly dead and it comes out cracked, and hits harder for it.
+          </span>
+          <span className="mt-2 block">
+            <span className="text-stone-300">Which attack you lean on</span> decides its shape:
+            mostly quick attacks draw something narrow and precise, mostly strong ones an
+            oversized, heavy thing.
+          </span>
+        </InfoTip>
+      </p>
 
       {/*
-        Where relics come from, stated where relics are the subject.
+        One line, where there was a paragraph.
 
-        This lived on the element step, two screens before anything it described,
-        explaining the condition of weapons a player had not been shown yet. Here
-        it sits above the slot those weapons occupy, next to an empty one, which
-        is the moment it means something.
+        The paragraph explained how a relic's condition is decided, which is true,
+        useful, and not what this screen asks. This screen asks which weapon you
+        are carrying in, and the answer to that is a sentence.
       */}
       <p className="mt-3 max-w-lg text-[12px] leading-relaxed text-bone-400">
-        Relics are forged from the fight that earns them. How much health you have
-        left when the boss falls decides what you get: finish comfortably and it
-        comes out flawless, finish nearly dead and it comes out cracked, and hits
-        harder for it.
+        Carry the iron blade, or a relic you have already won.
       </p>
 
       {/*
