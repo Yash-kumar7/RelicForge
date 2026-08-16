@@ -1,7 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
-import { COMBAT } from "../game/combat";
 import { carriedDamage } from "../game/equipped";
 import { useLoadout } from "../state/useLoadout";
 import { bossAt } from "../game/bosses";
@@ -198,13 +197,24 @@ export function PreFightBriefing() {
                 and one outcome against the other, which a table does and a pair
                 of boxes does not.
               */}
-              <dl className="mt-7 space-y-2.5">
+              {/*
+                The weapon, named once.
+
+                Its name was printed beside both damage figures, which is the same
+                word twice inside four lines and reads as a caption on a number
+                rather than as the thing doing the hitting. Said once, above the
+                two attacks it explains, it labels them both.
+              */}
+              <p className="mt-7 font-mono text-[10px] uppercase tracking-[0.3em] text-stone-600">
+                Carrying {carried ? carried.name : "the iron arming sword"}
+              </p>
+
+              <dl className="mt-3 space-y-2.5">
                 {[
                   {
                     key: "left click",
                     name: "quick attack",
                     damage: light.damage,
-                    changed: light.damage !== COMBAT.lightAttack.damage,
                     tone: "text-frost-300",
                     rule: "border-frost-500/50",
                     reads: "precise",
@@ -214,7 +224,6 @@ export function PreFightBriefing() {
                     key: "right click",
                     name: "strong attack",
                     damage: heavy.damage,
-                    changed: heavy.damage !== COMBAT.heavyAttack.damage,
                     tone: "text-ember-300",
                     rule: "border-ember-500/50",
                     reads: "brutal",
@@ -232,11 +241,6 @@ export function PreFightBriefing() {
                       <span className={`font-mono text-base tabular-nums ${attack.tone}`}>
                         {attack.damage} damage
                       </span>
-                      {attack.changed && carried && (
-                        <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-600">
-                          {carried.name}
-                        </span>
-                      )}
                       <span className="ml-2 text-[12px] text-stone-500">
                         {attack.note} Lean on it and the forge reads you as{" "}
                         <span className={attack.tone}>{attack.reads}</span>.
