@@ -1,54 +1,63 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!--
-    A relic in the canonical pose.
+    An inscriptional R, struck into the ash and lit from the coals below.
 
-    This is the same orientation the normalizer resolves every generated mesh
-    into before it can be equipped: principal axis on +Y, tip up, grip at the
-    origin. The one shape the whole pipeline exists to produce, drawn by hand at
-    the one size where it has to survive being 16 pixels wide.
+    The mark was a sword first, twice, and a sword is what every fantasy project
+    puts on its tab. It is also the wrong object to draw small: a blade is a thin
+    vertical, and thin verticals are the first thing a 16-pixel render throws
+    away. Letterforms have the opposite problem, which is to say none — they were
+    designed under exactly this constraint and have been legible at small sizes
+    for two thousand years.
 
-    Which it did not, at first. The first version was drawn at a comfortable
-    scale and checked afterwards: a 3-unit blade and a 2.9-unit guard are one and
-    a half pixels each at 16, and both disappeared into an ember glow that was
-    the widest and brightest thing in the frame. It read as an orange dot.
+    Cinzel sets every heading in the game and cannot be referenced here, since a
+    favicon loads no fonts, so the letter is drawn as paths in the same tradition
+    the face comes from: Roman capitals cut for stone, which is the right lineage
+    for a game about forging. Flat slab serifs rather than fine ones, because a
+    hairline serif at 16px is either invisible or a smudge.
 
-    So it is drawn for 16 and allowed to look slightly heavy at 256, which is the
-    correct way round. Every stroke is at least four units, nothing relies on
-    taper to be understood, and the ember is pushed low and dimmed so the blade
-    is always light-on-black at its widest point. Contrast carries a small mark;
-    detail does not.
+    The heat comes from underneath. Letters carved into a surface are read by the
+    shadow in them, and lighting this one from below puts the glow where a forge
+    would be rather than making it a backlit logo.
   -->
   <defs>
-    <radialGradient id="coals" cx="50%" cy="84%" r="46%">
-      <stop offset="0%" stop-color="#ff8c42" stop-opacity="0.85" />
-      <stop offset="60%" stop-color="#ff6b1a" stop-opacity="0.3" />
+    <radialGradient id="coals" cx="50%" cy="88%" r="52%">
+      <stop offset="0%" stop-color="#ff8c42" stop-opacity="0.9" />
+      <stop offset="55%" stop-color="#ff6b1a" stop-opacity="0.32" />
       <stop offset="100%" stop-color="#ff6b1a" stop-opacity="0" />
     </radialGradient>
-    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fffaf2" />
-      <stop offset="70%" stop-color="#d6cfc4" />
-      <stop offset="100%" stop-color="#a89e8f" />
+    <linearGradient id="cut" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#efe7da" />
+      <stop offset="58%" stop-color="#dcd2c2" />
+      <stop offset="100%" stop-color="#f0b982" />
     </linearGradient>
   </defs>
 
   <rect width="32" height="32" rx="6" fill="#0a0908" />
 
-  <!-- The forge, pushed to the floor of the frame. It was centred and 13 units
-       wide, which put its brightest part directly behind the blade and killed
-       the only contrast the mark has. -->
-  <ellipse cx="16" cy="30" rx="15" ry="11" fill="url(#coals)" />
+  <!-- The coals, at the floor of the frame and under the letter rather than
+       behind it. -->
+  <ellipse cx="16" cy="31" rx="16" ry="10" fill="url(#coals)" />
 
-  <!-- Blade. Nine units at the shoulder, so it is still four and a half pixels
-       at a 16px render, and the taper is a detail rather than the silhouette. -->
-  <path d="M16 2.4 20.5 12v5.5h-9V12z" fill="url(#steel)" />
+  <g fill="url(#cut)">
+    <!-- Stem, with the slab serifs top and bottom that carry the letter when
+         everything finer than three units has been resolved away. -->
+    <rect x="7.6" y="4.6" width="4.6" height="22.8" />
+    <rect x="4.9" y="4.6" width="10" height="2.2" />
+    <rect x="4.2" y="25.2" width="11.4" height="2.2" />
 
-  <!-- Crossguard. The widest thing in the mark and the reason it survives small:
-       an upright alone has no silhouette, a cross is unmistakable at any size. -->
-  <rect x="4.5" y="17.5" width="23" height="4" rx="1" fill="#7d6b55" />
-  <rect x="4.5" y="17.5" width="23" height="1.6" rx="0.8" fill="#a89e8f" />
+    <!-- Bowl. Stroked rather than filled so the counter stays open at small
+         sizes; a filled bowl with a punched hole closes up and the R becomes a
+         P-shaped blob. -->
+    <path
+      d="M12.2 6.9h4.6a5.2 5.2 0 0 1 0 10.4h-4.6"
+      fill="none"
+      stroke="url(#cut)"
+      stroke-width="4.4"
+    />
 
-  <!-- Grip and pommel, sized to hold together as one dark mass when they stop
-       being separable. -->
-  <rect x="13.6" y="21.5" width="4.8" height="6" fill="#453b30" />
-  <rect x="11.6" y="26.6" width="8.8" height="3.2" rx="1.6" fill="#6b5c4a" />
+    <!-- Leg. The one stroke that separates this from a P, so it is drawn heavy
+         and kicked well clear of the bowl. -->
+    <path d="M16.8 14.8 24.4 27.4h-5.7L12 16.6z" />
+    <rect x="18.4" y="25.2" width="9.2" height="2.2" />
+  </g>
 </svg>
