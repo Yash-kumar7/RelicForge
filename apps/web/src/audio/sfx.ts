@@ -230,11 +230,11 @@ let ambience: { stop: () => void } | null = null;
  * another room than to music.
  */
 const MOTIF: { frequency: number; at: number; duration: number; gain: number }[] = [
-  { frequency: 220.0, at: 0, duration: 2.6, gain: 0.075 }, // A3
-  { frequency: 261.63, at: 1.7, duration: 2.6, gain: 0.06 }, // C4
-  { frequency: 329.63, at: 3.4, duration: 3.0, gain: 0.05 }, // E4
-  { frequency: 293.66, at: 6.2, duration: 3.4, gain: 0.045 }, // D4
-  { frequency: 164.81, at: 9.0, duration: 4.2, gain: 0.055 }, // E3, the floor
+  { frequency: 220.0, at: 0, duration: 2.6, gain: 0.2 }, // A3
+  { frequency: 261.63, at: 1.7, duration: 2.6, gain: 0.17 }, // C4
+  { frequency: 329.63, at: 3.4, duration: 3.0, gain: 0.14 }, // E4
+  { frequency: 293.66, at: 6.2, duration: 3.4, gain: 0.13 }, // D4
+  { frequency: 164.81, at: 9.0, duration: 4.2, gain: 0.16 }, // E3, the floor
 ];
 
 /** How long between plays. Long enough that it never becomes a loop you notice. */
@@ -242,13 +242,30 @@ const MOTIF_EVERY_MS = 22_000;
 
 export function startAmbience(): void {
   if (ambience) return;
+  /*
+   * Waits for the context, rather than giving up on it.
+   *
+   * This checked whether the context was already running and returned if it was
+   * not, which is exactly the state it is in when this is called: the first
+   * gesture unlocks the audio and starts an asynchronous resume, and this ran a
+   * moment later against a context still coming up. It gave up, and because the
+   * unlock listener fires once, nothing ever asked again. The room tone has never
+   * played.
+   *
+   * whenRunning already exists for precisely this and is what every cue uses.
+   */
+  whenRunning(() => buildAmbience());
+}
+
+function buildAmbience(): void {
+  if (ambience) return;
   const audio = ctx();
-  if (!audio || !master || audio.state !== "running") return;
+  if (!audio || !master) return;
 
   const bed = audio.createGain();
   bed.gain.setValueAtTime(0.0001, audio.currentTime);
   // Four seconds to arrive, so it is never the thing that made you look up.
-  bed.gain.exponentialRampToValueAtTime(0.055, audio.currentTime + 4);
+  bed.gain.exponentialRampToValueAtTime(0.16, audio.currentTime + 4);
   bed.connect(master);
 
   const drones = [54, 81].map((frequency, i) => {
@@ -313,12 +330,12 @@ export function startAmbience(): void {
     }
   };
 
-  const opening = window.setTimeout(playMotif, 1800);
+  const opening = window.setTimeout(playMotif, 600);
   const repeat = window.setInterval(playMotif, MOTIF_EVERY_MS);
 
   /* Coals shifting, every few seconds, never on a beat anyone could count. */
   const crackle = window.setInterval(() => {
-    noise(0.09 + Math.random() * 0.14, 0.05, 900 + Math.random() * 700);
+    noise(0.09 + Math.random() * 0.14, 0.13, 900 + Math.random() * 700);
   }, 2600);
 
   ambience = {
