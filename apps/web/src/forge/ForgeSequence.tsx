@@ -106,29 +106,31 @@ export function ForgeSequence({
   /**
    * How much of the arena to hide, by stage.
    *
-   * Watching a corpse lie in an empty arena while text floats over it looks
-   * unfinished, so the scene is almost entirely covered while the forge works.
-   * It cannot simply go black, though: the relic reveal happens in the scene,
-   * above the forge, and that is the payoff the whole sequence exists for. So
-   * the cover lifts exactly when there is finally something worth seeing.
+   * The cover was doing nothing at all. It sat at -z-10, which puts it behind
+   * the canvas rather than over it, so the arena stayed fully lit through every
+   * stage while the code carefully animated an opacity nobody could see. That is
+   * the arena visible behind the forging text.
+   *
+   * It never lifts now, either. It used to thin out at MODEL_READY because the
+   * relic rose off the forge inside the scene and the cover would have hidden the
+   * payoff. The reveal is its own screen, so there is nothing behind this worth
+   * seeing and no reason to leave a dead arena half visible under the type.
+   *
+   * The first beats are the exception: the boss has just fallen and the forge is
+   * igniting, and both of those happen in the scene.
    */
-  const cover =
-    forge.stage === "MODEL_READY" || forge.stage === "COMPLETE"
-      ? 0.35
-      : forge.stage === "CONCEPT_READY"
-        ? 0.88
-        : 0.94;
+  const cover = forge.stage === "IDLE" || forge.stage === "ANALYZING" ? 0.55 : 1;
 
   return (
     <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-between p-10">
-      {/* Sits behind the copy and in front of the arena. */}
+      {/* Over the arena, which is the only place it can cover anything. */}
       <motion.div
-        className="absolute inset-0 -z-10 bg-ash-950"
+        className="absolute inset-0 bg-ash-950"
         animate={{ opacity: cover }}
-        transition={{ duration: 1.2, ease: "easeInOut" }}
+        transition={{ duration: 1.4, ease: "easeInOut" }}
       />
       {/* Headline */}
-      <div className="mt-6 h-24 text-center">
+      <div className="relative mt-6 h-24 text-center">
         <AnimatePresence mode="wait">
           {headline && (
             <motion.h2
@@ -159,10 +161,21 @@ export function ForgeSequence({
             transition={{ duration: 1.1, ease: "easeOut" }}
             className="relative"
           >
+            {/*
+              Concept art arrives on whatever ground the image model chose, and
+              for a weapon that is usually a pale studio backdrop. Dropped onto a
+              black screen it reads as a bright square with a sword in it, which
+              is the brightest thing in the frame and the least interesting.
+              
+              Darkened and dimmed at the edges so it sits in the page instead of
+              on top of it. The subject survives: it is the lit part of a picture
+              lit against a flat ground, so pulling the whole image down takes the
+              ground with it and leaves the blade.
+            */}
             <img
               src={forge.conceptUrl}
               alt="Relic concept"
-              className="max-h-[46vh] rounded border border-ember-500/30 shadow-[0_0_80px_rgba(255,107,26,0.25)]"
+              className="max-h-[46vh] rounded border border-ember-500/30 shadow-[0_0_80px_rgba(255,107,26,0.25)] brightness-[0.62] contrast-[1.15] [mask-image:radial-gradient(ellipse_78%_78%_at_50%_50%,black_58%,transparent_100%)]"
             />
 
             {/*
@@ -213,7 +226,7 @@ export function ForgeSequence({
         )}
       </AnimatePresence>
 
-      <div className="w-full max-w-3xl">
+      <div className="relative w-full max-w-3xl">
         {/* Telemetry readout, the causal link, stated plainly. */}
         <AnimatePresence>
           {showTelemetry && forge.dna && (
