@@ -104,8 +104,18 @@ export function InfoTip({
         aria-controls={id}
         data-sound="none"
         onClick={() => setOpen((current) => !current)}
+        /*
+          Its own typography, like the note it opens.
+
+          The mark sits inside whatever asks for it: a nine-pixel uppercase mono
+          label on one step, a display-face heading at up to 2.5rem with wide
+          letter spacing on another. It set a font and a size but inherited case
+          and tracking, so the i was pushed off-centre inside its own circle by
+          the heading's 0.12em and looked like a different control on every
+          screen.
+        */
         className={[
-          "grid h-4 w-4 shrink-0 place-items-center rounded-full border font-mono text-[9px] leading-none transition",
+          "grid h-4 w-4 shrink-0 place-items-center rounded-full border font-mono text-[9px] normal-case leading-none tracking-normal transition",
           open
             ? "border-brass-600 bg-brass-800/40 text-bone-300"
             : "border-brass-800 text-brass-700 hover:border-brass-600 hover:text-bone-400",
