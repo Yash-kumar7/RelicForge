@@ -27,6 +27,13 @@ interface Sky {
   strength: number;
   /** Which of the theme's colours the horizon takes. */
   from: keyof Pick<ArenaTheme, "forge" | "rune" | "ember" | "keyLight">;
+  /**
+   * How much colour sits directly overhead.
+   *
+   * Zero everywhere but the last rung, where there is no horizon to light and
+   * the glow belongs above the floor instead of around it.
+   */
+  overhead?: number;
 }
 
 /*
@@ -47,9 +54,20 @@ const SKIES: Record<number, Sky> = {
   3: { reach: 0.12, strength: 0.1, from: "rune" },
   // Rootbound King: almost nothing, because the canopy is over the top of it.
   4: { reach: 0.1, strength: 0.06, from: "keyLight" },
-  // Hollow Sovereign: the dome is the whole world here and it barely glows at
-  // all. The emptiness is the set.
-  5: { reach: 0.45, strength: 0.07, from: "rune" },
+  /*
+   * Hollow Sovereign: the light is above, not around.
+   *
+   * Every other rung glows at the horizon, because every other rung has one:
+   * something is burning or drowning or growing just out of sight. This one has
+   * no horizon and nothing beyond the floor, so a band at the bottom of the dome
+   * was describing scenery that is not there, and at 0.07 it was too faint to
+   * describe anything at all.
+   *
+   * It climbs instead, so the violet sits overhead and the dark gathers at the
+   * edge of the disc. The room reads as being under something rather than beside
+   * it, which is the only arena in the game where that is true.
+   */
+  5: { reach: 0.9, strength: 0.2, from: "rune", overhead: 0.22 },
 };
 
 function skyTexture(theme: ArenaTheme, sky: Sky): CanvasTexture {
@@ -64,7 +82,7 @@ function skyTexture(theme: ArenaTheme, sky: Sky): CanvasTexture {
   const horizon = new Color(theme[sky.from]);
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 256);
-  gradient.addColorStop(0, `#${top.getHexString()}`);
+  gradient.addColorStop(0, `#${top.clone().lerp(horizon, sky.overhead ?? 0).getHexString()}`);
   gradient.addColorStop(
     Math.max(0.01, 1 - sky.reach),
     // A quarter of the way in, not a third: the falloff has to be steep or the

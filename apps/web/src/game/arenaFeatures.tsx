@@ -284,6 +284,41 @@ function VoidField({ theme }: { theme: ArenaTheme }) {
     if (shards.current) shards.current.rotation.y += delta * spin.current;
   });
 
+  const motes = useRef<Group>(null);
+
+  /*
+   * Drifting down and wrapping, which is a falling snow trick: forty spheres
+   * moved slowly downward and reset to the top read as continuous fall without
+   * anything being created or destroyed.
+   */
+  const dust = useMemo(
+    () =>
+      Array.from({ length: 40 }, (_, i) => {
+        const a = ((i * 47) % 19) / 19;
+        const b = ((i * 83) % 23) / 23;
+        const angle = (i / 40) * Math.PI * 2 + a;
+        const radius = 2 + b * (ARENA_RADIUS + 6);
+        return {
+          key: i,
+          position: [Math.cos(angle) * radius, 0.5 + a * 14, Math.sin(angle) * radius] as [
+            number,
+            number,
+            number,
+          ],
+          size: 0.03 + b * 0.05,
+        };
+      }),
+    [],
+  );
+
+  useFrame((_, delta) => {
+    if (!motes.current) return;
+    for (const mote of motes.current.children) {
+      mote.position.y -= delta * 0.35;
+      if (mote.position.y < 0.2) mote.position.y = 15;
+    }
+  });
+
   const pieces = useMemo(
     () =>
       Array.from({ length: 22 }, (_, i) => {
@@ -313,6 +348,42 @@ function VoidField({ theme }: { theme: ArenaTheme }) {
             {/* Slabs rather than rocks: this was built and then broken. */}
             <boxGeometry args={[piece.size, piece.size * 0.22, piece.size * 0.75]} />
             <meshStandardMaterial color={theme.pillar} roughness={0.85} metalness={0.3} />
+          </mesh>
+        ))}
+      </group>
+
+      {/*
+        A lit edge, so the floor is an object rather than where the dark stops.
+
+        Every other arena ends at a wall or a treeline. This one ends, and without
+        something marking it the disc read as the point the renderer gave up. A
+        rim turns the same emptiness into a platform hanging in it, which is the
+        difference between a void and a missing background.
+      */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
+        <ringGeometry args={[ARENA_RADIUS - 0.5, ARENA_RADIUS, 96]} />
+        <meshBasicMaterial
+          color={theme.rune}
+          transparent
+          opacity={0.28}
+          toneMapped={false}
+          side={2}
+        />
+      </mesh>
+
+      {/*
+        Dust, falling forever.
+
+        The shards say the room came apart; these say it is still coming apart.
+        Small, slow and everywhere, they give the empty air between the floor and
+        the debris something in it, which is what stops a wide shot of this arena
+        reading as a black rectangle.
+      */}
+      <group ref={motes}>
+        {dust.map((mote) => (
+          <mesh key={mote.key} position={mote.position}>
+            <sphereGeometry args={[mote.size, 5, 5]} />
+            <meshBasicMaterial color={theme.rune} transparent opacity={0.5} toneMapped={false} />
           </mesh>
         ))}
       </group>

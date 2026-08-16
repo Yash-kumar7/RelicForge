@@ -77,7 +77,20 @@ export function Arena() {
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[ARENA_RADIUS, 64]} />
-        <meshStandardMaterial color={theme.ground} roughness={0.95} metalness={0.05} />
+        {/*
+          The last rung's floor is polished, and every other one is not.
+
+          Stone that takes a shine is the cheapest way to make a room feel built
+          rather than poured, and it is the only surface in the game with anything
+          above it worth reflecting: the Sovereign's debris hangs over this arena
+          and lands on the floor as light. Everywhere else, rough stone is
+          correct, and a mirror would read as ice.
+        */}
+        <meshStandardMaterial
+          color={theme.ground}
+          roughness={bossLevel === 5 ? 0.28 : 0.95}
+          metalness={bossLevel === 5 ? 0.55 : 0.05}
+        />
       </mesh>
 
       {/*
