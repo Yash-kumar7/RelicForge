@@ -81,20 +81,28 @@ function findHand(root: Object3D, bone: HandBone): Object3D | null {
 const IDLE_TIME_SCALE = 0.18;
 
 /**
- * How much of the walk's arm swing the weapon arm keeps.
+ * How quickly the weapon arm follows the clip. Low is a steady arm.
  *
  * Meshy ships one walk clip and it is an empty-handed walk: both arms swing
  * freely through the whole cycle. Put a sword in one of them and the blade goes
  * back and forth with it, which is what a swinging arm does and not what anyone
  * carrying a weapon does.
  *
- * Every engine solves this with layers, an override on the arm holding the
- * weapon over the locomotion underneath. There is no second clip to layer here,
- * so the arm is damped toward the pose it rests in instead: it keeps a little of
- * the walk, so it is not a mannequin arm bolted to a moving body, and loses the
- * travel that swings a blade around.
+ * Engines solve this by layering an override on the weapon arm over the
+ * locomotion underneath. There is no second clip to layer here, so the arm is
+ * low-pass filtered instead: each frame it moves a little of the way toward
+ * whatever the animation asked for, so the slow content of the pose survives and
+ * the fast swing averages out.
+ *
+ * The first attempt damped toward a reference pose captured on the first frame,
+ * which is worse than doing nothing. That frame runs before the mixer has
+ * written anything, so the reference was the bind pose, which for these rigs is
+ * an A-pose with the arms out: the weapon arm was being dragged out sideways
+ * into a T and fought back against the clip every frame, which is exactly the
+ * blade lying flat and swinging through 180 degrees. Filtering needs no
+ * reference pose at all, so there is nothing to capture at the wrong time.
  */
-const CARRY_DAMPING = 0.82;
+const CARRY_FOLLOW = 0.08;
 
 /** The chain that swings a hand: shoulder, upper arm, forearm. */
 const ARM_PATTERNS: Record<HandBone, RegExp[]> = {
@@ -377,22 +385,26 @@ export function AnimatedCharacter({
    * order they were registered in, and useAnimations subscribes above this hook,
    * so the mixer has always written before this runs.
    *
-   * The rest pose is captured on the first frame rather than read from the bind
-   * pose, because these rigs arrive through an FBX pipeline whose bind pose is
-   * not always the pose the clip returns to.
+   * Seeded from whatever the first frame holds and corrected from there, which
+   * costs a few frames of settling and needs no assumption about what any
+   * particular frame contains.
    */
   const arm = useMemo(() => findArm(scene, handBone), [scene, handBone]);
-  const rest = useRef<Quaternion[] | null>(null);
+  const smoothed = useRef<Quaternion[] | null>(null);
 
   useFrame(() => {
     if (!arm.length) return;
-    if (!rest.current) {
-      rest.current = arm.map((bone) => bone.quaternion.clone());
+    if (!smoothed.current) {
+      smoothed.current = arm.map((bone) => bone.quaternion.clone());
       return;
     }
     arm.forEach((bone, i) => {
-      const target = rest.current?.[i];
-      if (target) bone.quaternion.slerp(target, CARRY_DAMPING);
+      const filtered = smoothed.current?.[i];
+      if (!filtered) return;
+      // Follow the clip slowly, then write the followed value back: the arm ends
+      // up at the average of the swing rather than anywhere in particular.
+      filtered.slerp(bone.quaternion, CARRY_FOLLOW);
+      bone.quaternion.copy(filtered);
     });
   });
 
