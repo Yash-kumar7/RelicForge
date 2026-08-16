@@ -4,6 +4,7 @@ import type { Group } from "three";
 import { handSocketFor } from "./handSockets";
 import { fitCharacter } from "../lib/characterFit";
 import { AnimatedCharacter } from "./AnimatedCharacter";
+import { HandCover } from "./HandCover";
 
 /**
  * A Meshy-generated boss, rigged and walking when a rig exists.
@@ -97,6 +98,9 @@ export function BossModel({
           url={`/assets/bosses/${slug}/rig/walking.glb`}
           height={BOSS_HEIGHT}
           speed={walking}
+          /* On the bone rather than at the grip: this is meant to be the hand,
+             not something the hand is holding. */
+          atHand={<HandCover slug={slug} height={BOSS_HEIGHT} />}
         >
           {children}
         </AnimatedCharacter>

@@ -24,7 +24,7 @@ import { Box3, Vector3, type Group } from "three";
 
 /** Characters with a generated fist. Anything absent keeps its open hand. */
 const COVERS: Record<string, { url: string; /** Fraction of height. */ size: number }> = {
-  "ashen-warden": { url: "/assets/arena/warden-fist/model.glb", size: 0.13 },
+  "ashen-warden": { url: "/assets/arena/warden-fist/model.glb", size: 0.17 },
 };
 
 /**

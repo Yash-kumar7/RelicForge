@@ -13,7 +13,6 @@ import { setBossAction, BOSS_SPAWN } from "./bossState";
 import { bossAt } from "./bosses";
 import { BossModel } from "./BossModel";
 import { BossWeapon, BossHandWeapon } from "./BossWeapon";
-import { HandCover } from "./HandCover";
 import { BOSS_HEIGHT } from "./BossModel";
 import { BossDamagePopups } from "./BossDamagePopups";
 
@@ -355,15 +354,6 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
             weaponClass={bossAt(bossLevel ?? 1).weaponClass}
             height={BOSS_HEIGHT}
           />
-          {/*
-            A closed fist over the open one the rig came back with.
-
-            Rendered as a sibling of the weapon so it shares the hand socket and
-            therefore the hand's motion. Renders nothing for a character with no
-            generated fist, which is four of the five until this is proven on the
-            Warden.
-          */}
-          <HandCover slug={bossSlug} height={BOSS_HEIGHT} />
         </BossModel>
 
         {/* Primitive fallback, hidden the moment a generated mesh loads. */}

@@ -34,6 +34,13 @@ export interface AnimatedCharacterProps {
   children?: ReactNode;
   /** Which hand closed around a weapon when this character was generated. */
   handBone?: HandBone;
+  /**
+   * Rendered on the hand bone itself, without the clearance a grip needs.
+   *
+   * For anything meant to be part of the hand rather than held in it, which so
+   * far is one thing: a closed gauntlet laid over the open hand the rig returns.
+   */
+  atHand?: ReactNode;
 }
 
 /**
@@ -163,13 +170,28 @@ function HandFollower({
   bone,
   height,
   children,
+  atHand,
 }: {
   root: RefObject<Group | null>;
   bone: Object3D;
   height: number;
   children: ReactNode;
+  /** Rendered on the bone itself, with the grip clearance cancelled. */
+  atHand?: ReactNode;
 }) {
   const socket = useRef<Group>(null);
+  /*
+   * A second slot, sitting exactly on the bone.
+   *
+   * The socket deliberately pushes its children out of the palm and past the
+   * knuckles, which is right for a weapon and wrong for anything meant to be the
+   * hand: a gauntlet laid over an open fist inherited the grip clearance and
+   * ended up floating beside the hand it was supposed to cover.
+   *
+   * This group cancels those offsets, so whatever goes in it is at the bone.
+   */
+  const bare = useRef<Group>(null);
+  const applied = useMemo(() => new Vector3(), []);
   const inverse = useMemo(() => new Matrix4(), []);
   const local = useMemo(() => new Matrix4(), []);
   const position = useMemo(() => new Vector3(), []);
@@ -223,8 +245,9 @@ function HandFollower({
      */
     const outward = Math.sign(position.x) || 1;
     const clearance = height * HAND_CLEARANCE;
-    group.position.x += outward * clearance;
-    group.position.z += clearance * 0.4;
+    applied.set(outward * clearance, 0, clearance * 0.4);
+    group.position.x += applied.x;
+    group.position.z += applied.z;
 
     /*
      * Along the forearm, out past the wrist, to where the fingers close.
@@ -239,7 +262,9 @@ function HandFollower({
       handWorld.setFromMatrixPosition(bone.matrixWorld);
       reach.subVectors(handWorld, forearmWorld);
       if (reach.lengthSq() > 1e-8) {
-        group.position.addScaledVector(reach.normalize(), height * GRIP_REACH);
+        reach.normalize();
+        group.position.addScaledVector(reach, height * GRIP_REACH);
+        applied.addScaledVector(reach, height * GRIP_REACH);
       }
     }
 
@@ -257,10 +282,22 @@ function HandFollower({
       restOffset.current = boneRest.multiply(desired);
     }
     group.quaternion.copy(quaternion).multiply(restOffset.current);
+
+    /*
+     * Back to the bone, in the socket's own frame.
+     *
+     * The offsets above were accumulated in the character's frame, so undoing
+     * them from inside a rotated socket means rotating them into it first.
+     */
+    if (bare.current) {
+      bare.current.position.copy(applied).negate().applyQuaternion(group.quaternion.clone().invert());
+    }
   });
 
   return (
     <group ref={socket}>
+      {/* Anything that is meant to be the hand rather than held by it. */}
+      <group ref={bare}>{atHand}</group>
       {SHOW_SOCKET && (
         <mesh>
           <sphereGeometry args={[height * 0.03, 8, 8]} />
@@ -277,6 +314,7 @@ export function AnimatedCharacter({
   height,
   speed,
   children,
+  atHand,
   handBone = "RightHand",
 }: AnimatedCharacterProps) {
   const root = useRef<Group>(null);
@@ -329,8 +367,8 @@ export function AnimatedCharacter({
         discarding its scale, gives the weapon the hand's motion while keeping
         its own size.
       */}
-      {children && hand && (
-        <HandFollower root={root} bone={hand} height={height}>
+      {(children || atHand) && hand && (
+        <HandFollower root={root} bone={hand} height={height} atHand={atHand}>
           {children}
         </HandFollower>
       )}
