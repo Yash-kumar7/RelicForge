@@ -333,7 +333,17 @@ export function TitleScreen() {
           continues. Giving the column its own scroll keeps the figure fixed and
           the decision reachable.
         */}
-        <div className="flex max-h-full max-w-2xl flex-col justify-center overflow-y-auto py-4 pr-2">
+        {/*
+          Starts at the top, rather than floating in the middle.
+
+          justify-center held the whole column in the vertical centre of the
+          viewport, so a step with three rows in it sat with two hundred pixels of
+          nothing above the numbered steps and as much again below the button. The
+          steps are a header: they belong at the top of their column, in the same
+          place on every step, and the champion beside them is what should be
+          using the height.
+        */}
+        <div className="flex max-h-full max-w-2xl flex-col overflow-y-auto py-4 pr-2">
           {/*
             One decision at a time.
 
@@ -569,7 +579,15 @@ export function TitleScreen() {
               panel and a button, is taller than any laptop, and what fell off
               the bottom was the button.
             */}
-            <div className="mt-5 flex flex-col gap-1">
+            {/*
+              Space between the rows.
+
+              At gap-1 three champions were one block with hairlines through it,
+              and the selected row's tint bled into its neighbours. These are
+              three separate choices and should sit apart enough to be counted at
+              a glance.
+            */}
+            <div className="mt-5 flex flex-col gap-3">
               {AFFINITIES.map((a) => (
                 /*
                   A mark per row, in the corner rather than in the card.
