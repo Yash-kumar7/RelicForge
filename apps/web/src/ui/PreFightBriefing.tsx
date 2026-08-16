@@ -173,11 +173,23 @@ export function PreFightBriefing() {
                 a prop somebody left there. It is the thing this whole game is
                 about, so the one sentence that mentions it should point at it.
               */}
+              {/*
+                No loot table mentioned.
+
+                It opened with "there is no loot table", which is genre jargon
+                arguing with an assumption the player never made. Someone who has
+                met the term learns that this game is unlike other games; someone
+                who has not learns nothing at all, and both of them are being told
+                what is absent before they have been told what is here.
+
+                What is here is a furnace at the end of the room that reads the
+                fight. That is strange enough to be worth the sentence on its own.
+              */}
               <p className="mt-5 max-w-md border-l border-brass-800 pl-4 text-[13px] leading-relaxed text-stone-500">
-                There is no loot table. The forge is the furnace at the far end of the arena, and
-                it stays cold until you win. When it falls, the forge reads{" "}
-                <span className="text-stone-200">how you won</span> and builds a weapon that has
-                never existed before.
+                The furnace at the far end of the arena is the forge, and it stays cold until you
+                win. When this thing falls, the forge reads{" "}
+                <span className="text-stone-200">how you fought</span> and builds a weapon that
+                has never existed before.
               </p>
 
               {/*
@@ -250,26 +262,66 @@ export function PreFightBriefing() {
                 this screen belongs to one column, so they belong in it too, last,
                 which is the order they are wanted in.
               */}
-              <dl className="mt-7 flex max-w-md flex-wrap items-baseline gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.18em]">
+              {/*
+                Grouped, and the keys made to look like keys.
+
+                Seven pairs wrapped across three ragged lines in one uppercase
+                grey, so finding "how do I heal" meant reading all of them. They
+                divide naturally into what a player is doing at any moment:
+                moving, fighting, and looking at the game. Three short columns
+                answer a question at a glance, where a paragraph of keys answers
+                it by being read.
+              */}
+              <div className="mt-8 grid max-w-lg grid-cols-3 gap-x-8 gap-y-1">
                 {[
-                  ["WASD", "move"],
-                  ["Mouse", "look"],
-                  ["Space", "jump"],
-                  // Milliseconds are a tuning value, not something a player
-                  // thinks in. What matters is that a dodge avoids the hit.
-                  ["Shift", "dodge"],
-                  ["Q", "heal · 2 charges"],
-                  ["V", "first or third person"],
-                  // Worth a line: without it there is no way to photograph the
-                  // fight, since the game is holding the cursor.
-                  ["P", "freeze for a screenshot"],
-                ].map(([key, action]) => (
-                  <div key={key} className="flex items-baseline gap-2">
-                    <dt className="text-stone-400">{key}</dt>
-                    <dd className="text-stone-600">{action}</dd>
+                  {
+                    group: "Move",
+                    keys: [
+                      ["WASD", "walk"],
+                      ["Space", "jump"],
+                      // Milliseconds are a tuning value, not something a player
+                      // thinks in. What matters is that a dodge avoids the hit.
+                      ["Shift", "dodge"],
+                    ],
+                  },
+                  {
+                    group: "Fight",
+                    keys: [
+                      ["Left", "quick"],
+                      ["Right", "strong"],
+                      ["Q", "heal, 2 left"],
+                    ],
+                  },
+                  {
+                    group: "Look",
+                    keys: [
+                      ["Mouse", "aim"],
+                      ["V", "change view"],
+                      // Without it there is no way to photograph the fight, since
+                      // the game is holding the cursor.
+                      ["P", "freeze"],
+                    ],
+                  },
+                ].map((column) => (
+                  <div key={column.group}>
+                    <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-stone-700">
+                      {column.group}
+                    </p>
+                    <dl className="mt-2 space-y-1.5">
+                      {column.keys.map(([key, action]) => (
+                        <div key={key} className="flex items-baseline gap-2">
+                          {/* Set as a key rather than as a word, so the eye can
+                              find the one it wants without reading the line. */}
+                          <dt className="min-w-[3.2rem] border border-ash-700 px-1.5 py-0.5 text-center font-mono text-[9px] uppercase tracking-[0.1em] text-stone-300">
+                            {key}
+                          </dt>
+                          <dd className="font-mono text-[10px] text-stone-600">{action}</dd>
+                        </div>
+                      ))}
+                    </dl>
                   </div>
                 ))}
-              </dl>
+              </div>
 
               <motion.p
                 animate={{ opacity: [0.4, 1, 0.4] }}
