@@ -60,36 +60,63 @@ import { IRON, useLoadout } from "../state/useLoadout";
  * numbers for the blade in that box, and they change when the other one is
  * picked.
  */
+/**
+ * What each attack is for, in words.
+ *
+ * Lived under every damage figure on both cards, which is the same two sentences
+ * twice on a step that already scrolled. They describe the attacks rather than
+ * the weapon, so they are identical whichever is in hand, and repeating them was
+ * the clearest sign they belonged somewhere else.
+ */
+function AttackNotes() {
+  return (
+    <span className="mt-3 block border-t border-ash-800 pt-2">
+      {ATTACKS.map((attack) => (
+        <span key={attack.kind} className="mt-1 block">
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-500">
+            {attack.button}
+          </span>{" "}
+          <span className="text-stone-400">{attack.blurb}</span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function AttackBreakdown({ traits, dim = false }: { traits: RelicTraits; dim?: boolean }) {
   const light = attackSpec("light", traits);
   const heavy = attackSpec("heavy", traits);
 
   return (
-    <span className="mt-3 block space-y-3 border-t border-ash-800 pt-3">
+    <span className="mt-3 block space-y-1.5 border-t border-ash-800 pt-3">
       {ATTACKS.map((attack) => {
         const spec = attack.kind === "heavy" ? heavy : light;
         return (
-          <span key={attack.kind} className="block">
-            <span className="flex items-baseline justify-between gap-2">
-              <span className="font-display text-sm tracking-[0.1em] text-stone-300">
-                {attack.name}
-              </span>
-              <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-stone-600">
-                {attack.button}
-              </span>
+          /*
+            One line per attack, not four.
+            
+            This was a name, a button, a damage figure and a sentence stacked, on
+            both cards, which is sixteen lines for two weapons and taller than the
+            step could show without scrolling. The sentences moved to the mark;
+            what is left is the comparison, and a comparison reads better on one
+            line anyway.
+          */
+          <span key={attack.kind} className="flex items-baseline gap-3">
+            <span className="font-display text-sm tracking-[0.1em] text-stone-300">
+              {attack.name}
+            </span>
+            <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-stone-700">
+              {attack.button}
             </span>
             {/* The unselected side stays legible but quiet, so which weapon is
                 in hand is still obvious at a glance. */}
             <span
               className={[
-                "mt-0.5 block font-mono text-[10px] tabular-nums",
+                "ml-auto font-mono text-[11px] tabular-nums",
                 dim ? "text-stone-600" : "text-ember-300/80",
               ].join(" ")}
             >
               {spec.damage} damage
-            </span>
-            <span className="mt-1 block text-[10px] leading-relaxed text-stone-600">
-              {attack.blurb}
             </span>
           </span>
         );
@@ -268,6 +295,7 @@ export function ArmamentPanel() {
             <span className="mt-2 block text-stone-600">
               It cannot be lost, so a fight is never unwinnable for want of a weapon.
             </span>
+            <AttackNotes />
           </InfoTip>
         </span>
         </div>
@@ -346,6 +374,8 @@ export function ArmamentPanel() {
                 for weeks without learning that one is worth a fifth more damage
                 and the other trades quick attacks for heavy ones.
               */}
+              <AttackNotes />
+
               {relicNotes.length > 0 && (
                 <span className="mt-3 block border-t border-ash-800 pt-2">
                   <span className="block text-stone-600">against a plain blade</span>
