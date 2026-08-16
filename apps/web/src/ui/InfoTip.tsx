@@ -27,7 +27,9 @@ import { AnimatePresence, motion } from "framer-motion";
  * strands anyone on a touchscreen with information they cannot reach.
  */
 
-const WIDTH = 256;
+/* Wide enough for the rank ladder, which is a mark, a name, a number and a
+   pointer on one line and was wrapping at 256. */
+const WIDTH = 296;
 const GAP = 10;
 
 export function InfoTip({

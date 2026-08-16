@@ -12,6 +12,7 @@ import { ArmamentPanel } from "./ArmamentPanel";
 import { PendingForgePanel } from "./PendingForgePanel";
 import { RankSigil } from "./RankSigil";
 import { InfoTip } from "./InfoTip";
+import { RankLadder } from "./RankLadder";
 import { SpecimenPlate } from "./SpecimenPlate";
 import { TitleHero } from "./TitleHero";
 import { HowItWorks } from "./HowItWorks";
@@ -450,12 +451,17 @@ export function TitleScreen() {
             <span className="block w-[14rem] shrink-0 whitespace-nowrap">
               <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.3em] text-brass-700">
                 rank
-                {/* Nothing on screen has ever said what a rank is for. It is for
-                    nothing, deliberately, and that is worth one sentence. */}
+                {/*
+                  Six ranks existed and five of them were invisible.
+
+                  A player saw one name, one mark and a distance to the next, which
+                  says something is climbing but not what: Relic-Bound meant nothing
+                  beyond not being Unproven, and the sigil could not say whether it
+                  was the second rung or the fifth. The value of a rank is entirely
+                  in the ones above and below it.
+                */}
                 <InfoTip label="rank">
-                  Experience is a record of what you have fought, not a currency. Rank buys no
-                  damage and unlocks no weapon: every relic is earned in a single fight, by how
-                  that fight went.
+                  <RankLadder xp={xp} />
                 </InfoTip>
               </span>
 
