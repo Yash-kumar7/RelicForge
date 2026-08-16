@@ -255,7 +255,7 @@ export function TitleScreen() {
           the page. One step back from the edge is enough to sit them level with
           the champion's head without touching it.
         */
-        "h-full overflow-hidden bg-ash-950 pb-8 pl-0 pr-6 pt-14"
+        "h-full overflow-hidden bg-ash-950 pb-8 pl-0 pr-6 pt-20"
       }
     >
       {/*
