@@ -862,7 +862,10 @@ export function TitleScreen() {
               Choose who you fight
             </h2>
 
-            <div className="mt-4 flex flex-col gap-1.5">
+            {/* The list was squeezed to fit five rows under a paragraph and two
+                footnotes. Those are gone, so the rows can breathe like the
+                champions do on the first step. */}
+            <div className="mt-10 flex flex-col gap-3">
               {BOSSES.map((boss) => {
                 const cleared = isCleared(boss.level);
                 const selected = bossLevel === boss.level;
@@ -909,14 +912,15 @@ export function TitleScreen() {
                       large view lives on the left now, and every row keeps its
                       portrait so the list stays scannable.
                     */}
-                    <span className="flex items-start gap-4 py-2.5 pl-4 pr-12">
+                    <span className="flex items-center gap-4 py-3 pl-4 pr-12">
                       <BossPortrait
                         title={boss.title}
                         locked={false}
-                        /* 80 pixels tall was a third of a row and five of them
-                           pushed the last boss off the screen. A thumbnail only
-                           has to tell one row from another. */
-                        className="h-14 w-12 shrink-0 border border-ash-800"
+                        /* Halved to 56 when five rows had to share the step with
+                           a paragraph and two footnotes; those are gone. Still
+                           short of the champions' 112, because there are five of
+                           these and three of those. */
+                        className="h-20 w-16 shrink-0 border border-ash-800"
                       />
                       <span className="mt-0.5 w-7 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em]">
                         {boss.level.toString().padStart(2, "0")}
