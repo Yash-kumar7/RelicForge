@@ -5,12 +5,13 @@ import { useLoadout } from "../state/useLoadout";
 import { themeFor } from "../game/theme";
 import { bossAt } from "../game/bosses";
 import { rankFor, useProgress } from "../state/useProgress";
+import { carriedDamage } from "../game/equipped";
 
 /**
  * Loadout, hold TAB.
  *
  * Two slots, and the second one is the point. Your starting blade is fully
- * specified: iron, 25/60 damage, mass-produced, one of thousands. The relic
+ * specified: iron, mass-produced, one of thousands. The relic
  * slot shows `??????` because the weapon that fills it does not exist yet and
  * cannot be looked up, it will be generated from the fight you are currently
  * having.
@@ -24,6 +25,12 @@ export function LoadoutPanel() {
   const affinity = useGameStore((s) => s.affinity);
   const bossLevel = useGameStore((s) => s.bossLevel);
   const forge = useGameStore((s) => s.forge);
+  /*
+   * What this loadout actually deals, which is the relic and the champion
+   * together. The iron sword is the no-relic case, so it still lands here.
+   */
+  const carried = useLoadout((s) => s.equipped());
+  const damage = carriedDamage(carried?.dna, affinity);
   const owned = useLoadout((s) => s.owned);
   const xp = useProgress((s) => s.xp);
   const fightsWon = useProgress((s) => s.fightsWon);
@@ -104,9 +111,14 @@ export function LoadoutPanel() {
                   </p>
 
                   <dl className="mt-5 space-y-1.5 font-mono text-[11px]">
+                    {/* From the same place the fight gets them. These were
+                        typed in as "25 dmg" and "60 dmg", so the panel reported
+                        the same numbers for every champion carrying every
+                        weapon, and disagreed with both the briefing and the
+                        damage actually being dealt. */}
                     {[
-                      ["light", "25 dmg"],
-                      ["heavy", "60 dmg"],
+                      ["left click", `${damage.light} damage`],
+                      ["right click", `${damage.heavy} damage`],
                       ["origin", "loot table"],
                       ["unique", "no"],
                     ].map(([k, v]) => (

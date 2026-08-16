@@ -3,8 +3,8 @@ import { useGameStore } from "../state/useGameStore";
 import { bossAt } from "../game/bosses";
 import { accentFor, themeForBoss } from "../game/theme";
 import { useLoadout } from "../state/useLoadout";
-import { COMBAT, attackSpec } from "../game/combat";
-import { combinedTraits } from "../game/equipped";
+import { COMBAT } from "../game/combat";
+import { carriedDamage } from "../game/equipped";
 import { lastDodge } from "../game/feedback";
 
 /**
@@ -103,9 +103,7 @@ export function Hud() {
    * fight resolved the briefing's numbers. A readout that disagrees with the
    * damage it is reporting is worse than no readout.
    */
-  const traits = combinedTraits(carried?.dna, affinity);
-  const quick = attackSpec("light", traits).damage;
-  const strong = attackSpec("heavy", traits).damage;
+  const { light: quick, heavy: strong } = carriedDamage(carried?.dna, affinity);
 
   /*
    * The condition band is not repeated here.

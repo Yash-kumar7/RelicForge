@@ -1,4 +1,5 @@
 import { relicTraits, type RelicTraits } from "@relic/core";
+import { attackSpec } from "./combat";
 import type { OwnedRelic } from "../state/useLoadout";
 import { championFor } from "./champions";
 import type { Affinity, RelicDNA } from "@relic/core";
@@ -38,4 +39,28 @@ export function combinedTraits(dna: RelicDNA | null | undefined, affinity: Affin
 /** Read once when a fight starts, so nothing can change mid-swing. */
 export function setEquippedRelic(relic: OwnedRelic | null, affinity: Affinity): void {
   equipped.traits = combinedTraits(relic?.dna, affinity);
+}
+
+/**
+ * The two numbers a player is actually dealing, in one place.
+ *
+ * Three screens quoted these and all three did it differently. The HUD read the
+ * base constants, so it said 25 and 60 while the fight resolved 30 and 72. The
+ * loadout panel had them typed in as literal strings, so it said 25 and 60 for
+ * every champion carrying every weapon. Only the briefing was right, and it was
+ * right because it had been fixed separately after being wrong in its own way.
+ *
+ * A number the player can compare against what just happened has to come from
+ * the same place the fight gets it, or the interface is guessing about its own
+ * game. This is that place.
+ */
+export function carriedDamage(
+  dna: RelicDNA | null | undefined,
+  affinity: Affinity,
+): { light: number; heavy: number } {
+  const traits = combinedTraits(dna, affinity);
+  return {
+    light: attackSpec("light", traits).damage,
+    heavy: attackSpec("heavy", traits).damage,
+  };
 }

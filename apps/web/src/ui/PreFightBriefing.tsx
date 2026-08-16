@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "../state/useGameStore";
-import { COMBAT, attackSpec } from "../game/combat";
-import { combinedTraits } from "../game/equipped";
+import { COMBAT } from "../game/combat";
+import { carriedDamage } from "../game/equipped";
 import { useLoadout } from "../state/useLoadout";
 import { bossAt } from "../game/bosses";
 import { bossSlug } from "./BossPortrait";
@@ -38,9 +38,9 @@ export function PreFightBriefing() {
   const carried = useLoadout((s) => s.equipped());
   // The champion's strength included. Without it this promised a 60 damage
   // strong attack while an Ember dealt 72 and a Frost 49.
-  const traits = combinedTraits(carried?.dna, affinity);
-  const light = attackSpec("light", traits);
-  const heavy = attackSpec("heavy", traits);
+  const carriedNow = carriedDamage(carried?.dna, affinity);
+  const light = { damage: carriedNow.light };
+  const heavy = { damage: carriedNow.heavy };
 
   /*
    * Who is actually in the room.
