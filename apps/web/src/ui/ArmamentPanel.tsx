@@ -453,7 +453,17 @@ export function ArmamentPanel() {
               <span className="mt-2 block space-y-1">
                 <span className="flex justify-between gap-3">
                   <span className="text-stone-600">Forged from</span>
-                  <span className="text-stone-300">{shown.dna.bossInfluence}</span>
+                  {/*
+                    Capitalised here, lowercase at the source.
+
+                    bossInfluence is written to be dropped into a sentence, since
+                    that is what it is for: "forged from the remains of the Ashen
+                    Warden" is a prompt clause, and it goes to Meshy exactly as
+                    stored. Standing alone as a value in a table it wants a
+                    capital, so the stylesheet gives it one rather than the data
+                    carrying a display decision into the prompt.
+                  */}
+                  <span className="capitalize text-stone-300">{shown.dna.bossInfluence}</span>
                 </span>
                 <span className="flex justify-between gap-3">
                   <span className="text-stone-600">Element</span>
