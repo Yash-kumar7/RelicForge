@@ -86,7 +86,16 @@ const BY_CONDITION: Record<RelicDNA["condition"], Partial<RelicTraits>> = {
  * exactly when this would otherwise break quietly.
  */
 const MIN_MULTIPLIER = 0.65;
-const MAX_MULTIPLIER = 1.65;
+/**
+ * The most any relic can lean a number, and the ceiling a bar can be drawn to.
+ *
+ * Exported because a damage bar needs a scale that does not move. Drawn against
+ * the strongest weapon currently on screen, the scale changed every time the
+ * player looked at a different relic, so the iron sword's bar shifted although
+ * its damage is fixed, and two relics could not be compared because each had
+ * been measured against itself.
+ */
+export const MAX_MULTIPLIER = 1.65;
 
 function combine(...layers: Partial<RelicTraits>[]): RelicTraits {
   const out = { ...NEUTRAL };

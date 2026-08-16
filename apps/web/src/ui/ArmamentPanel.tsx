@@ -1,9 +1,10 @@
 import { useMemo } from "react";
-import { describeTraits, relicTraits, type RelicTraits } from "@relic/core";
+import { describeTraits, relicTraits, MAX_MULTIPLIER, type RelicTraits } from "@relic/core";
 import { combinedTraits } from "../game/equipped";
+import { championFor } from "../game/champions";
 import { InfoTip } from "./InfoTip";
 import { useGameStore } from "../state/useGameStore";
-import { attackSpec } from "../game/combat";
+import { COMBAT, attackSpec } from "../game/combat";
 
 /**
  * The two attacks, described rather than tabulated.
@@ -245,24 +246,25 @@ export function ArmamentPanel() {
    * every card would look identical, which is the opposite of what a comparison
    * is for.
    */
-  const ceiling = useMemo(
-    () =>
-      Math.max(
-        attackSpec("heavy", ironTraits).damage,
-        shown ? attackSpec("heavy", traits).damage : 0,
-      ),
-    [ironTraits, traits, shown],
-  );
-
   /*
-   * Headroom above the strongest weapon on screen.
+   * One scale, fixed, and not derived from what is on screen.
    *
-   * Scaled to the exact maximum, the better weapon's bar was always full and the
-   * only thing that ever moved was the weaker one. A bar that is pinned at the
-   * end of its track cannot show that a stronger relic exists, and the next one
-   * along would look identical.
+   * It was the strongest weapon currently displayed, which moved every time the
+   * player looked at a different relic: the iron sword's bar shifted although
+   * its damage never changes, the strongest relic was always pinned full, and
+   * two relics viewed one after the other could not be compared because each had
+   * been measured against itself.
+   *
+   * The ceiling is what the game can produce: the heaviest base attack, leaned by
+   * the largest multiplier relic traits are clamped to, in the hands of the
+   * champion holding it. Every bar on the screen means the same thing, and a
+   * relic that fills two thirds of its track fills two thirds of it whatever else
+   * is being looked at.
    */
-  const scale = ceiling * 1.15;
+  const scale = useMemo(
+    () => COMBAT.heavyAttack.damage * MAX_MULTIPLIER * championFor(affinity).traits.damage,
+    [affinity],
+  );
 
   const relicNotes = useMemo(
     () => (shown ? describeTraits(relicTraits(shown.dna)) : []),
