@@ -278,7 +278,7 @@ packages/relic-core   Pure, no I/O. Imported by both.
 - **Articulated weapons are out of scope.** A chained flail has multiple rigid bodies and no single principal axis; it needs different runtime semantics, not a better heuristic.
 - **Bosses walk, but that is all they animate.** Walking and idle clips are wired up. Attacks, staggers and deaths are whole-body transforms, so a boss telegraphs by moving, not by moving its arms.
 - **The champion is cosmetic.** It swings the real generated weapon, but the choice is visual: champions do not change reach, damage or any other number the fight runs on.
-- **No deploy config ships.** Fastify serves the built client in production, so it runs as one process on one origin, but nothing here has been deployed or containerised and I would not claim otherwise.
+- **Runs as one process on one origin.** Fastify serves the built client in production, so there is no separate static host and no CORS surface to get wrong. Not containerised, and nothing here has been deployed.
 
 ## Where this goes
 
