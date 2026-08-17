@@ -222,7 +222,11 @@ export function Hud() {
             Left click {quick} · right click {strong}
           </div>
           <div>Space jump · Shift dodge · Q heal</div>
-          <div>V view · P freeze for a screenshot</div>
+          {/* P still freezes the fight so it can be photographed while the
+              cursor is held, and is deliberately not listed. It was added to
+              take screenshots of this game rather than to be played with, and a
+              control list is for what a player needs in the next ten seconds. */}
+          <div>V view</div>
         </div>
       )}
     </div>

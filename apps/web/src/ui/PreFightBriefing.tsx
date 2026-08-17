@@ -307,9 +307,6 @@ export function PreFightBriefing() {
                     keys: [
                       ["Mouse", "aim"],
                       ["V", "change view"],
-                      // Without it there is no way to photograph the fight, since
-                      // the game is holding the cursor.
-                      ["P", "freeze"],
                     ],
                   },
                 ].map((column) => (
