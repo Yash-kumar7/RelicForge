@@ -55,6 +55,11 @@ function manifestFor(kind: "champions" | "bosses" | "arena", slug: string): stri
       `champions/${slug}/model-open.glb`,
       `champions/${slug}/rig/walking.glb`,
       `champions/${slug}/rig/idle.glb`,
+      /* The cut-out portrait, which is not decoration: the title screen's two
+         figures, the champion select cards and the pre-fight briefing are all
+         this image. Bundling the mesh and not this leaves a game that renders
+         its characters in 3D and cannot show their faces anywhere else. */
+      `champions/${slug}/concept-cut.png`,
     ];
   }
   if (kind === "bosses") {
@@ -64,6 +69,8 @@ function manifestFor(kind: "champions" | "bosses" | "arena", slug: string): stri
       `bosses/${slug}/rig/walking.glb`,
       `bosses/${slug}/rig/idle.glb`,
       `bosses/${slug}/concept.png`,
+      // Used by the title screen, the briefing and the defeat screen.
+      `bosses/${slug}/concept-cut.png`,
     ];
   }
   return [`arena/${slug}/model.glb`];
