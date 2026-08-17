@@ -263,12 +263,31 @@ Sound is synthesized at runtime with the Web Audio API, oscillators and filtered
 ## Layout
 
 ```
-apps/web          React + R3F. Game, forge, lab. Never sees Meshy.
-apps/api          Fastify. Owns MESHY_API_KEY. Only place api.meshy.ai appears.
-packages/relic-core   Pure, no I/O. Imported by both.
+apps/web/src              React + R3F. Never sees Meshy.
+  game/                   arena, boss, player, combat, telemetry capture
+  forge/                  the reveal sequence
+  state/                  Zustand stores
+  debug/  lib/  ui/  audio/
+
+apps/api/src              Fastify. Owns MESHY_API_KEY.
+  routes/relics.ts        the whole public API surface
+  services/meshy/         only place api.meshy.ai appears
+  generation/             orchestration: concept → mesh → optimize
+  cache/                  keyed file cache
+
+packages/relic-core/src   Pure, no I/O. Imported by both.
+  normalize.ts            orient, scale and grip arbitrary geometry
+  dna.ts                  telemetry → Relic DNA
+  prompt.ts               DNA → concept prompt, versioned
+  cacheKey.ts             hash of DNA + full generation config
+  attach.ts  traits.ts  naming.ts  stateMachine.ts
 ```
 
+**If you only read three files:** [`normalize.ts`](packages/relic-core/src/normalize.ts) is the problem this project exists to solve, [`dna.ts`](packages/relic-core/src/dna.ts) is the mechanic, and [`services/meshy/`](apps/api/src/services/meshy) is every line that talks to the API.
+
 `relic-core` staying pure is what lets the normalizer be unit-tested in Node against synthetic geometry **and** run in the browser at equip time. One implementation, one test suite, two runtimes.
+
+In production Fastify serves the built client itself, so it runs as one process on one origin with no separate static host and no CORS surface. Set `CLIENT_ORIGIN` if you split them.
 
 ---
 
@@ -278,7 +297,6 @@ packages/relic-core   Pure, no I/O. Imported by both.
 - **Articulated weapons are out of scope.** A chained flail has multiple rigid bodies and no single principal axis; it needs different runtime semantics, not a better heuristic.
 - **Bosses walk, but that is all they animate.** Walking and idle clips are wired up. Attacks, staggers and deaths are whole-body transforms, so a boss telegraphs by moving, not by moving its arms.
 - **The champion is cosmetic.** It swings the real generated weapon, but the choice is visual: champions do not change reach, damage or any other number the fight runs on.
-- **Runs as one process on one origin.** Fastify serves the built client in production, so there is no separate static host and no CORS surface to get wrong. Not containerised, and nothing here has been deployed.
 
 ## Where this goes
 
