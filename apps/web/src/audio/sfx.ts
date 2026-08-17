@@ -265,7 +265,7 @@ function buildAmbience(): void {
   const bed = audio.createGain();
   bed.gain.setValueAtTime(0.0001, audio.currentTime);
   // Four seconds to arrive, so it is never the thing that made you look up.
-  bed.gain.exponentialRampToValueAtTime(0.14, audio.currentTime + 4);
+  bed.gain.exponentialRampToValueAtTime(0.085, audio.currentTime + 4);
   bed.connect(master);
 
   /*

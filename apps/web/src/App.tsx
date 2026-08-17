@@ -45,7 +45,19 @@ export default function App() {
    */
   /* The forge hums on the screens before the fight, and stops when one starts:
      the arena brings its own sound and does not want a drone under it. */
-  useInterfaceSounds({ ambience: phase === "TITLE" || phase === "CHOOSE_AFFINITY" });
+  /*
+   * The forge is heard on the title screen and nowhere else before the fight.
+   *
+   * It ran through champion selection too, and that put coals burning under a
+   * screen where nothing is being forged. A room tone says where you are; that
+   * one was saying something is happening, and nothing was.
+   *
+   * It also spent the effect early. If the fire is going on every screen, then
+   * the forge lighting after a victory has nowhere left to go — it is already at
+   * full heat before the player has done anything. Held back to the title, the
+   * setup screens are quiet enough that the sequence lands as an event.
+   */
+  useInterfaceSounds({ ambience: phase === "TITLE" });
 
   if (route.startsWith("/lab")) {
     return (
