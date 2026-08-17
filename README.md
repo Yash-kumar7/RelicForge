@@ -2,6 +2,10 @@
 
 > **Your weapon is made from how you fight**
 
+![RelicForge title screen cycling through champions, their forged weapons, and the bosses they were won from](docs/relicforge.gif)
+
+*Every weapon, champion and boss above was generated. Nothing here was modelled by hand.*
+
 **What if the reward for a fight was made out of the fight?**
 
 Every weapon you have ever been handed in a game was finished months before you
