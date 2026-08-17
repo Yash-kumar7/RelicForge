@@ -272,19 +272,9 @@ packages/relic-core   Pure, no I/O. Imported by both.
 
 - **Two weapon classes ship** (greatsword, spear). Warhammer is implemented and in the normalizer's test corpus, but its end-resolution confidence sits at 0.09, so it stays behind a flag until that improves.
 - **Articulated weapons are out of scope.** A chained flail has multiple rigid bodies and no single principal axis; it needs different runtime semantics, not a better heuristic.
-- **The file cache is a JSON index.** Correct for one process; SQLite when the schema stops moving.
-- **Concept selection is a composition heuristic**, not a quality judgment, it rejects off-centre and small-in-frame subjects, nothing subtler.
-- **The client bundle is ~1.6 MB**, dominated by three.js. The dev surfaces are code-split (the lab and compare view are 9 KB and 5 KB); the engine itself is on the critical path.
+- **Bosses walk, but that is all they animate.** Walking and idle clips are wired up. Attacks, staggers and deaths are whole-body transforms, so a boss telegraphs by moving, not by moving its arms.
+- **The champion is cosmetic.** It swings the real generated weapon, but the choice is visual: champions do not change reach, damage or any other number the fight runs on.
 - **No deploy config ships.** Fastify serves the built client in production, so it runs as one process on one origin, but nothing here has been deployed or containerised and I would not claim otherwise.
-- **Losing forfeits the relic.** A weapon forged from a defeat would stop being a record of how you won.
-- **Bosses walk, but that is all they animate.** The rigging endpoint ships walking
-  and idle clips, and those are wired up. Attacks, staggers and deaths are still
-  whole-body transforms rather than authored animation, so a boss winds up for a
-  telegraph by moving, not by moving its arms.
-- **The champion is cosmetic.** Third person shows your rigged champion swinging
-  the real generated weapon, and **V** drops you into first person for hands only.
-  But the choice is visual: champions do not change reach, damage or any other
-  number the fight runs on.
 
 ## Where this goes
 
