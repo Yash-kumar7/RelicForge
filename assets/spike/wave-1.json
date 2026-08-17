@@ -1,0 +1,77 @@
+{
+  "wave": 1,
+  "results": [
+    {
+      "slug": "curved-saber",
+      "corpus": "core",
+      "why": "principal axis diverges from visual axis",
+      "prompt": "a legendary curved saber, deeply curved single-edged blade. Designed as a functional fantasy game weapon. Single isolated weapon, full object visible, vertical orientation, tip pointing up, pommel down, three-quarter view, centered composition. No character. No hands. No environment. Neutral background. Strong readable silhouette. Production-quality game concept art.",
+      "conceptTaskId": "019fefa7-05d3-73c7-8006-a3f43488105d",
+      "meshTaskId": "019fefa7-714d-7c1c-91af-a8e42ba1417c",
+      "conceptMs": 27414,
+      "meshMs": 101239,
+      "glbBytes": 9371184,
+      "config": {
+        "promptVersion": "v2",
+        "imageModel": "nano-banana-pro",
+        "conceptCandidates": 3,
+        "meshyModel": "meshy-7",
+        "ultraMode": true,
+        "targetPolycount": 12000,
+        "shouldRemesh": true,
+        "enablePbr": true,
+        "targetFormats": [
+          "glb"
+        ]
+      }
+    },
+    {
+      "slug": "asymmetric-axe",
+      "corpus": "core",
+      "why": "off-axis mass",
+      "prompt": "a legendary battle axe with one large asymmetric bearded blade. Designed as a functional fantasy game weapon. Single isolated weapon, full object visible, vertical orientation, tip pointing up, pommel down, three-quarter view, centered composition. No character. No hands. No environment. Neutral background. Strong readable silhouette. Production-quality game concept art.",
+      "conceptTaskId": "019fefa8-fe31-77d2-b519-ac263dfe141e",
+      "meshTaskId": "019fefa9-50b8-77da-8d89-aec4765376cc",
+      "conceptMs": 21121,
+      "meshMs": 124754,
+      "glbBytes": 9522776,
+      "config": {
+        "promptVersion": "v2",
+        "imageModel": "nano-banana-pro",
+        "conceptCandidates": 3,
+        "meshyModel": "meshy-7",
+        "ultraMode": true,
+        "targetPolycount": 12000,
+        "shouldRemesh": true,
+        "enablePbr": true,
+        "targetFormats": [
+          "glb"
+        ]
+      }
+    },
+    {
+      "slug": "glaive",
+      "corpus": "core",
+      "why": "blade at the end of a long shaft",
+      "prompt": "a legendary glaive, long pole with a broad blade at one end. Designed as a functional fantasy game weapon. Single isolated weapon, full object visible, vertical orientation, tip pointing up, pommel down, three-quarter view, centered composition. No character. No hands. No environment. Neutral background. Strong readable silhouette. Production-quality game concept art.",
+      "conceptTaskId": "019fefab-39e5-7cbe-be29-ecda9adba4ef",
+      "meshTaskId": "019fefab-8553-7cca-9f3a-b8ae4c231249",
+      "conceptMs": 19289,
+      "meshMs": 132341,
+      "glbBytes": 7747712,
+      "config": {
+        "promptVersion": "v2",
+        "imageModel": "nano-banana-pro",
+        "conceptCandidates": 3,
+        "meshyModel": "meshy-7",
+        "ultraMode": true,
+        "targetPolycount": 12000,
+        "shouldRemesh": true,
+        "enablePbr": true,
+        "targetFormats": [
+          "glb"
+        ]
+      }
+    }
+  ]
+}

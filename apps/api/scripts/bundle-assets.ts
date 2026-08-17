@@ -140,6 +140,26 @@ async function main(): Promise<void> {
     for (const slug of await slugsIn(kind)) wanted.push(...manifestFor(kind, slug));
   }
 
+  /*
+   * The normalizer corpus, because the README sends people to look at it.
+   *
+   * #/lab renders every spike model normalized beside a reference silhouette,
+   * and it is the evidence for the one claim this project makes that is hard to
+   * make: that arbitrary generated geometry can be oriented and gripped without
+   * a human touching it. A documented route that resolves to nothing is worse
+   * than one that was never mentioned.
+   *
+   * All twelve, not the eight the gate was scored on. The four stress cases are
+   * where the heuristic is known to struggle, and showing the edge it fails at
+   * is worth more than showing only the cases it passes.
+   *
+   * These are the heaviest files generated — around 9MB each, almost all of it
+   * texture on objects the lab draws two inches tall — so they compress hardest
+   * of anything here, about 88 percent.
+   */
+  for (const slug of await slugsIn("spike")) wanted.push(`spike/${slug}/model.glb`);
+  for (const wave of [0, 1, 2]) wanted.push(`spike/wave-${wave}.json`);
+
   let before = 0;
   let after = 0;
   let copied = 0;

@@ -1,0 +1,26 @@
+{
+  "wave": 0,
+  "results": [
+    {
+      "slug": "greatsword",
+      "corpus": "core",
+      "why": "baseline",
+      "remeshTaskId": "019fef32-f5d4-7d74-999a-65eb49b300bf",
+      "glbBytes": 13588644
+    },
+    {
+      "slug": "spear",
+      "corpus": "core",
+      "why": "extreme aspect ratio",
+      "remeshTaskId": "019fef33-5e97-7b58-96cd-c3052c646d07",
+      "glbBytes": 19383436
+    },
+    {
+      "slug": "warhammer",
+      "corpus": "core",
+      "why": "mass at one end, weak axis dominance",
+      "remeshTaskId": "019fef34-6fa5-7b71-b7d7-67b82be15391",
+      "glbBytes": 23732680
+    }
+  ]
+}

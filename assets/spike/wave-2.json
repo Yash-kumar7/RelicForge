@@ -1,0 +1,149 @@
+{
+  "wave": 2,
+  "results": [
+    {
+      "slug": "dagger",
+      "corpus": "core",
+      "why": "small scale, weak profile signal",
+      "prompt": "a legendary dagger, short tapered blade, ornate crossguard. Designed as a functional fantasy game weapon. Single isolated weapon, full object visible, vertical orientation, tip pointing up, pommel down, three-quarter view, centered composition. No character. No hands. No environment. Neutral background. Strong readable silhouette. Production-quality game concept art.",
+      "conceptTaskId": "019fefad-8e61-7c55-924f-a68f48951a06",
+      "meshTaskId": "019fefad-d8fa-7c6b-add6-5a689ef84593",
+      "conceptMs": 19004,
+      "meshMs": 123855,
+      "glbBytes": 9755612,
+      "config": {
+        "promptVersion": "v2",
+        "imageModel": "nano-banana-pro",
+        "conceptCandidates": 3,
+        "meshyModel": "meshy-7",
+        "ultraMode": true,
+        "targetPolycount": 12000,
+        "shouldRemesh": true,
+        "enablePbr": true,
+        "targetFormats": [
+          "glb"
+        ]
+      }
+    },
+    {
+      "slug": "ornate-longsword",
+      "corpus": "core",
+      "why": "vertex-density trap — heavy detail concentrated in the pommel",
+      "prompt": "a legendary longsword with an extremely ornate filigreed pommel and decorated crossguard. Designed as a functional fantasy game weapon. Single isolated weapon, full object visible, vertical orientation, tip pointing up, pommel down, three-quarter view, centered composition. No character. No hands. No environment. Neutral background. Strong readable silhouette. Production-quality game concept art.",
+      "conceptTaskId": "019fefaf-bed9-7820-be1b-6cd9dadf01e7",
+      "meshTaskId": "019fefb0-1254-7632-bd00-db3ee6bb7cbf",
+      "conceptMs": 21330,
+      "meshMs": 112830,
+      "glbBytes": 10903456,
+      "config": {
+        "promptVersion": "v2",
+        "imageModel": "nano-banana-pro",
+        "conceptCandidates": 3,
+        "meshyModel": "meshy-7",
+        "ultraMode": true,
+        "targetPolycount": 12000,
+        "shouldRemesh": true,
+        "enablePbr": true,
+        "targetFormats": [
+          "glb"
+        ]
+      }
+    },
+    {
+      "slug": "twin-maul",
+      "corpus": "stress",
+      "why": "symmetric — no tip taper at either end",
+      "prompt": "a legendary twin-headed maul, identical heavy heads at both ends of the haft. Designed as a functional fantasy game weapon. Single isolated weapon, full object visible, vertical orientation, tip pointing up, pommel down, three-quarter view, centered composition. No character. No hands. No environment. Neutral background. Strong readable silhouette. Production-quality game concept art.",
+      "conceptTaskId": "019fefb1-ccfd-7425-8948-a7490c4422dc",
+      "meshTaskId": "019fefb2-3d2f-707a-b667-5c76a1e7906e",
+      "conceptMs": 28710,
+      "meshMs": 132476,
+      "glbBytes": 9221436,
+      "config": {
+        "promptVersion": "v2",
+        "imageModel": "nano-banana-pro",
+        "conceptCandidates": 3,
+        "meshyModel": "meshy-7",
+        "ultraMode": true,
+        "targetPolycount": 12000,
+        "shouldRemesh": true,
+        "enablePbr": true,
+        "targetFormats": [
+          "glb"
+        ]
+      }
+    },
+    {
+      "slug": "crystal-shard-blade",
+      "corpus": "stress",
+      "why": "irregular protrusions confuse the radius profile",
+      "prompt": "a legendary jagged crystalline shard blade with irregular protruding facets. Designed as a functional fantasy game weapon. Single isolated weapon, full object visible, vertical orientation, tip pointing up, pommel down, three-quarter view, centered composition. No character. No hands. No environment. Neutral background. Strong readable silhouette. Production-quality game concept art.",
+      "conceptTaskId": "019fefb4-4476-793a-b703-95d719c16b65",
+      "meshTaskId": "019fefb5-4bb7-7758-bfff-9f0675150d66",
+      "conceptMs": 67367,
+      "meshMs": 109162,
+      "glbBytes": 9119148,
+      "config": {
+        "promptVersion": "v2",
+        "imageModel": "nano-banana-pro",
+        "conceptCandidates": 3,
+        "meshyModel": "meshy-7",
+        "ultraMode": true,
+        "targetPolycount": 12000,
+        "shouldRemesh": true,
+        "enablePbr": true,
+        "targetFormats": [
+          "glb"
+        ]
+      }
+    },
+    {
+      "slug": "ringed-staff",
+      "corpus": "stress",
+      "why": "mass ring at the top inverts the guard heuristic",
+      "prompt": "a legendary ringed staff, heavy ornamental ring mounted at the top of a long shaft. Designed as a functional fantasy game weapon. Single isolated weapon, full object visible, vertical orientation, tip pointing up, pommel down, three-quarter view, centered composition. No character. No hands. No environment. Neutral background. Strong readable silhouette. Production-quality game concept art.",
+      "conceptTaskId": "019fefb6-fd6d-7794-b8f9-758a2fccc479",
+      "meshTaskId": "019fefb7-4a73-7a0b-aff3-ca497ae83289",
+      "conceptMs": 19741,
+      "meshMs": 103956,
+      "glbBytes": 9514732,
+      "config": {
+        "promptVersion": "v2",
+        "imageModel": "nano-banana-pro",
+        "conceptCandidates": 3,
+        "meshyModel": "meshy-7",
+        "ultraMode": true,
+        "targetPolycount": 12000,
+        "shouldRemesh": true,
+        "enablePbr": true,
+        "targetFormats": [
+          "glb"
+        ]
+      }
+    },
+    {
+      "slug": "chained-flail",
+      "corpus": "stress",
+      "why": "disconnected components after merge — never P0, boundary probe only",
+      "prompt": "a legendary chained flail, spiked ball connected by chain links to a handle. Designed as a functional fantasy game weapon. Single isolated weapon, full object visible, vertical orientation, tip pointing up, pommel down, three-quarter view, centered composition. No character. No hands. No environment. Neutral background. Strong readable silhouette. Production-quality game concept art.",
+      "conceptTaskId": "019fefb8-e2dd-7591-a70f-197afef0bb29",
+      "meshTaskId": "019fefb9-39eb-7813-be26-4179df12abd3",
+      "conceptMs": 22256,
+      "meshMs": 134380,
+      "glbBytes": 9817792,
+      "config": {
+        "promptVersion": "v2",
+        "imageModel": "nano-banana-pro",
+        "conceptCandidates": 3,
+        "meshyModel": "meshy-7",
+        "ultraMode": true,
+        "targetPolycount": 12000,
+        "shouldRemesh": true,
+        "enablePbr": true,
+        "targetFormats": [
+          "glb"
+        ]
+      }
+    }
+  ]
+}
