@@ -8,7 +8,8 @@
     "build": "tsc --noEmit",
     "start": "tsx src/server.ts",
     "spike": "tsx scripts/spike-generate.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "assets:bundle": "tsx scripts/bundle-assets.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",

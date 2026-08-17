@@ -51,13 +51,34 @@ if (env.CLIENT_ORIGIN) {
 await mkdir(env.storageDir, { recursive: true });
 await mkdir(env.cacheDir, { recursive: true });
 
-// Generated assets are downloaded locally and served from here, Meshy asset
-// URLs expire, and a demo that 404s on replay is worse than no demo.
+/**
+ * Two roots behind one path, bundle first.
+ *
+ * Generated assets are downloaded locally rather than linked, because Meshy
+ * asset URLs expire and a demo that 404s on replay is worse than no demo. That
+ * left every character, boss and arena living only in storage, which is four
+ * hundred megabytes and not in the repository — so a fresh clone had the whole
+ * game missing, and so would any deploy that did not carry storage with it.
+ *
+ * assets/ is the committed answer: the forty-odd files the game actually
+ * requests, re-encoded small enough to belong in git. It is checked first, so a
+ * clone and a deploy both have everything they need with no setup at all.
+ *
+ * storage/ stays behind it and still serves what only exists at runtime — every
+ * relic the forge produces, which by definition cannot be committed, since it
+ * did not exist until somebody won a fight.
+ */
+const bundledAssets = path.resolve(here, "../../../assets");
 await app.register(fastifyStatic, {
-  root: env.storageDir,
+  root: existsSync(bundledAssets) ? [bundledAssets, env.storageDir] : env.storageDir,
   prefix: "/assets/",
   decorateReply: false,
 });
+if (!existsSync(bundledAssets)) {
+  app.log.warn(
+    `No asset bundle at ${bundledAssets}. Characters and arenas will fall back to primitives; run "pnpm --filter @relic/api assets:bundle" to build it.`,
+  );
+}
 
 app.get("/api/health", async () => {
   const balance = await getBalance().catch(() => null);
