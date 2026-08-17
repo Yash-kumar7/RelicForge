@@ -887,6 +887,27 @@ export function TitleScreen() {
             <div className="mt-7 flex flex-col gap-2">
               {BOSSES.map((boss) => {
                 const cleared = isCleared(boss.level);
+                /*
+                 * One rung at a time, but nothing hidden.
+                 *
+                 * Everything stays on screen and readable: portrait, name,
+                 * health, what it pays, and its note. A player can see the whole
+                 * climb and what is waiting at the top of it, which is most of
+                 * why a ladder is worth having. What they cannot do is skip to
+                 * the end.
+                 *
+                 * Locked rows are still selectable, and the lock lives on the one
+                 * control that starts a fight. Choosing a boss here only decides
+                 * what the left half of the screen is showing, and being able to
+                 * turn the Hollow Sovereign around in 3D before earning it is the
+                 * best argument the ladder has for climbing.
+                 *
+                 * BossPortrait has a locked treatment that blurs the art down to
+                 * a question mark, and it is deliberately not used here. That
+                 * hides the thing the game generated, and the reason to show a
+                 * boss you have not earned is so you want to earn it.
+                 */
+                const locked = boss.level > highestCleared() + 1;
                 const selected = bossLevel === boss.level;
                 const lean = describeTraits(bossTraits(boss.name));
                 const pay = xpRangeFor(boss.level);
@@ -913,9 +934,11 @@ export function TitleScreen() {
                     */
                     className={[
                       "w-full border-l-2 text-left transition",
-                      selected
-                        ? "border-ember-500/70 bg-gradient-to-r from-white/[0.04] to-transparent text-stone-200"
-                        : "border-transparent text-stone-500 hover:border-ash-700 hover:bg-white/[0.02]",
+                      locked && !selected
+                        ? "border-transparent text-stone-600 opacity-60 hover:border-ash-800 hover:opacity-100"
+                        : selected
+                          ? "border-ember-500/70 bg-gradient-to-r from-white/[0.04] to-transparent text-stone-200"
+                          : "border-transparent text-stone-500 hover:border-ash-700 hover:bg-white/[0.02]",
                     ].join(" ")}
                   >
                     {/*
@@ -964,6 +987,14 @@ export function TitleScreen() {
                         {cleared && (
                           <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-600">
                             cleared
+                          </span>
+                        )}
+                        {/* Named, not just marked. "Locked" tells a player they
+                            cannot have it; the boss standing in the way tells
+                            them what to go and do about it. */}
+                        {locked && (
+                          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
+                            beat {bossAt(boss.level - 1).title} first
                           </span>
                         )}
                         <dl className="w-32 space-y-1 font-mono text-[9px] uppercase tracking-[0.12em]">
@@ -1126,25 +1157,46 @@ export function TitleScreen() {
               something two steps away. Each step now offers exactly one way
               forward.
             */}
-            {section === 2 && (
-              <button
-                type="button"
-                onClick={startFight}
-                disabled={bossLevel === null}
-                /* The one press on this screen that starts a fight. */
-                data-sound="confirm"
-                /* Wider and brighter than Continue, because it starts a fight
-                   rather than turning a page, and centred with it. */
-                className={[
-                  "mx-auto mt-4 block border px-20 py-3.5 text-xs uppercase tracking-[0.35em] transition",
-                  bossLevel === null
-                    ? "cursor-not-allowed border-ash-800 text-stone-700"
-                    : "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
-                ].join(" ")}
-              >
-                {bossLevel === null ? "Choose who you fight" : `Fight ${bossAt(bossLevel).title}`}
-              </button>
-            )}
+            {section === 2 && (() => {
+              /*
+               * The ladder is enforced here, not in the list.
+               *
+               * Every boss can be selected and turned around in 3D, because
+               * seeing what is waiting at the top is most of the reason to climb
+               * toward it. Only the press that starts a fight is gated, so the
+               * rule is stated once, at the moment it applies, by the control it
+               * applies to.
+               */
+              const barred = bossLevel !== null && bossLevel > highestCleared() + 1;
+              const blocked = bossLevel === null || barred;
+
+              return (
+                <button
+                  type="button"
+                  onClick={startFight}
+                  disabled={blocked}
+                  /* The one press on this screen that starts a fight. */
+                  data-sound="confirm"
+                  /* Wider and brighter than Continue, because it starts a fight
+                     rather than turning a page, and centred with it. */
+                  className={[
+                    "mx-auto mt-4 block border px-20 py-3.5 text-xs uppercase tracking-[0.35em] transition",
+                    blocked
+                      ? "cursor-not-allowed border-ash-800 text-stone-700"
+                      : "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
+                  ].join(" ")}
+                >
+                  {/* Says what to do about it, rather than that it cannot be
+                      done. A disabled control that only reports its own state
+                      leaves the player to work out the rule. */}
+                  {bossLevel === null
+                    ? "Choose who you fight"
+                    : barred
+                      ? `Beat ${bossAt(highestCleared() + 1).title} first`
+                      : `Fight ${bossAt(bossLevel).title}`}
+                </button>
+              );
+            })()}
           </div>
         </div>
       </div>
