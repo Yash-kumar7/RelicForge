@@ -1,4 +1,4 @@
-import { mkdir, copyFile, readdir, stat, writeFile } from "node:fs/promises";
+import { mkdir, copyFile, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -67,6 +67,14 @@ function manifestFor(kind: "champions" | "bosses" | "arena", slug: string): stri
     ];
   }
   return [`arena/${slug}/model.glb`];
+}
+
+/** Only the fields the showcase needs to name and place a relic. */
+interface ShowcaseRecord {
+  status?: string;
+  modelUrl?: string;
+  dna?: { bossInfluence?: string; element?: string };
+  [key: string]: unknown;
 }
 
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
@@ -152,6 +160,82 @@ async function main(): Promise<void> {
       after += size;
     }
     copied += 1;
+  }
+
+  /*
+   * One relic per boss, and the cache entries that make them real.
+   *
+   * The title screen is built out of a relic. The champion on the left comes
+   * from its element, the boss behind it from what it was forged from, and the
+   * weapon turns in the middle — all three read off one record. So a deployment
+   * with an empty relic cache does not get a plainer title screen, it gets an
+   * empty one, and a fresh deploy is exactly that: relics are generated at
+   * runtime and the cache is not committed.
+   *
+   * Five relics, one per rung, chosen for what they demonstrate rather than for
+   * being first in the file. The same pipeline against five different bosses
+   * producing five different weapons is the argument this whole project makes,
+   * and the title screen is where it gets made.
+   *
+   * They ship as cache records too, so a first fight against a boss already in
+   * here answers from cache instead of spending two minutes and sixty-two
+   * credits regenerating a weapon that exists.
+   */
+  const cacheIndex = join(ROOT, "apps", "api", "cache", "index.json");
+  if (existsSync(cacheIndex)) {
+    const parsed = JSON.parse(await readFile(cacheIndex, "utf8")) as {
+      relics: Record<string, ShowcaseRecord>;
+    };
+
+    /* Only relics whose model is really on disk. A record pointing at a file
+       that was cleaned up is worse than no record: it renders as a title screen
+       that is broken rather than one that is empty. */
+    const usable = Object.values(parsed.relics).filter(
+      (r) =>
+        r.status === "COMPLETE" &&
+        r.modelUrl &&
+        r.dna?.bossInfluence &&
+        existsSync(join(SOURCE, r.modelUrl.replace(/^\/assets\//, ""))),
+    );
+
+    /*
+     * One per boss, and spread across elements where there is a choice.
+     *
+     * Taking the first match per boss gave four fire relics out of five, and the
+     * title screen picks its champion from the relic's element — so the same
+     * figure stood on the left through nearly the whole cycle. A showcase whose
+     * argument is that different fights make different weapons should not show
+     * the same fighter five times.
+     */
+    const chosen: ShowcaseRecord[] = [];
+    const seenBoss = new Set<string>();
+    const seenElement = new Set<string>();
+
+    for (const pass of [0, 1]) {
+      for (const relic of usable) {
+        const boss = relic.dna?.bossInfluence as string;
+        const element = (relic.dna as { element?: string })?.element ?? "";
+        if (seenBoss.has(boss)) continue;
+        // First pass takes only elements not yet spoken for; the second fills in
+        // whatever bosses are still unrepresented.
+        if (pass === 0 && seenElement.has(element)) continue;
+        seenBoss.add(boss);
+        seenElement.add(element);
+        chosen.push(relic);
+      }
+    }
+
+    for (const relic of chosen) {
+      const rel = (relic.modelUrl as string).replace(/^\/assets\//, "");
+      const [was, is] = await shrink(join(SOURCE, rel), join(DEST, rel));
+      before += was;
+      after += is;
+      copied += 1;
+      console.log(`  ${rel}  ${(was / 1e6).toFixed(2)}MB → ${(is / 1e6).toFixed(2)}MB`);
+    }
+
+    await writeFile(join(DEST, "showcase.json"), `${JSON.stringify({ relics: chosen }, null, 2)}\n`);
+    console.log(`\nShowcase: ${chosen.length} relics, one per boss`);
   }
 
   /* Written so the bundle can say what produced it. A committed binary

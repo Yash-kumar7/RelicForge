@@ -1,14 +1,14 @@
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 import fastifyCors from "@fastify/cors";
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { env } from "./env.js";
 import { getBalance } from "./services/meshy/meshy.balance.js";
 import { relicRoutes } from "./routes/relics.js";
-import { reapInterruptedRelics } from "./cache/fileCache.js";
+import { listRelics, putRelic, reapInterruptedRelics, RelicRecordSchema } from "./cache/fileCache.js";
 
 const isProd = process.env.NODE_ENV === "production";
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -78,6 +78,45 @@ if (!existsSync(bundledAssets)) {
   app.log.warn(
     `No asset bundle at ${bundledAssets}. Characters and arenas will fall back to primitives; run "pnpm --filter @relic/api assets:bundle" to build it.`,
   );
+}
+
+/**
+ * Seeds the relic cache from the bundle, once, when it is empty.
+ *
+ * The title screen is assembled out of a relic: the champion on the left is
+ * chosen by its element, the boss behind it by what it was forged from, and the
+ * weapon turns between them. One record drives all three, so a server with no
+ * relics does not render a simpler title screen — it renders an empty one, which
+ * is what the first deploy of this project showed.
+ *
+ * Relics are made at runtime and the cache is not committed, so empty is the
+ * normal state of a fresh install and of every restart on a host with an
+ * ephemeral disk. Five records ship in the bundle, one per boss, and they are
+ * copied in the first time nothing else is there.
+ *
+ * Only when empty. Anything already forged here is a player's own archive, and a
+ * seed that reappeared on every boot would keep re-adding weapons they had
+ * moved past.
+ */
+if ((await listRelics()).length === 0) {
+  const seedFile = path.join(bundledAssets, "showcase.json");
+  if (existsSync(seedFile)) {
+    try {
+      const parsed = JSON.parse(await readFile(seedFile, "utf8")) as { relics: unknown[] };
+      let seeded = 0;
+      for (const raw of parsed.relics ?? []) {
+        // Validated like anything else crossing into the cache. A malformed seed
+        // should cost its own record, not the boot.
+        const record = RelicRecordSchema.safeParse(raw);
+        if (!record.success) continue;
+        await putRelic(record.data);
+        seeded += 1;
+      }
+      app.log.info(`Seeded ${seeded} showcase relic(s) into an empty cache`);
+    } catch (error) {
+      app.log.warn({ error }, "Could not read the showcase seed, starting with an empty cache");
+    }
+  }
 }
 
 app.get("/api/health", async () => {
