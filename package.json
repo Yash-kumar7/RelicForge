@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "concurrently -n api,web -c magenta,cyan \"pnpm --filter @relic/api dev\" \"pnpm --filter @relic/web dev\"",
+    "start": "pnpm --filter @relic/api start",
     "build": "pnpm --filter @relic/core build && pnpm --filter @relic/api build && pnpm --filter @relic/web build",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -27,5 +28,6 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.67.0",
     "vitest": "^4.1.10"
-  }
+  },
+  "packageManager": "pnpm@9.15.0"
 }

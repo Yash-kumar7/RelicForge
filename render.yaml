@@ -1,0 +1,36 @@
+# One service.
+#
+# Fastify serves the built client, the API and the generated assets from the same
+# origin, so there is nothing to split: no CORS to configure, no second dashboard,
+# no VITE_BACKEND_URL, and one place to look when something is wrong. A CDN in
+# front of the client would be the reason to split it, and at this size there is
+# no such reason.
+#
+# Deploying from a blueprint rather than a dashboard form on purpose. Settings
+# typed into a web page are invisible to anyone reading the repository and are
+# gone if the service is deleted; this file is the deployment, reviewable in the
+# diff like everything else.
+services:
+  - type: web
+    name: relicforge
+    runtime: node
+    plan: free
+    # Everything the game shows is committed under assets/, so the build needs no
+    # asset step and no volume — install, compile the client, start.
+    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Set in the Render dashboard, never here. sync:false means Render prompts
+      # for it once and keeps it out of the repository, which is the whole reason
+      # this project has a backend at all.
+      - key: MESHY_API_KEY
+        sync: false
+      # Below this the pipeline refuses to spend rather than starting work it
+      # cannot finish. A backstop against a runaway loop, not a budget.
+      - key: CREDIT_FLOOR
+        value: 100
+      - key: LOG_LEVEL
+        value: info

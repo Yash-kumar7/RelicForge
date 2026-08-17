@@ -119,3 +119,35 @@ if (isProd) {
 const port = env.PORT;
 await app.listen({ port, host: "0.0.0.0" });
 app.log.info(`RelicForge API on :${port}`);
+
+/**
+ * Holds the instance awake on hosts that idle it out.
+ *
+ * A free Render service sleeps after fifteen minutes without a request and takes
+ * the better part of a minute to come back. For a link somebody clicks once,
+ * that minute is spent looking at nothing, before a single thing this project
+ * does has had a chance to happen — the worst possible place to lose someone.
+ *
+ * Render gives every service its own public URL in the environment, so the
+ * service can reach itself through the front door and that counts as traffic.
+ * Ten minutes, comfortably inside the fifteen it is measured against.
+ *
+ * What this costs, plainly: an always-on instance uses roughly 730 of the 750
+ * free hours in a month, so one service fits and a second would not. Nothing
+ * here is free that was not already granted; the sleep is a resource
+ * optimisation rather than a paywall, and this trades the allowance for a demo
+ * that answers immediately.
+ *
+ * unref'd, so it never holds the process open on its own, and failures are
+ * swallowed — a missed ping is the next one's problem and not worth a log line
+ * every ten minutes.
+ */
+const selfUrl = process.env["RENDER_EXTERNAL_URL"];
+if (isProd && selfUrl) {
+  const KEEP_AWAKE_MS = 10 * 60 * 1000;
+  const timer = setInterval(() => {
+    void fetch(`${selfUrl.replace(/\/+$/, "")}/api/health`).catch(() => undefined);
+  }, KEEP_AWAKE_MS);
+  timer.unref();
+  app.log.info(`Holding awake via ${selfUrl} every ${KEEP_AWAKE_MS / 60000} minutes`);
+}
