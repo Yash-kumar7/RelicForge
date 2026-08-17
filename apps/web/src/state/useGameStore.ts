@@ -116,9 +116,21 @@ interface GameState {
    */
   combatActive: boolean;
   /**
+   * Both views, opening on the one that shows the weapon.
+   *
    * Third person exists because choosing a champion you never see makes the
-   * choice pointless. First person stays available: it frames the relic larger
-   * and is the better shot for the reveal.
+   * choice pointless, and it is the view the setup screens have been selling for
+   * three steps.
+   *
+   * It opens in first person anyway. A fight begins with the relic held at the
+   * camera taking a large part of the frame, where every chip and molten crack
+   * on it is legible; from behind, the same weapon is a small object at the end
+   * of a distant arm. The champion is what the player picked, but the weapon is
+   * what the game is about and the only thing here that did not exist before the
+   * last fight.
+   *
+   * One key away either direction, so nothing is taken from anyone who wants to
+   * watch their champion swing it.
    */
   view: "first" | "third";
   /**
@@ -201,7 +213,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   fightStartedAt: null,
   combatActive: false,
   photoMode: false,
-  view: "third",
+  view: "first",
   pausedTotalMs: 0,
   pausedAt: null,
   telemetry: { ...EMPTY_TELEMETRY },
