@@ -12,7 +12,15 @@ import type { RelicDNA, RelicStatus, RelicTransform } from "@relic/core";
 
 export type RelicEvent =
   | { type: "dna.ready"; dna: RelicDNA; name: string }
-  | { type: "concept.generating"; taskId: string; index: number; total: number }
+  | {
+      type: "concept.generating";
+      taskId: string;
+      index: number;
+      total: number;
+      /* The candidate itself, once it exists. Present on completion and absent
+         on the event fired when the batch starts. */
+      candidateUrl?: string;
+    }
   | { type: "concept.ready"; conceptUrl: string; ms: number }
   | { type: "mesh.generating"; taskId: string }
   | { type: "mesh.progress"; percent: number }

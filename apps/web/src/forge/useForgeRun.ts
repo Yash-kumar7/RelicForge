@@ -26,6 +26,7 @@ export function useForgeRun() {
   const watchdog = useRef<number | null>(null);
   const lastEventAt = useRef(0);
   const patchForge = useGameStore((s) => s.patchForge);
+  const addConceptCandidate = useGameStore((s) => s.addConceptCandidate);
   const setPhase = useGameStore((s) => s.setPhase);
 
   const stopWatchdog = useCallback(() => {
@@ -121,7 +122,7 @@ export function useForgeRun() {
 
       const telemetry = useGameStore.getState().snapshotTelemetry();
       setPhase("FORGING");
-      patchForge({ stage: "ANALYZING" });
+      patchForge({ stage: "ANALYZING", conceptCandidates: [] });
 
       try {
         const relic = await requestRelic(telemetry, useGameStore.getState().boss().name, mode);
@@ -196,13 +197,15 @@ export function useForgeRun() {
               patchForge({ dna: event.dna, name: event.name, stage: "DNA_READY" });
               break;
             case "concept.generating":
-              // Carries which candidate is being imagined, so a minute of work
-              // is not a single motionless headline.
+              // Carries which candidate is being imagined, and the drawing
+              // itself once there is one, so a minute of work is neither a
+              // motionless headline nor an empty frame with a tally under it.
               patchForge({
                 stage: "GENERATING_CONCEPT",
                 conceptAttempt: event.index,
                 conceptAttempts: event.total,
               });
+              if (event.candidateUrl) addConceptCandidate(event.candidateUrl);
               break;
             case "concept.ready":
               patchForge({ conceptUrl: event.conceptUrl, stage: "CONCEPT_READY" });
@@ -241,7 +244,7 @@ export function useForgeRun() {
         stopWatchdog();
       }
     },
-    [patchForge, setPhase, startWatchdog, stopWatchdog],
+    [patchForge, addConceptCandidate, setPhase, startWatchdog, stopWatchdog],
   );
 
   /**
@@ -254,7 +257,7 @@ export function useForgeRun() {
     if (!relicId) return;
 
     unsubscribe.current?.();
-    patchForge({ stage: "ANALYZING", error: null, meshPercent: 0 });
+    patchForge({ stage: "ANALYZING", error: null, meshPercent: 0, conceptCandidates: [] });
 
     try {
       await retryRelic(relicId);

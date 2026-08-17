@@ -23,7 +23,7 @@ export interface RelicResponse {
 
 export type RelicStreamEvent =
   | { type: "dna.ready"; dna: RelicDNA; name: string }
-  | { type: "concept.generating"; taskId: string; index: number; total: number }
+  | { type: "concept.generating"; taskId: string; index: number; total: number; candidateUrl?: string }
   | { type: "concept.ready"; conceptUrl: string; ms: number }
   | { type: "mesh.generating"; taskId: string }
   | { type: "mesh.progress"; percent: number }

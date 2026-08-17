@@ -72,6 +72,16 @@ export interface ForgeState {
   /** Which concept candidate is being generated, and how many there are. */
   conceptAttempt: number;
   conceptAttempts: number;
+  /**
+   * The candidates themselves, in the order they finished.
+   *
+   * Hero mode draws three concepts and keeps one, because geometry quality is
+   * dominated by concept quality and images are cheap next to a mesh. None of
+   * that was visible: the screen held a counter over an empty frame for the
+   * half minute it takes, so the most deliberate step in the pipeline read as
+   * slow loading.
+   */
+  conceptCandidates: string[];
   totalMs: number | null;
   cached: boolean;
   error: string | null;
@@ -147,6 +157,9 @@ interface GameState {
   recordDodge: () => void;
   snapshotTelemetry: () => CombatTelemetry;
   patchForge: (patch: Partial<ForgeState>) => void;
+  /** Appends a finished concept candidate. Its own action because it accumulates,
+      and patchForge cannot read what it is adding to. */
+  addConceptCandidate: (url: string) => void;
   reset: () => void;
 }
 
@@ -171,6 +184,7 @@ const EMPTY_FORGE: ForgeState = {
   meshPercent: 0,
   conceptAttempt: 0,
   conceptAttempts: 0,
+  conceptCandidates: [],
   totalMs: null,
   cached: false,
   error: null,
@@ -314,6 +328,18 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   patchForge: (patch) => set((state) => ({ forge: { ...state.forge, ...patch } })),
+  addConceptCandidate: (url) =>
+    set((state) =>
+      // Guarded, because a reconnect replays events the run already saw.
+      state.forge.conceptCandidates.includes(url)
+        ? state
+        : {
+            forge: {
+              ...state.forge,
+              conceptCandidates: [...state.forge.conceptCandidates, url],
+            },
+          },
+    ),
 
   reset: () =>
     set({

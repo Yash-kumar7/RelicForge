@@ -171,11 +171,20 @@ async function runGeneration(initial: RelicRecord, forceFail = false): Promise<v
           // Reported as they finish rather than as they start, since in parallel
           // "starting" happens all at once and says nothing about progress.
           completed += 1;
+          /* The image travels with the count.
+             
+             Candidates run in parallel and the whole batch is the longest one,
+             but until now the only thing crossing to the browser was a number,
+             so the forge showed an empty frame and a tally while three weapons
+             were being drawn. The URL is Meshy's own and short-lived, which is
+             fine for something on screen for twenty seconds and replaced by the
+             stored copy the moment one is chosen. */
           emitRelicEvent(relicId, {
             type: "concept.generating",
             taskId,
             index: completed,
             total: config.conceptCandidates,
+            ...(url ? { candidateUrl: url } : {}),
           });
           void patchRelic(relicId, {
             conceptAttempt: completed,

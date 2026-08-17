@@ -151,6 +151,52 @@ export function ForgeSequence({
         </AnimatePresence>
       </div>
 
+      {/*
+        The candidates, while they are still candidates.
+
+        Hero mode draws three concepts and keeps one, because geometry quality
+        follows concept quality and an image is cheap next to a mesh. Until now
+        none of that was visible: the screen held a counter over an empty frame
+        for the half minute it takes, which is the longest stretch of nothing in
+        the game and sits in the middle of its most important moment. The most
+        deliberate step in the pipeline read as slow loading.
+
+        Each one appears as it finishes, so the wait shows the work. They are
+        held small, dim and side by side — these are drafts, and the moment one
+        is chosen it arrives properly, at size, on its own.
+
+        Dropped the instant a concept is settled on, so the two things never
+        share the screen and there is no doubt about which one won.
+      */}
+      <AnimatePresence>
+        {forge.stage === "GENERATING_CONCEPT" && forge.conceptCandidates.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center justify-center gap-4"
+          >
+            {forge.conceptCandidates.map((url, i) => (
+              <motion.img
+                key={url}
+                src={url}
+                alt=""
+                aria-hidden
+                initial={{ opacity: 0, y: 14, filter: "blur(14px)" }}
+                animate={{ opacity: 0.75, y: 0, filter: "blur(0px)" }}
+                transition={{ duration: 1.2, delay: i * 0.08, ease: "easeOut" }}
+                /* Same treatment as the chosen concept, further down: these
+                   arrive on whatever pale ground the image model picked, and a
+                   bright square on a black screen is the least interesting
+                   thing in the frame. */
+                className="h-[20vh] w-auto rounded border border-ember-500/20 brightness-[0.55] contrast-[1.15] [mask-image:radial-gradient(ellipse_78%_78%_at_50%_50%,black_58%,transparent_100%)]"
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Concept reveal, arrives ~10-20s in, long before the mesh. */}
       <AnimatePresence>
         {forge.conceptUrl && forge.stage !== "COMPLETE" && (
