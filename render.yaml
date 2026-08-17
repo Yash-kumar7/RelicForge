@@ -17,7 +17,13 @@ services:
     plan: free
     # Everything the game shows is committed under assets/, so the build needs no
     # asset step and no volume — install, compile the client, start.
-    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    #
+    # --prod=false because NODE_ENV is production here, and pnpm reads that as
+    # permission to skip devDependencies. Which is right for what ships and wrong
+    # for what builds it: tsc, vite and the type packages all live there, so
+    # without this the install quietly omits the entire toolchain and the build
+    # fails on the first typecheck.
+    buildCommand: pnpm install --frozen-lockfile --prod=false && pnpm build
     startCommand: pnpm start
     healthCheckPath: /api/health
     envVars:
