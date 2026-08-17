@@ -3,7 +3,7 @@ import type { Affinity } from "@relic/core";
 import { championFor, championStats } from "../game/champions";
 import { useGameStore } from "../state/useGameStore";
 import { IRON, useLoadout } from "../state/useLoadout";
-import { BOSSES, bossAt, describeBoss, isCleared } from "../game/bosses";
+import { BOSSES, MAX_LEVEL, bossAt, describeBoss, highestCleared, isCleared } from "../game/bosses";
 import { bossTraits, describeTraits } from "@relic/core";
 import { ChampionPreview } from "./ChampionPreview";
 import { TitleBackdrop } from "./TitleBackdrop";
@@ -133,10 +133,29 @@ export function TitleScreen() {
     // Only as a starting position. Selecting a relic later replaces it.
     if (owned.length === 0) selectArmament(IRON);
   }, [owned.length, selectArmament]);
+
   const affinity = useGameStore((s) => s.affinity);
   const bossLevel = useGameStore((s) => s.bossLevel);
   const chooseAffinity = useGameStore((s) => s.chooseAffinity);
   const chooseBossLevel = useGameStore((s) => s.chooseBossLevel);
+  /**
+   * The enemy step opens on the next fight rather than on nothing.
+   *
+   * It was the only step that arrived with no selection. Element and weapon both
+   * carry one in, so the third asking to be filled in before it would do
+   * anything made the champion beside it look stranded, and left the largest
+   * control on the screen greyed out and restating the heading above it.
+   *
+   * Next uncleared, not the first. That is where a returning player actually is,
+   * and it is the first boss anyway for anyone who has cleared nothing. The
+   * ladder is still open — every rung stays selectable, because the demo that
+   * matters most is a rung-one relic beside a rung-five one, and gating that
+   * behind four wins hides it. This suggests the path instead of enforcing it.
+   */
+  useEffect(() => {
+    if (section !== 2 || bossLevel !== null) return;
+    chooseBossLevel(Math.min(highestCleared() + 1, MAX_LEVEL));
+  }, [section, bossLevel, chooseBossLevel]);
   const startFight = useGameStore((s) => s.startFight);
   const armament = useLoadout((s) => s.armament);
   const xp = useProgress((s) => s.xp);
@@ -1123,7 +1142,7 @@ export function TitleScreen() {
                     : "border-ember-500/60 text-ember-300 hover:bg-ember-500/10",
                 ].join(" ")}
               >
-                {bossLevel === null ? "Choose who you fight" : "Descend"}
+                {bossLevel === null ? "Choose who you fight" : `Fight ${bossAt(bossLevel).title}`}
               </button>
             )}
           </div>
