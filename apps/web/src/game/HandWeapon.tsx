@@ -293,10 +293,36 @@ export function BossHandWeaponSwing({
   height: number;
 }) {
   const arm = useRef<Group>(null);
+  /** The carry pose, which is let go of before the blow rather than swung with. */
+  const carried = useRef<Group>(null);
+  const carry = useRef(1);
 
   const slash = useRef<Mesh>(null);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
+    /*
+     * The carry is released as the boss commits, and that is the whole fix.
+     *
+     * Holding the weapon clear of the leg at rest means rotating it about ninety
+     * degrees in the hand — and a rotation applied to the weapon rotates the arc it
+     * travels through, whether it is nested inside the swing or wrapped around it,
+     * because the arc is defined in the hand bone's frame either way. Committed, it
+     * turned a blow that came down at the player into one that swept past them: the
+     * idle looked right and the attack stopped reading, which is worse than the
+     * clipping it fixed.
+     *
+     * So the carry is a pose, not a mount. It fades out through the wind-up — the
+     * boss brings the weapon into line before it swings, the way anyone carrying
+     * something heavy does — and the strike itself runs on exactly the arc it always
+     * had, with the rest pose at zero.
+     */
+    const wanted = bossState.action === "idle" ? 1 : 0;
+    // About a third of a second either way, well inside the one-second telegraph.
+    carry.current += (wanted - carry.current) * Math.min(1, delta * 8);
+    if (carried.current) {
+      carried.current.rotation.set(REST_PITCH * carry.current, 0, REST_ROLL * carry.current);
+    }
+
     const swing = bossSwing();
     // The boss only has one attack, and it is a heavy one.
     /*
@@ -350,7 +376,7 @@ export function BossHandWeaponSwing({
   return (
     <group ref={arm} scale={bossWeaponScale(weaponClass, height)}>
       {/*
-        A rest pose, inside the swing.
+        A rest pose, released before the swing.
 
         The weapon is parented to the rig's hand bone and canonicalized so the blade
         runs up +Y from the grip — which means it points wherever the hand points,
@@ -364,7 +390,7 @@ export function BossHandWeaponSwing({
         the swing writes the parent's quaternion outright every frame, so a rotation
         set on that group would be erased on the first frame.
       */}
-      <group rotation={[REST_PITCH, 0, REST_ROLL]}>
+      <group ref={carried} rotation={[REST_PITCH, 0, REST_ROLL]}>
         {/*
           The hint applies here too.
 

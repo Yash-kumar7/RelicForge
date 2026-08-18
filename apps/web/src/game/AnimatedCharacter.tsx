@@ -625,6 +625,25 @@ export function AnimatedCharacter({
 
     const standing = names[1] ? actions[names[1]] : undefined;
     if (!standing) {
+      /*
+       * No idle *yet* and no idle *at all* are different states.
+       *
+       * The slow walk below is the right answer for a character that never had an
+       * idle bought for it: marching gently on the spot beats a statue. But every
+       * boss has one now, and it arrives on its own request — so for the second or
+       * two before it lands, this branch was running, and the place that is most
+       * visible is the opening: the camera holds on a boss that is standing still
+       * in the fiction and treading on the spot on screen.
+       *
+       * If an idle was asked for, hold the first frame of the walk until it turns
+       * up. A pose that does not move reads as a character waiting; a walk that
+       * goes nowhere reads as a bug.
+       */
+      if (idleUrl) {
+        walk.timeScale = 0;
+        walk.time = 0;
+        return;
+      }
       // No idle bought for this character, so the old behaviour stands: a very
       // slow walk is still better than a statue.
       walk.timeScale = speed <= 0.01 ? IDLE_TIME_SCALE : speed;
