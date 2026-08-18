@@ -38,16 +38,37 @@ export function LoadoutPanel() {
   const fightsLost = useProgress((s) => s.fightsLost);
   const rank = rankFor(xp);
   const theme = themeFor(affinity);
+  const pauseCombat = useGameStore((s) => s.pauseCombat);
 
+  /**
+   * The fight stops while this is open.
+   *
+   * It did not, and the boss went on swinging at a player who was reading. This
+   * is a reference screen — what you are carrying, what it does, where you are on
+   * the ladder — and none of it is a tactical decision made under pressure. Being
+   * hit for looking at it is a punishment for using the interface.
+   *
+   * Held rather than toggled, so it cannot be left open to stall a fight, and it
+   * reuses the same pause the escape key uses: pausedTotalMs already excludes
+   * paused time from the fight duration the forge reads, so a long look at the
+   * loadout cannot forge a faster relic than it earned.
+   */
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.code === "Tab") {
         e.preventDefault();
         setOpen(true);
+        if (useGameStore.getState().phase === "FIGHTING") pauseCombat();
       }
     };
     const up = (e: KeyboardEvent) => {
-      if (e.code === "Tab") setOpen(false);
+      if (e.code === "Tab") {
+        setOpen(false);
+        const state = useGameStore.getState();
+        // Only if this pause was ours. Escape may have paused it first, and that
+        // one is dismissed deliberately rather than by letting go of a key.
+        if (state.phase === "FIGHTING" && !state.photoMode) state.armCombat();
+      }
     };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
@@ -70,11 +91,8 @@ export function LoadoutPanel() {
 
   return (
     <>
-      {!open && (
-        <div className="pointer-events-none absolute right-8 top-8 font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">
-          tab · loadout
-        </div>
-      )}
+      {/* No standalone hint any more: the HUD's one control line names Tab
+          beside V, so this had become the same sentence twice in one corner. */}
 
       <AnimatePresence>
         {open && (
@@ -129,8 +147,23 @@ export function LoadoutPanel() {
                     {[
                       ["left click", `${damage.light} damage`],
                       ["right click", `${damage.heavy} damage`],
-                      ["origin", "loot table"],
-                      ["made from", "nothing you did"],
+                      /*
+                       * Two rows removed here, not renamed.
+                       *
+                       * They read "origin · loot table" and "made from · nothing
+                       * you did". The first is genre vocabulary that only makes
+                       * sense to someone who has read about games rather than
+                       * played this one, and it is the exact kind of word this
+                       * interface has been cleared of everywhere else. The second
+                       * is a riddle at the player's expense: they are holding it,
+                       * and being told it represents nothing they did is a
+                       * put-down dressed as a stat.
+                       *
+                       * What both were reaching for is already said, better and
+                       * once, in the line above: standard issue, eleven million
+                       * identical copies. The contrast with a relic is the whole
+                       * game and it does not need saying three times on one card.
+                       */
                     ].map(([k, v]) => (
                       <div key={k} className="flex justify-between border-b border-ash-800/60 pb-1">
                         <dt className="uppercase tracking-[0.15em] text-stone-700">{k}</dt>
@@ -230,6 +263,45 @@ export function LoadoutPanel() {
                     <div key={k} className="flex justify-between">
                       <span className="text-stone-700">{k}</span>
                       <span className="text-stone-400">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/*
+                The controls, on the screen a player opens when they have
+                forgotten one.
+                
+                The fight used to list them in a corner, three lines of it, next
+                to a fourth line pointing here. That is a manual pinned to the
+                windscreen: it is in the way exactly when there is no time to read
+                it, and absent from the one screen whose whole purpose is to be
+                read. They live here now, and the fight names only Tab and V.
+                
+                Held open, and the fight is paused while it is, so looking
+                something up costs nothing.
+              */}
+              <div className="mt-6 border border-ash-800 p-4">
+                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-700">
+                  controls
+                </p>
+                <div className="mt-3 grid gap-x-8 gap-y-1.5 font-mono text-[10px] uppercase tracking-[0.15em] sm:grid-cols-3">
+                  {[
+                    ["wasd", "walk"],
+                    ["space", "jump"],
+                    ["shift", "dodge"],
+                    ["left click", "quick attack"],
+                    ["right click", "strong attack"],
+                    ["q", "heal, twice"],
+                    ["mouse", "aim"],
+                    ["v", "change view"],
+                    ["tab", "this screen"],
+                  ].map(([key, does]) => (
+                    <div key={key} className="flex items-baseline justify-between gap-3">
+                      <span className="border border-ash-800 px-1.5 py-0.5 text-stone-500">
+                        {key}
+                      </span>
+                      <span className="text-stone-600">{does}</span>
                     </div>
                   ))}
                 </div>
