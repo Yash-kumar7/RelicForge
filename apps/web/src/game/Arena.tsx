@@ -8,6 +8,7 @@ import { ArenaFeatures, grainTexture } from "./arenaFeatures";
 import { Forge } from "./Forge";
 import { Backdrop } from "./Backdrop";
 import { ArenaScenery } from "./ArenaScenery";
+import { ArenaBound } from "./ArenaBound";
 
 export { ARENA_RADIUS } from "./arenaGeometry";
 
@@ -146,6 +147,14 @@ export function Arena() {
         out, the fog closes, and there are large things standing in the distance.
       */}
       <ArenaScenery level={bossLevel} />
+
+      {/*
+        The edge of the room, which was enforced but never drawn.
+
+        Only while the player is near it — see ArenaBound for why a permanent ring
+        is the wrong answer on a screen that already has a boss in it.
+      */}
+      {phase === "FIGHTING" && <ArenaBound theme={theme} />}
 
       {/*
         What actually makes this rung a different place.
