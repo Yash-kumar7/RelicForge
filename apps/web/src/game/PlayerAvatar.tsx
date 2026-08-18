@@ -128,10 +128,24 @@ function AvatarBody({
      * of driving it. A right-handed swing takes the right shoulder across the
      * body, and with the model facing +Z that is a positive yaw.
      */
+    /*
+     * The body supports the swing. It does not perform it.
+     *
+     * Yaw was 0.55, which at peak is about sixty-six degrees: the entire
+     * character pivoting left. The weapon's own arc is smaller than that, so the
+     * blade was cargo on a turning body and the swing read as the player
+     * spinning rather than as a cut. Whatever the arm did was invisible
+     * underneath it.
+     *
+     * A real shoulder turn is fifteen to twenty-five degrees. At that size the
+     * body drives the weapon without competing with it, and the fastest-moving
+     * thing on screen is the thing doing the hitting, which is what the eye
+     * follows.
+     */
     const swing = swingProgress(playerHandle.attacking);
-    body.current.rotation.x = swing * 0.3;
-    body.current.rotation.y = swing * 0.55;
-    body.current.rotation.z = swing * -0.12;
+    body.current.rotation.x = swing * 0.1;
+    body.current.rotation.y = swing * 0.17;
+    body.current.rotation.z = swing * -0.05;
 
     // Unrigged fallback socket only; the rigged path animates its own weapon.
     if (arm.current && !rigged) {

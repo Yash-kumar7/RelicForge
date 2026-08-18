@@ -25,7 +25,15 @@ import { BOSS_SPAWN } from "./bossState";
 export interface PlayerHandle {
   position: Vector3;
   forward: Vector3;
-  attacking: { kind: AttackKind; startedAt: number } | null;
+  /**
+   * `mirrored` alternates between swings.
+   *
+   * Every light attack cut the same way, so a run of them read as one animation
+   * restarting rather than as a sequence of blows. Alternating the arc is what a
+   * combo is made of: the blade finishes on the left, so the next one starts
+   * there and comes back across.
+   */
+  attacking: { kind: AttackKind; startedAt: number; mirrored: boolean } | null;
   invulnerableUntil: number;
   moving: boolean;
 }
@@ -79,6 +87,10 @@ interface PlayerProps {
 
 export function Player({ bossPosition, onHitBoss }: PlayerProps) {
   const { camera, gl } = useThree();
+  /* Which way the next cut travels. Flipped on every attack. */
+  const swingSide = useRef(false);
+  /* When the player last turned the camera by hand, so assist can yield to it. */
+  const aimedAt = useRef(0);
   const keys = useRef<Record<string, boolean>>({});
   const yaw = useRef(SPAWN_YAW);
   const pitch = useRef(0);
@@ -105,6 +117,7 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
 
   const phase = useGameStore((s) => s.phase);
   const combatActive = useGameStore((s) => s.combatActive);
+  const bossHp = useGameStore((s) => s.bossHp);
   const view = useGameStore((s) => s.view);
   const recordDodge = useGameStore((s) => s.recordDodge);
 
@@ -159,6 +172,8 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
 
     const onMouseMove = (e: MouseEvent) => {
       if (document.pointerLockElement !== canvas) return;
+      // Aim assist stands down while the player is aiming themselves.
+      if (Math.abs(e.movementX) > 1) aimedAt.current = performance.now();
       yaw.current -= e.movementX * 0.0022;
       pitch.current = Math.max(
         -Math.PI / 2.4,
@@ -190,7 +205,14 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
     };
 
     const startAttack = (kind: AttackKind) => {
-      playerHandle.attacking = { kind, startedAt: performance.now() };
+      // Alternates, so consecutive swings return across the body instead of
+      // resetting and repeating the same cut.
+      swingSide.current = !swingSide.current;
+      playerHandle.attacking = {
+        kind,
+        startedAt: performance.now(),
+        mirrored: swingSide.current,
+      };
       attackLanded.current = false;
       if (kind === "heavy") sfx.swingHeavy();
       else sfx.swingLight();
@@ -245,6 +267,45 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
     const swinging = false;
 
     // Look is allowed after victory too, so the player can watch the forge.
+    /**
+     * Soft lock-on.
+     *
+     * There was none, and its absence is most of why a fight felt flat. A boss
+     * is nearly three metres tall and circles constantly, so without any help
+     * the player spends the fight steering a camera rather than choosing when to
+     * swing — hits land by accident, and the thing you are fighting is
+     * frequently half out of frame.
+     *
+     * Every third person action game solves this with lock-on. This is the quiet
+     * version: the camera is drawn toward the boss continuously, fast enough to
+     * keep it framed and slow enough that it never feels like the view was taken
+     * away. It yields entirely for a third of a second whenever the player turns
+     * by hand, so looking somewhere deliberately always wins.
+     *
+     * Yaw only. Pitch stays where it was put, because a camera that also decides
+     * how high to look is a camera the player no longer owns.
+     */
+    if (fighting && bossHp > 0 && now - aimedAt.current > 320) {
+      const boss = bossPosition();
+      const dx = boss.x - playerHandle.position.x;
+      const dz = boss.z - playerHandle.position.z;
+
+      if (dx * dx + dz * dz > 0.04) {
+        /* The view direction for a given yaw is (-sin y, 0, -cos y), so the yaw
+           that points at the boss is atan2 of the negated offset. */
+        const want = Math.atan2(-dx, -dz);
+        let diff = want - yaw.current;
+        // Shortest way round, or the camera takes the long path through 180.
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+
+        /* Frame-rate independent, and gentle: about a third of the remaining
+           error every tenth of a second. Enough to hold a circling boss in
+           frame, not enough to feel like a rail. */
+        yaw.current += diff * (1 - Math.exp(-delta / 0.22));
+      }
+    }
+
     camera.rotation.order = "YXZ";
     camera.rotation.y = yaw.current;
     camera.rotation.x = pitch.current;
