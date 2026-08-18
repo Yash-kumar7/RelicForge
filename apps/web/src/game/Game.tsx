@@ -166,15 +166,25 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
     const { forge: f } = state;
     // The relic is yours from here: it persists across runs and shows up in
     // the loadout on every later fight.
+    /*
+     * No experience is paid here. It is paid once, on victory.
+     *
+     * This called award() a second time, with healthRemaining: 100, dodges: 0 and
+     * healingUsed: 1 written in by hand — so every win was paid twice, and the
+     * second payment described a fight nobody had. That is three bugs in one
+     * call.
+     *
+     * The totals were inflated, because two awards landed per win. The bonuses
+     * looked broken, because the invented half always claimed the "finished
+     * barely marked" 30 and never the 80 for finishing hurt, the 40 for never
+     * healing or the 30 for reading blows — a player who did all three saw the
+     * same total as one who did none. And award() also increments fightsWon and
+     * relicsForged, so both counters ran at double.
+     *
+     * The victory effect below already pays from snapshotTelemetry, which is the
+     * fight that actually happened, and it already includes the relic bonus.
+     */
     if (f.relicId && f.name && f.dna && f.modelUrl) {
-      // Claiming is when a relic actually exists, so this is where its XP is paid.
-      useProgress.getState().award({
-        bossLevel: state.bossLevel ?? 1,
-        healthRemaining: 100,
-        dodges: 0,
-        healingUsed: 1,
-        forgedRelic: true,
-      });
       useLoadout.getState().claim({
         relicId: f.relicId,
         name: f.name,

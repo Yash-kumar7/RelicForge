@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { fetchRelic } from "../lib/relicClient";
 import { usePendingForge } from "../state/usePendingForge";
 import { useLoadout } from "../state/useLoadout";
-import { useProgress } from "../state/useProgress";
 
 /**
  * A relic still being forged, waiting to be collected.
@@ -56,15 +55,18 @@ export function PendingForgePanel() {
     const relic = await fetchRelic(pending.relicId);
     if (!relic?.modelUrl || !relic.dna) return;
 
-    // Paid here rather than at the end of the fight, for the same reason the
-    // forge screen pays it on claim: experience is for a relic that exists.
-    useProgress.getState().award({
-      bossLevel: pending.bossLevel,
-      healthRemaining: 100,
-      dodges: 0,
-      healingUsed: 1,
-      forgedRelic: true,
-    });
+    /*
+     * No experience here either.
+     *
+     * This was the same mistake as the forge screen's claim, with the same
+     * invented telemetry: healthRemaining 100, dodges 0, healingUsed 1. The fight
+     * this relic came from was paid for when it was won, from the telemetry it
+     * actually produced. Paying again on collection pays a second time for a
+     * fight that happened once, and describes it wrongly while doing so.
+     *
+     * award() also counts a win and a forge, so this inflated both counters for
+     * anyone who left a forge running and came back for it.
+     */
     useLoadout.getState().claim({
       relicId: relic.relicId,
       name: relic.name,
