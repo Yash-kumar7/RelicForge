@@ -72,7 +72,7 @@ export interface AnimatedCharacterProps {
    * animation cannot disagree with the hit, whatever the clip's duration happens
    * to be.
    */
-  attackAt?: () => number | null;
+  attackAt?: (clipSeconds: number) => number | null;
   /**
    * A standing clip, blended against the walk.
    *
@@ -687,7 +687,7 @@ export function AnimatedCharacter({
      * like it is lying about the hit.
      */
     const attack = names[2] ? actions[names[2]] : undefined;
-    const at = attackAt?.() ?? null;
+    const at = attack ? (attackAt?.(attack.getClip().duration) ?? null) : null;
     if (attack) {
       const clip = attack.getClip();
       if (at === null) {

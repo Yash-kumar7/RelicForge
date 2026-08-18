@@ -172,7 +172,7 @@ function AvatarBody({
               naturalistic and small.
             */
             attackUrl={asset(`/assets/champions/${slug}/rig/attack.glb`)}
-            attackAt={() => attackClipAt(playerHandle.attacking)}
+            attackAt={(seconds) => attackClipAt(playerHandle.attacking, seconds)}
             height={AVATAR_HEIGHT}
             speed={walkSpeed}
             swing={() => swingLift(playerHandle.attacking)}

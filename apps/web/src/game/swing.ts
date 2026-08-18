@@ -29,6 +29,7 @@ import { frozenAt } from "./feedback";
  */
 export function attackClipAt(
   attack: { kind: AttackKind; startedAt: number } | null,
+  clipSeconds: number,
   now = performance.now(),
 ): number | null {
   if (!attack) return null;
@@ -39,8 +40,38 @@ export function attackClipAt(
   const spec = attackSpec(attack.kind, equipped.traits);
   const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
   const t = (now - attack.startedAt) / total;
-  return t >= 1 ? null : Math.max(0, t);
+  if (t >= 1) return null;
+
+  /*
+   * Played at its own speed, aligned on the moment of contact.
+   *
+   * Stretching the whole clip across the whole attack was the obvious mapping and
+   * it is wrong for the player, because the two are nothing like the same length: a
+   * generated clip runs 1.53 seconds and a light attack is 440 milliseconds end to
+   * end, so the body was playing the entire swing at three and a half times speed.
+   * It read exactly as it was — a twitch — and the heavy, at 1220ms, looked fine,
+   * which is the tell.
+   *
+   * So the clip runs at 1x and the attack selects a window of it. The two are
+   * pinned at the instant that matters: the end of the wind-up, when damage lands,
+   * sits at the clip's own contact point. A light attack therefore plays the third
+   * of a second around the impact and a heavy plays most of the swing, both at the
+   * speed the animation was made for.
+   */
+  const contact = spec.windupMs / total;
+  const played = total / 1000 / Math.max(0.01, clipSeconds);
+  const at = CLIP_CONTACT + (t - contact) * played;
+  return Math.min(1, Math.max(0, at));
 }
+
+/**
+ * Where the blow lands inside a generated clip, as a fraction of it.
+ *
+ * Measured by eye against the library's slash animations, which all wind up for
+ * roughly the first half and connect around the middle. It is the one number that
+ * has to be right: everything else about the mapping is derived from it.
+ */
+const CLIP_CONTACT = 0.5;
 
 export function swingProgress(
   attack: { kind: AttackKind; startedAt: number } | null,
