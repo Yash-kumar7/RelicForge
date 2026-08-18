@@ -67,6 +67,31 @@ const EXTENDED = 3.1;
  *   strike     wound to extended, easing in so it accelerates into the blow
  *   recover    extended back to rest, a slow follow-through
  */
+/**
+ * How high the boss carries its weapon, 0 at rest and 1 fully raised.
+ *
+ * Its own curve, because bossSwing winds backwards rather than upward: it goes
+ * to -0.8 during the telegraph and forward through the strike, which is the
+ * horizontal shape of the blow. Height has to run on a different schedule —
+ * raised while it winds, falling as it comes down — or the blade would lift on
+ * the way through the player instead of before it.
+ *
+ * The same two beats the player has, from the boss's own state machine.
+ */
+export function bossLift(): number {
+  const p = Math.min(1, Math.max(0, bossState.progress));
+
+  switch (bossState.action) {
+    case "telegraph":
+      // Raised early and held there, which is what makes a telegraph readable.
+      return 1 - (1 - p) * (1 - p);
+    case "strike":
+      return 1 - p;
+    default:
+      return 0;
+  }
+}
+
 export function bossSwing(): number {
   const p = Math.min(1, Math.max(0, bossState.progress));
 

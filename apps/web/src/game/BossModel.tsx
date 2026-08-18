@@ -5,6 +5,7 @@ import { handSocketFor } from "./handSockets";
 import { fitCharacter } from "../lib/characterFit";
 import { AnimatedCharacter } from "./AnimatedCharacter";
 import { asset as assetUrl } from "../lib/backend";
+import { bossLift } from "./bossState";
 
 /**
  * A Meshy-generated boss, rigged and walking when a rig exists.
@@ -99,6 +100,24 @@ export function BossModel({
           idleUrl={assetUrl(`/assets/bosses/${slug}/rig/idle.glb`)}
           height={BOSS_HEIGHT}
           speed={walking}
+          /*
+           * A hint of lift, not a raise.
+           *
+           * The boss already had a complete swing before any of this: its curve
+           * winds back to -0.8, drives through to 3.1, and applySwing scales it
+           * by 1.35 because a boss is watched from further away. That is roughly
+           * fifty degrees of blade travel and it read correctly.
+           *
+           * Giving it the player's full lift added another hundred and thirty on
+           * top, and the two together came to most of a revolution — the weapon
+           * tumbling rather than swinging. The player needs that lift because a
+           * champion's arc alone is small and starts from a hanging carry; the
+           * boss never did.
+           *
+           * A quarter of it, so the weapon rises a little as it winds and the
+           * telegraph reads slightly better, and the swing stays the boss's own.
+           */
+          swing={() => bossLift() * 0.25}
         >
           {children}
         </AnimatedCharacter>

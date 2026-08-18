@@ -10,7 +10,7 @@ import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
 import { themeFor } from "./theme";
 import { playerHandle } from "./Player";
-import { swingProgress } from "./swing";
+import { swingLift, swingProgress } from "./swing";
 import { IronSwordMesh } from "./IronSwordMesh";
 import { IRON_SCALE } from "./weaponScale";
 import { HeldRelicMesh } from "./HeldRelicMesh";
@@ -151,6 +151,7 @@ function AvatarBody({
             idleUrl={asset(`/assets/champions/${slug}/rig/idle.glb`)}
             height={AVATAR_HEIGHT}
             speed={walkSpeed}
+            swing={() => swingLift(playerHandle.attacking)}
           >
             {/*
               Position comes from the hand bone, so the weapon travels with the

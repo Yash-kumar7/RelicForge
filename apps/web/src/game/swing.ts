@@ -1,5 +1,6 @@
 import { attackSpec, type AttackKind } from "./combat";
 import { equipped } from "./equipped";
+import { frozenAt } from "./feedback";
 
 /**
  * Swing progress as a single curve, shared by every view.
@@ -17,6 +18,19 @@ export function swingProgress(
   now = performance.now(),
 ): number {
   if (!attack) return 0;
+
+  /*
+   * Held on the frame of impact while a hitstop is running.
+   *
+   * Only the pose is frozen. Hit detection keeps its own clock, so nothing here
+   * can change what a swing reaches or when damage applies — the blade simply
+   * stops inside what it struck for sixty-odd milliseconds and then continues
+   * from where it was, which is the oldest impact trick in action games and the
+   * one this fight was missing.
+   */
+  const held = frozenAt(now);
+  if (held !== null) now = held;
+
   // Same traits the hit test uses, so a faster relic also animates faster.
   const spec = attackSpec(attack.kind, equipped.traits);
   const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
@@ -44,6 +58,44 @@ export function swingProgress(
 }
 
 /**
+ * How high the blade is carried through a swing, 0 at rest and 1 fully raised.
+ *
+ * A cut is two beats and this is the first of them. swingProgress has no
+ * backswing by design — every frame of it travels toward the target — which is
+ * right for the horizontal part of a cut and leaves the vertical part with
+ * nowhere to come from. Driving the blade's height off it made the whole motion
+ * travel one way: the sword scooped up off the floor and into the boss, which is
+ * not a sword stroke, it is a shovel.
+ *
+ * So height gets its own curve. It rises through the wind-up, which is what a
+ * wind-up is for, and falls through the strike, so the blade is above the target
+ * before it comes down through it. The recovery leaves it where it landed and
+ * the carry pose takes it back.
+ */
+export function swingLift(
+  attack: { kind: AttackKind; startedAt: number } | null,
+  now = performance.now(),
+): number {
+  if (!attack) return 0;
+
+  const held = frozenAt(now);
+  if (held !== null) now = held;
+
+  const spec = attackSpec(attack.kind, equipped.traits);
+  const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
+  const t = Math.min(1, (now - attack.startedAt) / total);
+  const windup = spec.windupMs / total;
+  const strike = windup + spec.activeMs / total;
+
+  // Raising. Eased, so it settles at the top rather than snapping to it.
+  if (t < windup) return Math.sin((t / windup) * (Math.PI / 2));
+  // Cutting down through the target, which is the fast half.
+  if (t < strike) return 1 - (t - windup) / (strike - windup);
+  // Recovered, and the carry pose brings it home.
+  return 0;
+}
+
+/**
  * How a first-person swing turns, as one set of numbers.
  *
  * Three things carry this pose and have to agree exactly or the blade drifts out
@@ -62,6 +114,15 @@ export function swingProgress(
  * blade across the view, so together they carry the tip from the right shoulder
  * down across the body, which is the way a right hand cuts.
  */
-export function firstPersonSwingPose(swing: number): [number, number, number] {
-  return [-swing * 0.5, swing * 0.55, swing * 0.85];
+export function firstPersonSwingPose(swing: number, mirrored = false): [number, number, number] {
+  /*
+   * Mirrored swings come back the other way.
+   *
+   * Yaw and roll are what carry the tip across the view, so negating both
+   * reverses the cut: right shoulder down across the body, then left shoulder
+   * back across it. Pitch is untouched, because a swing drops on both sides and
+   * flipping it would send the blade upward on every second blow.
+   */
+  const side = mirrored ? -1 : 1;
+  return [-swing * 0.5, swing * 0.55 * side, swing * 0.85 * side];
 }

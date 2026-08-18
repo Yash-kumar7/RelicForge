@@ -36,6 +36,18 @@ export interface AnimatedCharacterProps {
   /** 0 while standing, 1 at walking pace, above 1 to run. */
   speed: number;
   /**
+   * This character's own swing, read every frame.
+   *
+   * A getter rather than a value, because React renders on state changes and a
+   * swing changes on frames. Passed as a number it would be sampled once when
+   * the component rendered and then held there, so the blade would lift only if
+   * a render happened to land mid-swing.
+   *
+   * Lifts the weapon out of its carried tip-down pose so a cut travels through
+   * the target rather than into the floor in front of it.
+   */
+  swing?: () => number;
+  /**
    * Rendered into the skeleton's weapon hand, so a weapon travels with the hand
    * through the animation instead of hanging in the air beside it.
    */
@@ -254,6 +266,21 @@ const REST_PITCH = 2.85;
 const REST_ROLL = 0.35;
 
 /**
+ * Where the blade travels to at the top of a swing, in REST_PITCH's frame.
+ *
+ * Rest is 2.85, which is tip-down. This was 1.35, a little under horizontal, on
+ * the reasoning that a cut travels through a target rather than saluting it —
+ * true of the moment of contact and wrong for the top of the arc, which is
+ * where this number applies. Levelling out is not lifting: the blade rose from
+ * hanging to flat and the swing still looked like it started at the floor.
+ *
+ * 0.5 carries it well above horizontal, so the wind-up genuinely raises the
+ * weapon and the strike has somewhere to fall from. The fall through the target
+ * is swingLift's second beat, not this.
+ */
+const SWING_PITCH = 0.5;
+
+/**
  * Turns the carried pose live, with ?carry, and prints it.
  *
  * These two numbers are the last thing about a held weapon that cannot be
@@ -335,8 +362,11 @@ function HandFollower({
   bone,
   hand,
   height,
+  swing,
   children,
 }: {
+  /** This character's own swing, so a boss does not lift when the player cuts. */
+  swing: (() => number) | undefined;
   root: RefObject<Group | null>;
   bone: Object3D;
   /** Which hand this is, which decides which way "away from the body" points. */
@@ -431,7 +461,25 @@ function HandFollower({
      * stands still on its own clip, so the hand barely turns, and a fixed pose
      * holds.
      */
-    group.rotation.set(carry.pitch, 0, outward * carry.roll);
+    /*
+     * The blade lifts out of the carry to swing.
+     *
+     * This set the carried pose unconditionally, every frame, and the carry is
+     * tip-down at 163 degrees. The swing arc is applied to a group inside this
+     * one, so it was rotating an already-down blade by another few degrees:
+     * whatever the arm did, the sword stayed pointing at the floor and wagged
+     * there. First person never had this problem, because it has no carry pose
+     * to escape, which is exactly why the same swing read correctly there and
+     * hit the ground here.
+     *
+     * So the pose itself gives way during a swing. Pitch travels from the carry
+     * toward level, so the weapon comes up out of the hanging position first and
+     * the arc happens from there, on a blade that is pointing at the thing being
+     * hit rather than at the ground in front of it.
+     */
+    const lift = Math.min(1, Math.max(0, swing?.() ?? 0));
+    const pitch = carry.pitch + (SWING_PITCH - carry.pitch) * lift;
+    group.rotation.set(pitch, 0, outward * carry.roll * (1 - lift * 0.6));
   });
 
   return (
@@ -475,6 +523,7 @@ export function AnimatedCharacter({
   children,
   idleUrl,
   handBone = "RightHand",
+  swing,
 }: AnimatedCharacterProps) {
   const root = useRef<Group>(null);
   const { scene, animations } = useGLTF(url);
@@ -609,7 +658,7 @@ export function AnimatedCharacter({
         its own size.
       */}
       {children && hand && (
-        <HandFollower root={root} bone={hand} hand={handBone} height={height}>
+        <HandFollower root={root} bone={hand} hand={handBone} height={height} swing={swing}>
           {children}
         </HandFollower>
       )}
