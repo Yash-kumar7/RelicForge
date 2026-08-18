@@ -29,8 +29,22 @@ const popListeners = new Set<(pops: DamagePop[]) => void>();
 /** Camera shake, decayed in useFrame. */
 export const shake = { magnitude: 0 };
 
-/** Brief time dilation on impact, the classic "hitstop" weight cue. */
-export const hitstop = { until: 0 };
+/**
+ * Brief time dilation on impact, the classic "hitstop" weight cue.
+ *
+ * `from` is the instant contact happened, and it is what makes this a hitstop
+ * rather than a pause on a decay curve. The swing pose is evaluated at `from`
+ * for as long as the freeze lasts, so the blade stops dead inside the thing it
+ * hit instead of sweeping through at constant speed. That constant speed is the
+ * whole reason a landed hit looked like a miss: nothing in the world
+ * acknowledged the moment of contact.
+ */
+export const hitstop = { from: 0, until: 0 };
+
+/** True while the world should be held on the frame of impact. */
+export function frozenAt(now: number): number | null {
+  return now < hitstop.until ? hitstop.from : null;
+}
 
 export function registerHit(amount: number, kind: "light" | "heavy"): void {
   pops.push({
@@ -44,7 +58,12 @@ export function registerHit(amount: number, kind: "light" | "heavy"): void {
   if (pops.length > 12) pops.shift();
 
   shake.magnitude = Math.min(0.32, shake.magnitude + (kind === "heavy" ? 0.22 : 0.1));
-  hitstop.until = performance.now() + (kind === "heavy" ? 90 : 45);
+  /* Long enough to read as a stop rather than a stutter. Fighting games sit
+     around 60-150ms for exactly this, and a light hit wants less than a heavy
+     one or every jab feels like a hammer. */
+  const at = performance.now();
+  hitstop.from = at;
+  hitstop.until = at + (kind === "heavy" ? 120 : 65);
 
   popListeners.forEach((listener) => listener([...pops]));
 }
@@ -59,6 +78,11 @@ const hurtListeners = new Set<(hit: { at: number; amount: number }) => void>();
 
 export function registerPlayerHurt(amount = 0): void {
   shake.magnitude = Math.min(0.45, shake.magnitude + 0.3);
+  /* Taking one has weight too. Without this only the blows you land stop the
+     world, so the boss connecting reads as lighter than your own jab. */
+  const at = performance.now();
+  hitstop.from = at;
+  hitstop.until = at + 90;
   playerHurt.at = performance.now();
   playerHurt.amount = amount;
   hurtListeners.forEach((listener) => listener({ ...playerHurt }));
@@ -106,6 +130,7 @@ export function resetFeedback(): void {
   playerHurt.at = 0;
   playerHurt.amount = 0;
   shake.magnitude = 0;
+  hitstop.from = 0;
   hitstop.until = 0;
   // Otherwise the dodge bar opens a fight showing a recharge from the last one.
   lastDodge.at = 0;

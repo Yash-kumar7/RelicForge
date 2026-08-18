@@ -4,6 +4,10 @@ import { Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PointLight
 import { useGameStore } from "../state/useGameStore";
 import { COMBAT, isWithinArc } from "./combat";
 import { BOSS_LIMIT, FORGE_POSITION, FORGE_RADIUS } from "./arenaGeometry";
+
+/* What a struck body is pushed toward. Not pure white: these meshes are lit
+   warm, and a full white flash reads as a lighting fault rather than an impact. */
+const HIT_COLOUR = new Color("#ffd9b0");
 import { glowTexture } from "./arenaFeatures";
 import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
@@ -49,6 +53,11 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
   const state = useRef<BossState>("APPROACH");
   const stateUntil = useRef(0);
   const hitFlash = useRef(0);
+  /* Kept per material so a boss that already glows is restored to its own
+     values rather than to black. */
+  const originalEmissive = useRef(
+    new Map<MeshStandardMaterial, { colour: Color; intensity: number }>(),
+  );
   const stagger = useRef(0);
   const knockback = useRef(new Vector3());
   const deathAt = useRef(0);
@@ -373,6 +382,45 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
     if (material) {
       material.emissiveIntensity = 0.4 + (charge || 0.15) * 5 + hitFlash.current * 4;
       material.emissive = new Color(hitFlash.current > 0.4 ? "#ffffff" : theme.bossCore);
+    }
+
+    /*
+     * The generated boss flashes when it is struck.
+     *
+     * Everything above writes to the primitive fallback's chest core, and that
+     * mesh carries visible={!hasModel} — so the moment a real boss loads, every
+     * hit was being drawn onto something nobody could see. What survived was a
+     * point light nudging up, inside an arena already lit the same colour, which
+     * is why a landed hit looked like a miss.
+     *
+     * So the mesh itself is lit instead. Its own materials are pushed toward
+     * white for the length of the flash and put back exactly as they were, with
+     * the original emissive kept per material the first time it is touched:
+     * these meshes come out of Meshy with their own emissive values, and
+     * assuming black would permanently dim any boss that glows.
+     */
+    if (hasModel && body.current) {
+      const flash = hitFlash.current;
+      body.current.traverse((node) => {
+        const mesh = node as Mesh;
+        if (!mesh.isMesh) return;
+        const mat = mesh.material as MeshStandardMaterial | undefined;
+        if (!mat || !mat.isMeshStandardMaterial) return;
+
+        let base = originalEmissive.current.get(mat);
+        if (!base) {
+          base = { colour: mat.emissive.clone(), intensity: mat.emissiveIntensity };
+          originalEmissive.current.set(mat, base);
+        }
+
+        if (flash > 0.001) {
+          mat.emissive.copy(base.colour).lerp(HIT_COLOUR, flash);
+          mat.emissiveIntensity = base.intensity + flash * 2.2;
+        } else if (mat.emissiveIntensity !== base.intensity) {
+          mat.emissive.copy(base.colour);
+          mat.emissiveIntensity = base.intensity;
+        }
+      });
     }
 
     // The light carries the same signal, which is what keeps a generated boss
