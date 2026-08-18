@@ -76,7 +76,7 @@ export function LoadoutPanel() {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, []);
+  }, [pauseCombat]);
 
   const inWorld = phase === "FIGHTING" || phase === "FORGING";
   if (!inWorld) return null;

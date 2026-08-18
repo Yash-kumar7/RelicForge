@@ -34,7 +34,7 @@ export function LiveRelicPanel() {
         },
         bossName,
       ),
-    [telemetry, affinity, playerHp, fightStartedAt],
+    [telemetry, affinity, playerHp, fightStartedAt, bossName],
   );
 
   if (phase !== "FIGHTING") return null;
