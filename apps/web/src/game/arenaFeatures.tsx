@@ -117,6 +117,29 @@ export function grainTexture(): CanvasTexture {
   return texture;
 }
 
+/**
+ * Ground past the edge of the fight floor.
+ *
+ * The arena floor is a disc fourteen metres across, and until now the world
+ * stopped there: past it the sky dome showed straight through. Measured on every
+ * rung, that is what made the scenery float — the Drowned Choir's wreck hangs in
+ * the air, the Gilded Husk's screens stand on nothing, and the Rootbound King's
+ * trees are rooted in a gradient. Fog cannot fix it, because fog needs a surface
+ * to sit on.
+ *
+ * One plain, a touch below the disc so the arena keeps its own swept edge, in the
+ * rung's own darkest colour. Every rung gets it except the Hollow Sovereign,
+ * where the floor ending in nothing is the entire idea.
+ */
+function OuterGround({ theme }: { theme: ArenaTheme }) {
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.08, 0]} receiveShadow>
+      <circleGeometry args={[46, 64]} />
+      <meshStandardMaterial color={theme.wall} roughnessMap={grainTexture()} roughness={1} />
+    </mesh>
+  );
+}
+
 interface Pool {
   /** Distance from the middle of the arena, in metres. */
   radius: number;
@@ -428,14 +451,7 @@ function ScorchedPlain({ theme }: { theme: ArenaTheme }) {
 
   return (
     <group>
-      {/*
-        Set a touch below the fight floor, so the disc keeps its own edge: the
-        arena still reads as swept and the ground around it as not.
-      */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.08, 0]} receiveShadow>
-        <circleGeometry args={[46, 64]} />
-        <meshStandardMaterial color={theme.wall} roughnessMap={grainTexture()} roughness={1} />
-      </mesh>
+      <OuterGround theme={theme} />
 
       {/*
         Lit stone, not silhouettes.
@@ -513,14 +529,29 @@ function FloodedFloor({ theme }: { theme: ArenaTheme }) {
 
   return (
     <group>
+      <OuterGround theme={theme} />
+
+      {/*
+        The water reaches past the fight, because water does.
+
+        At the arena's own radius the flood was a disc that ended exactly where
+        the floor did, and with the ground beyond the floor now in place the
+        surface was the only thing still stopping at fourteen metres — a lake with
+        a cut edge. It runs out to the rubble line instead, so the far shore is
+        somewhere out in the fog rather than a rim you can see.
+
+        Twice as present as it was, too. At 0.2 opacity over a near-black floor
+        there was nothing between the eye and the ground, so the rung read as a
+        dark room rather than a drowned one.
+      */}
       <mesh ref={surface} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.34, 0]}>
-        <circleGeometry args={[ARENA_RADIUS - 0.2, 64]} />
+        <circleGeometry args={[26, 64]} />
         <meshStandardMaterial
           color={theme.forge}
           transparent
-          opacity={0.2}
-          roughness={0.1}
-          metalness={0.65}
+          opacity={0.34}
+          roughness={0.08}
+          metalness={0.7}
         />
       </mesh>
       {/* Lit from under the surface, which is what makes it read as water rather
@@ -547,6 +578,7 @@ function FloodedFloor({ theme }: { theme: ArenaTheme }) {
 function GildedHall({ theme }: { theme: ArenaTheme }) {
   return (
     <group>
+      <OuterGround theme={theme} />
       <mesh position={[0, 0.09, 0]} receiveShadow>
         <cylinderGeometry args={[4.6, 4.9, 0.18, 48]} />
         <meshStandardMaterial color={theme.pillar} roughness={0.45} metalness={0.55} />
@@ -594,8 +626,26 @@ function Overgrowth({ theme }: { theme: ArenaTheme }) {
    */
   return (
     <group>
-      <mesh position={[0, 8.6, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[ARENA_RADIUS + 1, 48]} />
+      <OuterGround theme={theme} />
+
+      {/*
+        A canopy with no edge in frame.
+
+        At the arena's radius plus one it was a fifteen-metre disc eight and a half
+        metres up, and measured from inside the fight its rim cuts straight across
+        the upper third of the screen: a dark plate hanging over the arena, with
+        open sky visible past it on every side. A canopy is the one piece of
+        scenery that must not show its own boundary, because the thing it is
+        selling is that there is no way out upward.
+
+        Six times as wide, and raised, so the trees reach into it rather than
+        stopping short. Measured: at three times the radius the rim still sat
+        fourteen degrees above the horizon and cut a visible line across the upper
+        third of the frame. This puts it at seven, behind the treeline and past the
+        fog's far plane, where it fades out instead of ending.
+      */}
+      <mesh position={[0, 10.5, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[ARENA_RADIUS * 6, 48]} />
         <meshStandardMaterial color={theme.wall} roughness={1} />
       </mesh>
 

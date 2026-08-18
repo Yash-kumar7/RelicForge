@@ -20,6 +20,15 @@ import { ARENA_RADIUS } from "./arenaGeometry";
  */
 
 /** How much of the dome the horizon glow climbs. Low is a distant, flat world. */
+/**
+ * Note on the numbers below: they are mix fractions in *linear* light, not in
+ * sRGB. Colours here are built with three's Color, which converts to linear on
+ * the way in, so a stated 0.12 against a near-black sky comes out around
+ * rgb(52,24,81) on screen rather than the rgb(26,22,39) the arithmetic suggests —
+ * mixing 12% of a bright colour into near-nothing is dominated by the bright
+ * side. Measured, not derived. Every value here is smaller than it looks like it
+ * should be, and that is why.
+ */
 interface Sky {
   /** Where the colour fades out, 0 at the horizon and 1 overhead. */
   reach: number;
@@ -52,8 +61,16 @@ const SKIES: Record<number, Sky> = {
   2: { reach: 0.3, strength: 0.1, from: "ember" },
   // Gilded Husk: a hall lit for a ceremony, even and low.
   3: { reach: 0.12, strength: 0.1, from: "rune" },
-  // Rootbound King: almost nothing, because the canopy is over the top of it.
-  4: { reach: 0.1, strength: 0.06, from: "keyLight" },
+  /*
+   * Rootbound King: almost nothing, because the canopy is over the top of it.
+   *
+   * "Almost nothing" was still enough to give the canopy away. The gap between the
+   * canopy's rim and the horizon is the one strip of sky this rung shows, and at
+   * 0.06 it came through as a pale band bright enough to draw the rim as a hard
+   * curve across the frame — the ceiling was legible as a disc because of what was
+   * lit behind it. Dimmer, the two read as one dark mass with trees in it.
+   */
+  4: { reach: 0.1, strength: 0.022, from: "keyLight" },
   /*
    * Hollow Sovereign: the light is above, not around.
    *
@@ -67,7 +84,14 @@ const SKIES: Record<number, Sky> = {
    * edge of the disc. The room reads as being under something rather than beside
    * it, which is the only arena in the game where that is true.
    */
-  5: { reach: 0.9, strength: 0.2, from: "rune", overhead: 0.22 },
+  /*
+   * Measured after the falloff was fixed: at 0.22 overhead this rung rendered as
+   * a flat violet field across the entire frame, with the spires, the debris and
+   * the Sovereign itself reduced to silhouettes on it. It is the one sky here that
+   * is meant to be a wash, and a wash still has to be darker than everything
+   * standing in front of it.
+   */
+  5: { reach: 0.9, strength: 0.02, from: "rune", overhead: 0.05 },
 };
 
 function skyTexture(theme: ArenaTheme, sky: Sky): CanvasTexture {
