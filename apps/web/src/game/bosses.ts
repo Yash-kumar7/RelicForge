@@ -144,15 +144,23 @@ export function recordClear(level: number): void {
 }
 
 /**
- * Every boss is selectable from the start.
+ * Every boss can be looked at. Only the next one can be fought.
  *
- * Progression gating made four of the five rungs identical blurred smudges you
- * could not select, which is actively hostile in a piece someone is evaluating:
- * the content exists, and a reviewer should be able to reach the Hollow
- * Sovereign without grinding the ladder first.
+ * Two rules that are easy to collapse into one and should not be. Gating what a
+ * player may *see* made four of the five rungs blurred smudges, which is hostile
+ * in a piece someone is evaluating — the content exists, and the reason to want a
+ * boss is to have seen it. So every rung is selectable, and selecting one turns it
+ * around in 3D at full size whether or not it has been earned.
  *
- * `highestCleared` is still recorded, and still drives rank and the cleared
- * count, so progress remains visible without being a wall.
+ * Fighting is a different question, and the ladder still answers it: the wall lives
+ * on the single control that starts a fight, in TitleScreen, so the rule is stated
+ * once at the moment it applies. Seeing the Hollow Sovereign is the argument for
+ * climbing toward it; being handed it is not.
+ *
+ * This function survives as the name for the first half of that. It has no callers
+ * — the gate is a comparison against `highestCleared` where it is enforced — and it
+ * is kept because deleting it would leave the two rules with nowhere to be written
+ * down together.
  */
 export function isUnlocked(_level: number): boolean {
   return true;
