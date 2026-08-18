@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { CanvasTexture, type Group, type Mesh } from "three";
+import { CanvasTexture, RepeatWrapping, type Group, type Mesh } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { ARENA_RADIUS } from "./arenaGeometry";
 import type { ArenaTheme } from "./theme";
@@ -49,6 +49,62 @@ export function glowTexture(): CanvasTexture {
 
   cachedGlow = new CanvasTexture(canvas);
   return cachedGlow;
+}
+
+/**
+ * Grain for the arena floor, as a roughness map.
+ *
+ * The floor was one flat value across twenty-eight metres. A large area of a
+ * single colour reads as paint no matter how it is lit, because every patch of it
+ * takes the light identically — so there is no material to read and no scale to
+ * measure a stride against.
+ *
+ * Built here rather than shipped, since it is only noise, and it drives roughness
+ * rather than colour: the tint stays exactly the theme's and what varies is how
+ * each patch catches light. Two frequencies, because one is a pattern and two is
+ * a surface, and tiled far enough that the repeat never lands inside a glance.
+ */
+let cachedGrain: CanvasTexture | null = null;
+
+export function grainTexture(): CanvasTexture {
+  if (cachedGrain) return cachedGrain;
+
+  const size = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+
+  // Mid grey, so the map neither polishes nor roughens the material on average.
+  ctx.fillStyle = "#808080";
+  ctx.fillRect(0, 0, size, size);
+
+  const image = ctx.getImageData(0, 0, size, size);
+  const data = image.data;
+
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      /* Coarse patches for wear, fine speckle for tooth. Deterministic on
+         position rather than random per pixel, so the coarse band is actually
+         coarse instead of dissolving into the fine one. */
+      const coarse = Math.sin(x * 0.09) * Math.cos(y * 0.11) * 26;
+      const fine = (Math.sin(x * 1.7 + y * 2.3) + Math.sin(x * 2.9 - y * 1.3)) * 12;
+      const value = Math.max(0, Math.min(255, 128 + coarse + fine));
+      const i = (y * size + x) * 4;
+      data[i] = value;
+      data[i + 1] = value;
+      data[i + 2] = value;
+      data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(image, 0, 0);
+
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.repeat.set(9, 9);
+  cachedGrain = texture;
+  return texture;
 }
 
 interface Pool {

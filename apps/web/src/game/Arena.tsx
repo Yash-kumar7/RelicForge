@@ -4,7 +4,7 @@ import type { PointLight } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { themeForBoss } from "./theme";
 import { ARENA_RADIUS, FORGE_POSITION } from "./arenaGeometry";
-import { ArenaFeatures } from "./arenaFeatures";
+import { ArenaFeatures, grainTexture } from "./arenaFeatures";
 import { Forge } from "./Forge";
 import { Backdrop } from "./Backdrop";
 import { ArenaScenery } from "./ArenaScenery";
@@ -54,7 +54,22 @@ export function Arena() {
 
   return (
     <group>
-      <fog attach="fog" args={[theme.fog, 12, 44]} />
+      {/*
+        Fog that reaches into the fight, not only past it.
+
+        This ran from 12 to 44 while the arena is 14 across, so nothing a player
+        could walk to was ever fogged: the entire play space rendered crisp and
+        evenly lit, and the fog only touched scenery beyond the floor. That is why
+        the set read as a lit disc with objects standing on it rather than a place
+        with depth in it.
+
+        From 5, the boss at two and a half metres stays completely clear while the
+        far side of the arena softens, so distance becomes visible inside the
+        space where the fight actually happens. The far plane comes in with it,
+        because fog that only starts at the horizon is a backdrop, and fog that
+        thickens across the floor is air.
+      */}
+      <fog attach="fog" args={[theme.fog, 5, 34]} />
 
       {/*
         Something behind everything.
@@ -86,9 +101,24 @@ export function Arena() {
           and lands on the floor as light. Everywhere else, rough stone is
           correct, and a mirror would read as ice.
         */}
+        {/*
+          A grain map, so the floor is a surface rather than a colour.
+
+          It was one flat value across 28 metres, and a large unbroken area of a
+          single colour reads as paint however it is lit: nothing on it catches
+          light differently from anything else, so the eye gets no sense of
+          material, and none of scale either — there is nothing to measure a
+          stride against.
+
+          Generated rather than loaded, because the alternative is shipping a
+          texture for something that is only noise. It feeds roughness, not
+          colour: the tint stays exactly the theme's, and what varies is how each
+          patch takes the light, which is what stone does and what paint does not.
+        */}
         <meshStandardMaterial
           color={theme.ground}
-          roughness={bossLevel === 5 ? 0.28 : 0.95}
+          roughnessMap={grainTexture()}
+          roughness={bossLevel === 5 ? 0.42 : 0.95}
           metalness={bossLevel === 5 ? 0.55 : 0.05}
         />
       </mesh>
