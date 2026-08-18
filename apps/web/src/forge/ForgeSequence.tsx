@@ -28,7 +28,41 @@ function Elapsed() {
     return () => clearInterval(timer);
   }, []);
 
-  return <span className="ml-3 text-stone-700">{seconds}s</span>;
+  return <span className="ml-3 text-stone-700">· {seconds}s</span>;
+}
+
+/**
+ * The middle of the screen, before there is anything to put in it.
+ *
+ * The first beats have no picture and the layout pushes the headline to the top
+ * and the readout to the bottom, so what the player got was two lines of type
+ * separated by a screen height of black. A held breath needs something to be
+ * held on.
+ */
+function Hearth() {
+  return (
+    <div className="relative h-[30vh] w-[30vh]">
+      <motion.div
+        className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(255,107,26,0.30),transparent_66%)]"
+        animate={{ opacity: [0.45, 0.9, 0.45], scale: [0.94, 1.04, 0.94] }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+      />
+      {SPARKS.map((spark) => (
+        <motion.span
+          key={spark.key}
+          className="absolute bottom-[38%] h-1 w-1 rounded-full bg-ember-200"
+          style={{ left: `${spark.left}%` }}
+          animate={{ y: [0, -spark.rise], x: [0, spark.drift], opacity: [0, 1, 0], scale: [1, 0.4] }}
+          transition={{
+            duration: spark.duration,
+            repeat: Infinity,
+            delay: spark.delay,
+            ease: "easeOut",
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 /**
@@ -169,7 +203,7 @@ export function ForgeSequence({
         share the screen and there is no doubt about which one won.
       */}
       <AnimatePresence>
-        {forge.stage === "GENERATING_CONCEPT" && forge.conceptCandidates.length > 0 && (
+        {forge.stage === "GENERATING_CONCEPT" && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -177,25 +211,71 @@ export function ForgeSequence({
             transition={{ duration: 0.6 }}
             className="flex items-center justify-center gap-4"
           >
-            {forge.conceptCandidates.map((url, i) => (
-              <motion.img
-                key={url}
-                src={url}
-                alt=""
-                aria-hidden
-                initial={{ opacity: 0, y: 14, filter: "blur(14px)" }}
-                animate={{ opacity: 0.75, y: 0, filter: "blur(0px)" }}
-                transition={{ duration: 1.2, delay: i * 0.08, ease: "easeOut" }}
-                /* Same treatment as the chosen concept, further down: these
-                   arrive on whatever pale ground the image model picked, and a
-                   bright square on a black screen is the least interesting
-                   thing in the frame. */
-                className="h-[20vh] w-auto rounded border border-ember-500/20 brightness-[0.55] contrast-[1.15] [mask-image:radial-gradient(ellipse_78%_78%_at_50%_50%,black_58%,transparent_100%)]"
-              />
-            ))}
+            {Array.from({ length: Math.max(forge.conceptAttempts, 1) }, (_, i) => {
+              const url = forge.conceptCandidates[i];
+              return (
+                /*
+                  The empty ones are the point. Waiting on the first drawing used
+                  to mean waiting on an empty screen, with a counter at the bottom
+                  claiming three of something the player could not see. Standing
+                  all three frames up immediately turns the wait into a picture of
+                  what is being waited for, and each one filling in is a beat.
+                */
+                <div
+                  key={url ?? `slot-${i}`}
+                  className="relative h-[24vh] w-[24vh] overflow-hidden rounded border border-ember-500/20"
+                >
+                  {url ? (
+                    <motion.img
+                      src={url}
+                      alt=""
+                      aria-hidden
+                      initial={{ opacity: 0, scale: 1.06, filter: "blur(14px)" }}
+                      animate={{ opacity: 0.75, scale: 1, filter: "blur(0px)" }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                      /* Same treatment as the chosen concept, further down: these
+                         arrive on whatever pale ground the image model picked, and
+                         a bright square on a black screen is the least interesting
+                         thing in the frame. */
+                      className="h-full w-full object-cover brightness-[0.55] contrast-[1.15] [mask-image:radial-gradient(ellipse_78%_78%_at_50%_50%,black_58%,transparent_100%)]"
+                    />
+                  ) : (
+                    <>
+                      <motion.div
+                        className="absolute inset-0 bg-[radial-gradient(circle_at_50%_60%,rgba(255,107,26,0.16),transparent_70%)]"
+                        animate={{ opacity: [0.3, 0.75, 0.3] }}
+                        transition={{
+                          duration: 2.6,
+                          repeat: Infinity,
+                          delay: i * 0.5,
+                          ease: "easeInOut",
+                        }}
+                      />
+                      {/* The frame the drawing has not arrived in yet, lit as
+                          though something is about to. */}
+                      <motion.div
+                        className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-ember-500/10 to-transparent"
+                        animate={{ left: ["-33%", "100%"] }}
+                        transition={{
+                          duration: 2.8,
+                          repeat: Infinity,
+                          delay: i * 0.5,
+                          ease: "linear",
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Nothing drawn yet and nothing being drawn: the hearth holds the middle. */}
+      {!forge.conceptUrl &&
+        forge.stage !== "GENERATING_CONCEPT" &&
+        forge.stage !== "FAILED" && <Hearth />}
 
       {/* Concept reveal, arrives ~10-20s in, long before the mesh. */}
       <AnimatePresence>
@@ -368,7 +448,7 @@ export function ForgeSequence({
               </div>
 
               <p className="mt-2 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-stone-700">
-                meshy-7 usually takes 90 to 120 seconds
+                this usually takes 90 to 120 seconds
               </p>
             </motion.div>
           )}
