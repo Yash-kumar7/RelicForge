@@ -16,7 +16,8 @@ import { RankSigil } from "./RankSigil";
  * it.
  */
 export function RankLadder({ xp }: { xp: number }) {
-  const current = rankFor(xp).index;
+  const rank = rankFor(xp);
+  const current = rank.index;
 
   return (
     <span className="block">
@@ -34,7 +35,26 @@ export function RankLadder({ xp }: { xp: number }) {
         did it.
       </span>
 
-      <span className="mt-3 block border-t border-ash-800 pt-2 font-mono text-[10px] uppercase tracking-[0.12em]">
+      {/*
+        The player's own total, which the ladder was missing.
+
+        Six thresholds and a marker say which rung you are on but never what you
+        have. That is survivable while there is a "so much to the next one"
+        figure elsewhere on the screen, and at the top of the ladder there is no
+        such figure: reaching the last rank replaced the only running number with
+        the words "highest rank", and the tally the whole thing counts stopped
+        being visible at exactly the point it is worth the most.
+      */}
+      <span className="mt-3 flex items-baseline justify-between gap-3 border-t border-ash-800 pt-2 font-mono text-[10px] uppercase tracking-[0.12em]">
+        <span className="tabular-nums text-bone-200">{xp} xp</span>
+        <span className="text-brass-700">
+          {rank.next === null
+            ? `${xp - RANKS[current]!.at} past ${RANKS[current]!.name}`
+            : `${rank.next - xp} to ${RANKS[current + 1]!.name}`}
+        </span>
+      </span>
+
+      <span className="mt-2 block font-mono text-[10px] uppercase tracking-[0.12em]">
         {RANKS.map((rank, index) => (
           <span
             key={rank.name}

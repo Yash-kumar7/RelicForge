@@ -561,8 +561,12 @@ export function TitleScreen() {
                       that did not.
                     */}
                     <span className="font-mono text-[9px] tabular-nums text-brass-700">
+                      {/* Past the last rung the bar is pinned full and there is
+                          no distance left to report, so the reading became a
+                          flat two words and every kill after it changed nothing
+                          on screen. The overflow keeps counting. */}
                       {rank.next === null
-                        ? "highest rank"
+                        ? `Highest rank · +${xp - RANKS[rank.index]!.at} XP`
                         : `${rank.next - xp} XP to ${RANKS[rank.index + 1]?.name ?? ""}`}
                     </span>
                   </span>
