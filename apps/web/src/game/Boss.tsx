@@ -8,6 +8,16 @@ import { BOSS_LIMIT, FORGE_POSITION, FORGE_RADIUS } from "./arenaGeometry";
 /* What a struck body is pushed toward. Not pure white: these meshes are lit
    warm, and a full white flash reads as a lighting fault rather than an impact. */
 const HIT_COLOUR = new Color("#ffd9b0");
+
+/**
+ * The one colour in this game that means a blow is coming.
+ *
+ * Reserved: no arena theme uses it, no element uses it, and nothing in the
+ * interface uses it. A warning is only worth anything if it cannot be mistaken
+ * for decoration, and the cheapest way to guarantee that is to spend the colour
+ * on nothing else.
+ */
+const DANGER = new Color("#ff2f21");
 import { glowTexture } from "./arenaFeatures";
 import { playerHandle } from "./Player";
 import { sfx } from "../audio/sfx";
@@ -540,13 +550,31 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
         thin, and the ground inside it is filled with the same soft falloff the
         arena lights use, which is what carries the growing threat.
       */}
+      {/*
+        One colour for danger, on every rung.
+
+        This was drawn in theme.bossCore, which is the arena's own accent — so the
+        warning was painted from the same palette as the floor it sits on. On the
+        Sovereign's disc that put a violet danger ring inside a violet lit rim,
+        and a player could not tell a blow that was about to land from the edge of
+        the platform they were standing on.
+
+        Danger is now a fixed red that appears nowhere else in this game: not in
+        any arena theme, not in any element, not in the interface. That is the
+        whole value of it. A warning that changes colour per arena has to be
+        learned five times; a warning that never changes is learned once, in the
+        first fight, and read instantly in the fifth.
+
+        Brighter and thicker than it was, too. It is competing with a lit floor,
+        and it only has the length of a telegraph to be noticed in.
+      */}
       <group ref={dangerRing} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} visible={false}>
         <mesh>
           <planeGeometry args={[COMBAT.boss.reach * 2, COMBAT.boss.reach * 2]} />
           <meshBasicMaterial
             ref={dangerFill}
             map={glowTexture()}
-            color={theme.bossCore}
+            color={DANGER}
             transparent
             opacity={0.2}
             depthWrite={false}
@@ -554,12 +582,12 @@ export const Boss = forwardRef<BossHandle>(function Boss(_props, ref) {
           />
         </mesh>
         <mesh>
-          <ringGeometry args={[COMBAT.boss.reach - 0.16, COMBAT.boss.reach, 64]} />
+          <ringGeometry args={[COMBAT.boss.reach - 0.3, COMBAT.boss.reach, 64]} />
           <meshBasicMaterial
             ref={dangerEdge}
-            color={theme.bossCore}
+            color={DANGER}
             transparent
-            opacity={0.5}
+            opacity={0.75}
             toneMapped={false}
             side={2}
           />
