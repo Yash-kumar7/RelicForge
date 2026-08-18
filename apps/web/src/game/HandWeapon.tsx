@@ -323,6 +323,20 @@ export function BossHandWeaponSwing({
       carried.current.rotation.set(REST_PITCH * carry.current, 0, REST_ROLL * carry.current);
     }
 
+    /*
+     * The clip and the procedural swing must not both drive the weapon.
+     *
+     * The weapon hangs off the hand bone, so a generated attack already moves it —
+     * the whole arm travels and the blade goes with it. Rotating the weapon group
+     * on top of that is a second, unrelated motion applied to the same object: the
+     * two partly cancel, and the result reads as a body that moves "a bit more"
+     * rather than as a blow. Measured against a build with the clip off, that
+     * muddle is most of what was left of the difference.
+     *
+     * So when a clip is driving, this stands aside entirely and lets the rig do the
+     * work it was generated to do. Without one — every boss but the Warden today —
+     * the procedural arc is still the only thing that swings.
+     */
     const swing = bossSwing();
     // The boss only has one attack, and it is a heavy one.
     /*

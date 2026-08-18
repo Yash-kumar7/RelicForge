@@ -2,6 +2,7 @@ import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useGLTF } from "@react-three/drei";
 import type { Group } from "three";
 import { handSocketFor } from "./handSockets";
+import { bossAttackAt } from "./bossState";
 import { fitCharacter } from "../lib/characterFit";
 import { AnimatedCharacter } from "./AnimatedCharacter";
 import { asset as assetUrl } from "../lib/backend";
@@ -58,6 +59,16 @@ export function BossModel({
   children?: ReactNode;
 }) {
   const [asset, setAsset] = useState<"rig" | "static" | "none" | null>(null);
+  /*
+   * Only some bosses have had an attack clip generated.
+   *
+   * Each one costs credits, so they arrive one at a time, and a missing clip has to
+   * be a non-event: useGLTF throws on a 404 inside Suspense, which would take the
+   * whole arena down rather than fall back. Checked the same way the weapon and the
+   * scenery are — a HEAD before anything tries to load it — and a boss without one
+   * keeps the procedural swing it has always had.
+   */
+  const [hasAttack, setHasAttack] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,6 +85,8 @@ export function BossModel({
       if (rigged) {
         setAsset("rig");
         onLoaded(true);
+        const attack = await head(assetUrl(`/assets/bosses/${slug}/rig/attack.glb`));
+        if (!cancelled) setHasAttack(attack);
         return;
       }
       const staticMesh = await head(assetUrl(`/assets/bosses/${slug}/model.glb`));
@@ -98,6 +111,12 @@ export function BossModel({
           handBone={handSocketFor(slug).bone}
           url={assetUrl(`/assets/bosses/${slug}/rig/walking.glb`)}
           idleUrl={assetUrl(`/assets/bosses/${slug}/rig/idle.glb`)}
+          {...(hasAttack
+            ? {
+                attackUrl: assetUrl(`/assets/bosses/${slug}/rig/attack.glb`),
+                attackAt: bossAttackAt,
+              }
+            : {})}
           height={BOSS_HEIGHT}
           speed={walking}
           /*

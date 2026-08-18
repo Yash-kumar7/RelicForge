@@ -10,7 +10,7 @@ import { useGameStore } from "../state/useGameStore";
 import { useLoadout } from "../state/useLoadout";
 import { themeFor } from "./theme";
 import { playerHandle } from "./Player";
-import { swingLift, swingProgress } from "./swing";
+import { attackClipAt, swingLift, swingProgress } from "./swing";
 import { IronSwordMesh } from "./IronSwordMesh";
 import { IRON_SCALE } from "./weaponScale";
 import { HeldRelicMesh } from "./HeldRelicMesh";
@@ -163,6 +163,16 @@ function AvatarBody({
             handBone={handSocketFor(slug).bone}
             url={asset(`/assets/champions/${slug}/rig/walking.glb`)}
             idleUrl={asset(`/assets/champions/${slug}/rig/idle.glb`)}
+            /*
+              The champion swings with its body too.
+
+              Same arrangement the boss has: the clip drives the torso and legs, and
+              the tuned procedural arc keeps driving the weapon, because that arc was
+              built to read at this camera distance and the generated arm motion is
+              naturalistic and small.
+            */
+            attackUrl={asset(`/assets/champions/${slug}/rig/attack.glb`)}
+            attackAt={() => attackClipAt(playerHandle.attacking)}
             height={AVATAR_HEIGHT}
             speed={walkSpeed}
             swing={() => swingLift(playerHandle.attacking)}

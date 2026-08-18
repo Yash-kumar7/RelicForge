@@ -13,6 +13,35 @@ import { frozenAt } from "./feedback";
  * Returns a small forward lead during the wind-up and up to ~2.65 through the
  * strike. Never negative: nothing in a swing travels away from the target.
  */
+/**
+ * Where the champion is in its attack clip, 0 to 1, or null when it is not
+ * attacking.
+ *
+ * The boss has one blow with a fixed telegraph, so its clip is mapped onto three
+ * named phases. The player has two — a light and a heavy that differ in every
+ * duration, and get faster still with a quick relic — so there is nothing fixed to
+ * map onto. What there is, is the same total the hit test uses: wind-up plus active
+ * plus recovery. The clip is stretched across exactly that, which means a fast
+ * weapon plays the same swing faster rather than playing part of it.
+ *
+ * Frozen on the frame of impact, like the pose curve below it, so a hitstop holds
+ * the whole body rather than just the blade.
+ */
+export function attackClipAt(
+  attack: { kind: AttackKind; startedAt: number } | null,
+  now = performance.now(),
+): number | null {
+  if (!attack) return null;
+
+  const held = frozenAt(now);
+  if (held !== null) now = held;
+
+  const spec = attackSpec(attack.kind, equipped.traits);
+  const total = spec.windupMs + spec.activeMs + spec.recoveryMs;
+  const t = (now - attack.startedAt) / total;
+  return t >= 1 ? null : Math.max(0, t);
+}
+
 export function swingProgress(
   attack: { kind: AttackKind; startedAt: number } | null,
   now = performance.now(),

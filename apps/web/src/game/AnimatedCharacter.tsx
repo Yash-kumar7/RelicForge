@@ -55,6 +55,25 @@ export interface AnimatedCharacterProps {
   /** Which hand closed around a weapon when this character was generated. */
   handBone?: HandBone;
   /**
+   * A generated attack clip, played by scrubbing rather than by playing.
+   *
+   * Optional: a character without one keeps the procedural swing, which is what
+   * every character had until now.
+   */
+  attackUrl?: string;
+  /**
+   * Where in the blow this character is, 0 to 1, or null when it is not attacking.
+   *
+   * This is the whole reason the clip is scrubbed instead of played. Damage lands
+   * at a fixed point in the fight's own state machine — the instant the wind-up
+   * ends — and a clip left to run at its own speed would drift out of step with
+   * that within a swing or two: the blade would arrive after the health bar moved.
+   * Driving the clip's time from the same progress the damage reads means the
+   * animation cannot disagree with the hit, whatever the clip's duration happens
+   * to be.
+   */
+  attackAt?: () => number | null;
+  /**
    * A standing clip, blended against the walk.
    *
    * Optional because it is bought separately: rigging includes walking and
@@ -524,6 +543,8 @@ export function AnimatedCharacter({
   idleUrl,
   handBone = "RightHand",
   swing,
+  attackUrl,
+  attackAt,
 }: AnimatedCharacterProps) {
   const root = useRef<Group>(null);
   const { scene, animations } = useGLTF(url);
@@ -546,10 +567,15 @@ export function AnimatedCharacter({
    * standing inside its own reach.
    */
   const [idle, setIdle] = useState<AnimationClip | null>(null);
-  const clips = useMemo(
-    () => (idle ? [...animations, idle] : animations).map(withoutRootTurn),
-    [animations, idle],
-  );
+  const [attack, setAttack] = useState<AnimationClip | null>(null);
+  /* Order matters: the frame loop below addresses these by index — walk, idle,
+     attack — and an absent idle must not shift the attack up into its slot. */
+  const clips = useMemo(() => {
+    const all = [...animations];
+    if (idle) all.push(idle);
+    if (attack) all.push(attack);
+    return all.map(withoutRootTurn);
+  }, [animations, idle, attack]);
   const { actions, names } = useAnimations(clips, root);
   const hand = useMemo(() => findHand(scene, handBone), [scene, handBone]);
 
@@ -650,6 +676,39 @@ export function AnimatedCharacter({
       return;
     }
 
+    /*
+     * An attack overrides the legs, and is scrubbed rather than played.
+     *
+     * `attackAt` returns where the blow is, from the same state machine that
+     * decides when damage lands, so the clip is positioned rather than advanced:
+     * paused, with its time written every frame. A clip left to play would keep its
+     * own schedule, and the two would disagree about when the blade arrives — which
+     * is worse than no attack animation at all, because it makes the fight look
+     * like it is lying about the hit.
+     */
+    const attack = names[2] ? actions[names[2]] : undefined;
+    const at = attackAt?.() ?? null;
+    if (attack) {
+      const clip = attack.getClip();
+      if (at === null) {
+        attack.weight = 0;
+      } else {
+        if (!attack.isRunning()) attack.play();
+        attack.paused = true;
+        attack.weight = 1;
+        attack.time = Math.min(1, Math.max(0, at)) * clip.duration;
+      }
+    }
+
+    /* While a blow is running the locomotion clips stand down entirely: a boss
+       that keeps walking underneath its own swing is what the attack looked like
+       before there was a clip to play. */
+    if (at !== null) {
+      walk.weight = 0;
+      standing.weight = 0;
+      return;
+    }
+
     // Roughly a fifth of a second to change stance, either way.
     const rate = Math.min(1, delta * 5);
     const moving = speed > 0.01;
@@ -665,6 +724,7 @@ export function AnimatedCharacter({
       </group>
 
       {idleUrl && <IdleClip url={idleUrl} onLoad={setIdle} />}
+      {attackUrl && <IdleClip url={attackUrl} onLoad={setAttack} />}
 
       {/*
         The weapon follows the hand rather than being parented to it.

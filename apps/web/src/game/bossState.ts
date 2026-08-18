@@ -92,6 +92,52 @@ export function bossLift(): number {
   }
 }
 
+/**
+ * The clip moves the body; the tuned arc still moves the weapon.
+ *
+ * Both halves, decided by comparison rather than argument. Three modes were built
+ * and played against each other — clip only, procedural only, and both — and the
+ * answer was split: the clip wins on the body, which used to stand perfectly still
+ * through its own attack, and the procedural arc wins on the weapon, because it was
+ * tuned for this fight. It is a wide overhead scaled up so it reads from ten metres,
+ * where the generated arm motion is naturalistic and too small to carry.
+ *
+ * The switch is gone now that the question is settled. It is not free — two systems
+ * drive one weapon and partly cancel — but losing either half was worse, and that
+ * was watched rather than reasoned about.
+ */
+
+/**
+ * Where the boss is in its attack clip, 0 to 1, or null when it is not attacking.
+ *
+ * The generated clip is one continuous blow: it winds up, comes down, and recovers.
+ * The fight has those same three beats but with its own durations — a full second
+ * of telegraph, a short strike, a slower recovery — so the clip is mapped onto them
+ * rather than played at its own pace.
+ *
+ * The split points are eyeballed against the clip and should be checked in frame,
+ * not trusted: what they have to satisfy is that the blade is coming down as the
+ * strike begins, because that is the instant damage is applied. Everything else is
+ * taste.
+ */
+const WINDUP_END = 0.42;
+const STRIKE_END = 0.7;
+
+export function bossAttackAt(): number | null {
+  const p = Math.min(1, Math.max(0, bossState.progress));
+
+  switch (bossState.action) {
+    case "telegraph":
+      return p * WINDUP_END;
+    case "strike":
+      return WINDUP_END + p * (STRIKE_END - WINDUP_END);
+    case "recover":
+      return STRIKE_END + p * (1 - STRIKE_END);
+    default:
+      return null;
+  }
+}
+
 export function bossSwing(): number {
   const p = Math.min(1, Math.max(0, bossState.progress));
 
