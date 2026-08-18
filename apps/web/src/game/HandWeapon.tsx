@@ -296,7 +296,27 @@ export function BossHandWeaponSwing({
      * further away, so the same rotation covers less of the screen and reads as
      * a twitch rather than a blow coming at you.
      */
-    if (arm.current) applySwing(arm.current, swing, 1.35, "heavy");
+    /*
+     * Its own arc, not the player's heavy scaled up.
+     *
+     * Sharing the player's numbers at 1.35 against a swing that runs to 3.1 gave
+     * roughly fifty degrees of pitch, fifty of roll and sixty of yaw, all at
+     * once. Roll turns a sword about its own length, so at that size the blade
+     * twirled while it travelled and the whole blow read as the weapon spinning
+     * rather than being swung.
+     *
+     * A boss's blow should be one motion, legible from across an arena: mostly
+     * an overhead drop, a little across the body, and almost no roll at all. The
+     * player can afford a compound arc because the weapon is close to the camera
+     * and small on screen; from ten metres it just reads as tumbling.
+     */
+    if (arm.current) {
+      /* Steeper than the player's, so the blade comes down in front of the boss
+         rather than reaching out past whatever it is aimed at. A tall attacker
+         with a long weapon has to drop it, not extend it. */
+      swingEuler.set(swing * -0.38, swing * 0.1, swing * -0.03);
+      arm.current.quaternion.setFromEuler(swingEuler);
+    }
 
     /**
      * A slash that appears only as the blow lands.

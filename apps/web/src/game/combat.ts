@@ -42,7 +42,7 @@ export const COMBAT = {
     windupMs: 120,
     activeMs: 140,
     recoveryMs: 180,
-    reach: 2.7,
+    reach: 2.9,
     arcDeg: 130,
   },
   /**
@@ -65,7 +65,7 @@ export const COMBAT = {
     windupMs: 420,
     activeMs: 180,
     recoveryMs: 620,
-    reach: 3.0,
+    reach: 3.2,
     arcDeg: 160,
   },
   boss: {
@@ -80,14 +80,20 @@ export const COMBAT = {
     reach: 3.3,
     moveSpeed: 2.3,
     /**
-     * Inside the player's blade, not beyond it.
+     * Where both weapons work, which is not the same distance for each.
      *
-     * 3.1 was chosen against a 4.2 reach and satisfied the old rule while sitting
-     * a metre past where a sword can touch. At 2.3 the boss is close enough that
-     * the tip passes through it, and far enough that the two are not standing
-     * inside one another. Must stay below lightAttack.reach.
+     * 3.1 sat a metre past anything the player's sword could touch. 2.3 fixed
+     * that and broke the other half: this thing is 2.75 tall with a weapon
+     * scaled to match, so at 2.3 it stands over the player and its blade travels
+     * past them entirely — the body arrives where the sword should, and being
+     * hit reads as being walked into rather than cut.
+     *
+     * 2.6 is the distance both reach. The player's tip travels about 1.9 from
+     * the body and the boss is wide enough to meet it; the boss's own blow comes
+     * down in front of itself rather than through the space behind the player.
+     * Must stay below lightAttack.reach, which is 2.9.
      */
-    preferredRange: 2.3,
+    preferredRange: 2.6,
   },
 } as const;
 
