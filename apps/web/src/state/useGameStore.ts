@@ -329,6 +329,22 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   damageBoss: (amount, kind) =>
     set((state) => {
+      /*
+       * Nothing lands on a boss that is already dead.
+       *
+       * The health was clamped at zero but the telemetry was not, so a swing still
+       * in the air when the killing blow landed went on being recorded — and since
+       * `finishingAttack` is simply the last kind written, a queued light attack
+       * resolving against a corpse renamed the finish. The reveal then reported
+       * "light" after a heavy had actually killed it, which is a lie about the fight
+       * in the one place the game asks to be believed: the reading that decides the
+       * weapon.
+       *
+       * It also inflated damageDealt and the attack counts, both of which feed the
+       * relic's temperament.
+       */
+      if (state.bossHp <= 0) return state;
+
       const bossHp = Math.max(0, state.bossHp - amount);
       return {
         bossHp,
