@@ -244,6 +244,32 @@ function Model({
   );
 }
 
+/**
+ * Everything that decides what this viewer is looking at.
+ *
+ * Split out from the component's own props so a screen can swap subjects — a
+ * champion for the boss it is about to fight — by changing values rather than by
+ * unmounting one viewer and mounting another. See the note on the wrapper below
+ * for why that distinction is worth a type.
+ */
+export interface CharacterSubject {
+  url: string;
+  height: number;
+  accent: string;
+  /** Selects which hand this character grips with. See game/handSockets.ts. */
+  slug: string;
+  caption?: string | undefined;
+  /**
+   * How much room to leave around the figure.
+   *
+   * Lower brings the camera in, so the character fills more of the view and is
+   * cropped by it. A framed portrait wants air; a figure meant to bleed off the
+   * edge of the page wants none.
+   */
+  framing?: number;
+  weapon?: HeldWeaponSpec | undefined;
+}
+
 export function CharacterViewer({
   url,
   height,
@@ -254,31 +280,37 @@ export function CharacterViewer({
   weapon,
   slug,
   framing = 0.45,
-}: {
-  url: string;
-  height: number;
-  accent: string;
-  /** Selects which hand this character grips with. See game/handSockets.ts. */
-  slug: string;
+}: CharacterSubject & {
   className?: string;
-  caption?: string | undefined;
   autoRotate?: boolean;
-  /**
-   * How much room to leave around the figure.
-   *
-   * Lower brings the camera in, so the character fills more of the view and is
-   * cropped by it. A framed portrait wants air; a figure meant to bleed off the
-   * edge of the page wants none.
-   */
-  framing?: number;
-  weapon?: HeldWeaponSpec | undefined;
 }) {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [fit, setFit] = useState<{ distance: number; centerY: number } | null>(null);
+  /*
+   * Stable pointer target for r3f. See the note on the wrapper below.
+   *
+   * `null!` because r3f types eventSource as a ref that is never null, and this one
+   * is only null for the single render before the div it points at exists — by the
+   * time r3f reads it, in a commit-time effect, it is set.
+   */
+  const host = useRef<HTMLDivElement>(null!);
 
+  /*
+   * The canvas survives a change of subject.
+   *
+   * This used to clear `available` back to null whenever the url changed, which
+   * unmounts the canvas and then mounts a new one when the HEAD request lands. The
+   * title sequence changes this url on every step — bare champion, armed champion,
+   * boss — so walking to the third step tore down and rebuilt a WebGL context
+   * three times, and one of those rebuilds raced its own teardown and threw out of
+   * r3f's event setup.
+   *
+   * Nothing needed the reset: the model inside is keyed on the url and swaps under
+   * Suspense. Once a subject has been confirmed to exist, the canvas stays, and
+   * only a subject that turns out to be missing takes it away.
+   */
   useEffect(() => {
     let cancelled = false;
-    setAvailable(null);
     fetch(url, { method: "HEAD" })
       .then((res) => !cancelled && setAvailable(res.ok))
       .catch(() => !cancelled && setAvailable(false));
@@ -290,9 +322,28 @@ export function CharacterViewer({
   if (available === false) return null;
 
   return (
-    <div className={`relative cursor-grab active:cursor-grabbing ${className}`}>
+    /*
+     * The wrapper is the event host, and the canvas inside it is meant to live.
+     *
+     * react-three-fiber attaches its pointer listeners to the canvas's parentNode,
+     * read when the canvas is created, and it reads it late enough that a canvas
+     * created and destroyed around the same commit finds nothing there: `Cannot
+     * read properties of null (reading 'addEventListener')`, thrown from inside
+     * r3f. That was the only error in the console on a clean run, in the
+     * production build as well as in dev, and it fired on the step where the enemy
+     * appears — where a champion viewer was being torn down as a boss viewer went
+     * up.
+     *
+     * Naming the host is half of the answer. The other half is upstream: the title
+     * screen now keeps one of these and changes its subject, so no WebGL context is
+     * built and thrown away between steps.
+     */
+    <div ref={host} className={`relative cursor-grab active:cursor-grabbing ${className}`}>
       {available && (
-        <Canvas camera={{ position: [0, 0.25, fitDistance(height, framing)], fov: FOV }}>
+        <Canvas
+          eventSource={host}
+          camera={{ position: [0, 0.25, fitDistance(height, framing)], fov: FOV }}
+        >
           <ambientLight intensity={0.55} />
           <directionalLight position={[3, 5, 4]} intensity={2.1} />
           <directionalLight position={[-3, 2, -2]} intensity={0.9} color={accent} />

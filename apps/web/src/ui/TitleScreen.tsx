@@ -5,10 +5,11 @@ import { useGameStore } from "../state/useGameStore";
 import { IRON, useLoadout } from "../state/useLoadout";
 import { BOSSES, MAX_LEVEL, bossAt, describeBoss, highestCleared, isCleared } from "../game/bosses";
 import { bossTraits, describeTraits } from "@relic/core";
-import { ChampionPreview } from "./ChampionPreview";
+import { useChampionSubject } from "./ChampionPreview";
 import { TitleBackdrop } from "./TitleBackdrop";
 import { BossPortrait } from "./BossPortrait";
-import { BossPreview } from "./BossPreview";
+import { bossSubject } from "./BossPreview";
+import { CharacterViewer } from "./CharacterViewer";
 import { ArmamentPanel } from "./ArmamentPanel";
 import { PendingForgePanel } from "./PendingForgePanel";
 import { RankSigil } from "./RankSigil";
@@ -160,6 +161,9 @@ export function TitleScreen() {
   const armament = useLoadout((s) => s.armament);
   const xp = useProgress((s) => s.xp);
   const rank = rankFor(xp);
+  /* Always built, even on the step showing a boss: it is a hook, and the viewer
+     below picks whichever subject the step calls for. */
+  const championSubject = useChampionSubject({ affinity, armed: section > 0 });
 
   if (phase === "TITLE") {
     /*
@@ -329,25 +333,32 @@ export function TitleScreen() {
                 }, transparent 72%)`,
               }}
             />
-          {section === 2 && bossLevel !== null ? (
-            <BossPreview
-              level={bossLevel}
-              title={bossAt(bossLevel).title}
-              accent={bossAt(bossLevel).accent}
-              /*
-                Bleeds, exactly as the champion does.
+          {/*
+            One viewer, three subjects.
 
-                The champion moved out of its bordered plate and onto the page
-                two steps ago; the boss never followed, so the last step of the
-                sequence still looked like the version of the screen the first
-                two had left behind. The enemy gets the same room the character
-                choosing to fight it gets.
-              */
-              className="h-[calc(100svh-7rem)] w-full"
-            />
-          ) : (
-            <ChampionPreview affinity={affinity} armed={section > 0} />
-          )}
+            The champion and the boss used to be separate components, each with a
+            canvas of its own, so reaching the enemy step disposed one WebGL context
+            and built another — and one of the two threw out of r3f's event setup
+            every time it happened. They are subjects now and this is the only
+            viewer on the screen, so the figure changes without the renderer
+            noticing.
+
+            It bleeds either way. The champion moved out of its bordered plate onto
+            the page two steps ago; the boss never followed, so the last step of the
+            sequence still looked like the version of the screen the first two had
+            left behind. The enemy gets the same room the character choosing to
+            fight it gets.
+          */}
+          <CharacterViewer
+            {...(section === 2 && bossLevel !== null
+              ? bossSubject({
+                  level: bossLevel,
+                  title: bossAt(bossLevel).title,
+                  accent: bossAt(bossLevel).accent,
+                })
+              : championSubject)}
+            className="h-[calc(100svh-7rem)] w-full"
+          />
           </div>
 
           {/*

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { Affinity } from "@relic/core";
 import { themeFor } from "../game/theme";
-import { CharacterViewer, type HeldWeaponSpec } from "./CharacterViewer";
+import type { CharacterSubject, HeldWeaponSpec } from "./CharacterViewer";
 import { IRON, useLoadout } from "../state/useLoadout";
 import { asset } from "../lib/backend";
 
@@ -14,7 +14,12 @@ import { asset } from "../lib/backend";
  */
 const CHAMPION_HEIGHT = 2.6;
 
-export function ChampionPreview({
+/*
+ * A subject, not a viewer. A hook, because the weapon comes from the loadout.
+ *
+ * See bossSubject for why neither of these renders a canvas of its own any more.
+ */
+export function useChampionSubject({
   affinity,
   armed = true,
 }: {
@@ -36,7 +41,7 @@ export function ChampionPreview({
    * not been asked yet.
    */
   armed?: boolean;
-}) {
+}): CharacterSubject {
   const theme = themeFor(affinity);
   const slug = affinity === "fire" ? "ember" : affinity === "ice" ? "frost" : "storm";
 
@@ -58,9 +63,8 @@ export function ChampionPreview({
     return { kind: "relic", url: relic.modelUrl, weaponClass: relic.dna.weaponClass };
   }, [owned, armament, armed]);
 
-  return (
-    <CharacterViewer
-      slug={slug}
+  return {
+    slug,
       /*
         Two poses of one character, chosen by whether anything is in hand.
 
@@ -75,34 +79,28 @@ export function ChampionPreview({
         same lighting, one hand opened. That distinction is the whole reason the
         feature works at all.
       */
-      url={
-        weapon === undefined
-          ? asset(`/assets/champions/${slug}/model-open.glb`)
-          : asset(`/assets/champions/${slug}/model.glb`)
-      }
-      height={CHAMPION_HEIGHT}
-      accent={theme.forge}
-      weapon={weapon}
-      /*
-       * The only thing that says the figure can be turned.
-       *
-       * A champion that can be dragged looks identical to one that cannot until
-       * somebody tries. It says only that, because the longer version was
-       * explaining a framed panel that no longer exists.
-       */
-      caption="drag to turn · scroll to zoom"
-      /*
-       * Enough room for feet.
-       *
-       * 0.06 cropped the champion at the shins. A figure meant to fill the
-       * screen still has to stand on something, and a knight cut off at the
-       * ankles reads as a rendering error rather than as a composition.
-       */
-      framing={0.22}
-      /* Short of the full height on purpose. At 100svh the figure met the top
-         and bottom edges at once, which reads as a picture too big for its
-         window rather than a character standing in a room. */
-      className="h-[calc(100svh-7rem)] w-full"
-    />
-  );
+    url:
+      weapon === undefined
+        ? asset(`/assets/champions/${slug}/model-open.glb`)
+        : asset(`/assets/champions/${slug}/model.glb`),
+    height: CHAMPION_HEIGHT,
+    accent: theme.forge,
+    weapon,
+    /*
+     * The only thing that says the figure can be turned.
+     *
+     * A champion that can be dragged looks identical to one that cannot until
+     * somebody tries. It says only that, because the longer version was
+     * explaining a framed panel that no longer exists.
+     */
+    caption: "drag to turn · scroll to zoom",
+    /*
+     * Enough room for feet.
+     *
+     * 0.06 cropped the champion at the shins. A figure meant to fill the
+     * screen still has to stand on something, and a knight cut off at the
+     * ankles reads as a rendering error rather than as a composition.
+     */
+    framing: 0.22,
+  };
 }

@@ -1,4 +1,4 @@
-import { CharacterViewer, type HeldWeaponSpec } from "./CharacterViewer";
+import type { CharacterSubject, HeldWeaponSpec } from "./CharacterViewer";
 import { bossSlug } from "./BossPortrait";
 import { bossWeaponHint } from "../game/orientationHints";
 import { bossWeaponScale } from "../game/weaponScale";
@@ -15,17 +15,23 @@ import { asset } from "../lib/backend";
  */
 const BOSS_HEIGHT = 2.9;
 
-export function BossPreview({
+/*
+ * A subject, not a viewer.
+ *
+ * This used to render its own CharacterViewer, which meant selecting a boss
+ * mounted a second WebGL canvas while the champion's was being disposed — and one
+ * of the two threw out of r3f's event setup every time. It hands back what to look
+ * at instead, and the screen keeps a single viewer pointed at it.
+ */
+export function bossSubject({
   level,
   title,
   accent,
-  className = "",
 }: {
   level: number;
   title: string;
   accent: string;
-  className?: string;
-}) {
+}): CharacterSubject {
   const slug = bossSlug(title);
 
   // Oversized relative to the wielder on purpose: a slab of scorched stone
@@ -50,18 +56,15 @@ export function BossPreview({
     ...(hint ? { hint } : {}),
   };
 
-  return (
-    <CharacterViewer
-      slug={slug}
-      url={asset(`/assets/bosses/${slug}/model.glb`)}
-      height={BOSS_HEIGHT}
-      accent={accent}
-      weapon={weapon}
-      caption="drag to turn · scroll to zoom"
-      /* The same breathing room the bleeding champion gets. At the framed 0.45
-         the boss sat small in the middle of a half-screen of black. */
-      framing={0.22}
-      className={className}
-    />
-  );
+  return {
+    slug,
+    url: asset(`/assets/bosses/${slug}/model.glb`),
+    height: BOSS_HEIGHT,
+    accent,
+    weapon,
+    caption: "drag to turn · scroll to zoom",
+    /* The same breathing room the bleeding champion gets. At the framed 0.45
+       the boss sat small in the middle of a half-screen of black. */
+    framing: 0.22,
+  };
 }
