@@ -133,6 +133,14 @@ export function ForgeSequence({
           { label: "dodges", value: `${telemetry.dodges}` },
         ]}
         onClaim={onClaim}
+        /*
+          The same exit a failed forge already had.
+
+          Abandoning a failure and refusing a relic end in exactly the same place —
+          unclaimed, back at the ladder — so they share a handler rather than
+          growing a second one that does the same thing.
+        */
+        onDiscard={onAbandon}
       />
     );
   }

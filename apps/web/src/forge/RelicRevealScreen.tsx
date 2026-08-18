@@ -74,6 +74,13 @@ export interface RelicRevealProps {
   readings: { label: string; value: string }[];
   accent: string;
   onClaim: () => void;
+  /**
+   * Walk away without taking it.
+   *
+   * Leaves the relic unclaimed and returns to the ladder — the same place claiming
+   * goes, and the same thing a failed forge already did.
+   */
+  onDiscard: () => void;
 }
 
 /** A number that arrives rather than appearing. */
@@ -111,8 +118,21 @@ export function RelicRevealScreen({
   readings,
   accent,
   onClaim,
+  onDiscard,
 }: RelicRevealProps) {
   const award = useProgress((s) => s.lastAward);
+  /**
+   * Refusing takes two presses, and only refusing.
+   *
+   * This weapon exists once. It was generated from a fight that happened, it cannot
+   * be produced again by fighting the same way, and there is no list of discarded
+   * relics to recover it from — so a single mis-click beside the claim button would
+   * destroy the only copy of the thing the entire game exists to make.
+   *
+   * Claiming stays one press, because claiming is reversible: an unwanted relic sits
+   * in the loadout and is never selected. Only the irreversible half asks twice.
+   */
+  const [refusing, setRefusing] = useState(false);
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-ash-950">
@@ -255,15 +275,38 @@ export function RelicRevealScreen({
             </motion.div>
           )}
 
-          <button
-            type="button"
-            onClick={onClaim}
-            data-sound="confirm"
-            className="mt-10 border px-10 py-3 text-xs uppercase tracking-[0.35em] transition"
-            style={{ borderColor: `${accent}99`, color: accent }}
-          >
-            Claim relic
-          </button>
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              onClick={onClaim}
+              data-sound="confirm"
+              className="border px-10 py-3 text-xs uppercase tracking-[0.35em] transition"
+              style={{ borderColor: `${accent}99`, color: accent }}
+            >
+              Claim relic
+            </button>
+
+            {/*
+              Quieter than the claim, and never the same size.
+
+              Two equally weighted buttons would read as a choice between two goods.
+              This is not that: one of them is what the fight was for and the other
+              is throwing it away, so it sits in the plainest treatment on the
+              screen and says what happens rather than daring you.
+            */}
+            <button
+              type="button"
+              onClick={() => (refusing ? onDiscard() : setRefusing(true))}
+              className={[
+                "border px-6 py-3 text-[10px] uppercase tracking-[0.3em] transition",
+                refusing
+                  ? "border-red-500/60 text-red-300 hover:bg-red-500/10"
+                  : "border-ash-800 text-stone-600 hover:border-stone-600 hover:text-stone-400",
+              ].join(" ")}
+            >
+              {refusing ? "Leave it for good" : "Leave it in the forge"}
+            </button>
+          </div>
         </motion.div>
       </div>
     </div>
