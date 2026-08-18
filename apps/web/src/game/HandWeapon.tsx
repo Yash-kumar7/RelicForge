@@ -269,6 +269,16 @@ export function PlayerHandWeapon({
   );
 }
 
+/**
+ * How the weapon sits in a hanging hand.
+ *
+ * Measured against the fight camera rather than reasoned about: the hand bone's
+ * rest orientation is whatever Meshy's rig produced, so the only way to find the
+ * angle that carries a blade clear of the leg and the floor is to look.
+ */
+const REST_PITCH = -1.62;
+const REST_ROLL = -0.25;
+
 export function BossHandWeaponSwing({
   url,
   weaponClass,
@@ -340,13 +350,30 @@ export function BossHandWeaponSwing({
   return (
     <group ref={arm} scale={bossWeaponScale(weaponClass, height)}>
       {/*
-        The hint applies here too.
+        A rest pose, inside the swing.
 
-        This is the third place a boss weapon is drawn, after the ladder preview
-        and the unrigged fallback, and it is the one the player actually fights.
-        Fixing the other two left the weapon upright everywhere except in combat.
+        The weapon is parented to the rig's hand bone and canonicalized so the blade
+        runs up +Y from the grip — which means it points wherever the hand points,
+        and at rest a boss's arms hang at its sides. So the blade hung straight down:
+        through its own leg, with the tip below the floor. It only looked right in
+        the ladder preview, where the weapon is placed against the body rather than
+        in a bone.
+
+        Tipped back so the weapon rides up and away from the body the way anything
+        heavy is carried when it is not being swung. It has to be a nested group:
+        the swing writes the parent's quaternion outright every frame, so a rotation
+        set on that group would be erased on the first frame.
       */}
-      <HeldRelicMesh url={url} weaponClass={weaponClass} {...hintProps(slug)} />
+      <group rotation={[REST_PITCH, 0, REST_ROLL]}>
+        {/*
+          The hint applies here too.
+
+          This is the third place a boss weapon is drawn, after the ladder preview
+          and the unrigged fallback, and it is the one the player actually fights.
+          Fixing the other two left the weapon upright everywhere except in combat.
+        */}
+        <HeldRelicMesh url={url} weaponClass={weaponClass} {...hintProps(slug)} />
+      </group>
 
       {/* Sits along the blade, so the arc sweeps where the weapon sweeps. */}
       <mesh ref={slash} position={[0, 0.9, 0]} rotation={[0, 0, 0]} visible={false}>
