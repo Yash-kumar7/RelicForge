@@ -4,7 +4,8 @@ import type { PointLight } from "three";
 import { useGameStore } from "../state/useGameStore";
 import { themeForBoss } from "./theme";
 import { ARENA_RADIUS, FORGE_POSITION } from "./arenaGeometry";
-import { ArenaFeatures, grainTexture } from "./arenaFeatures";
+import { ArenaFeatures } from "./arenaFeatures";
+import { groundMaps } from "./groundTexture";
 import { Forge } from "./Forge";
 import { Backdrop } from "./Backdrop";
 import { ArenaScenery } from "./ArenaScenery";
@@ -25,6 +26,8 @@ export function Arena() {
   const bossLevel = useGameStore((s) => s.bossLevel) ?? 1;
   // The arena is the boss's domain, so it wears the boss's colours.
   const theme = themeForBoss(bossLevel);
+  /* Built once per rung and cached, so walking back into an arena costs nothing. */
+  const ground = groundMaps(bossLevel, theme);
   const forgeLight = useRef<PointLight>(null);
 
   /*
@@ -94,33 +97,38 @@ export function Arena() {
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[ARENA_RADIUS, 64]} />
         {/*
-          The last rung's floor is polished, and every other one is not.
+          A material per rung, generated at load.
 
-          Stone that takes a shine is the cheapest way to make a room feel built
-          rather than poured, and it is the only surface in the game with anything
-          above it worth reflecting: the Sovereign's debris hangs over this arena
-          and lands on the floor as light. Everywhere else, rough stone is
-          correct, and a mirror would read as ice.
-        */}
-        {/*
-          A grain map, so the floor is a surface rather than a colour.
+          This was one flat theme tint plus a single noise field shared by every
+          arena, feeding roughness only. That is enough to stop a floor reading as
+          paint and nowhere near enough to say what it is made of: ash, silt, laid
+          tile, wet earth and split obsidian all rendered as the same ground in five
+          colours, which is most of why five arenas felt like one room repainted.
 
-          It was one flat value across 28 metres, and a large unbroken area of a
-          single colour reads as paint however it is lit: nothing on it catches
-          light differently from anything else, so the eye gets no sense of
-          material, and none of scale either — there is nothing to measure a
-          stride against.
-
-          Generated rather than loaded, because the alternative is shipping a
-          texture for something that is only noise. It feeds roughness, not
-          colour: the tint stays exactly the theme's, and what varies is how each
-          patch takes the light, which is what stone does and what paint does not.
+          groundTexture builds colour, relief and roughness for each of them. The
+          relief is the part that matters — the arenas are lit by pools on the floor,
+          and a surface with direction to it catches a highlight on one side of every
+          ripple and a shadow on the other. Roughness comes from its map, so the
+          material's own value stays at 1 and is modulated by it, and metalness stays
+          per-rung: only the Sovereign's floor has any, because only that one is glass
+          rather than stone.
         */}
         <meshStandardMaterial
-          color={theme.ground}
-          roughnessMap={grainTexture()}
-          roughness={bossLevel === 5 ? 0.42 : 0.95}
-          metalness={bossLevel === 5 ? 0.55 : 0.05}
+          /*
+           * White, because the map already carries the tint.
+           *
+           * Leaving the theme's ground colour here multiplied it against a texture
+           * built from that same colour, and two dark values multiplied are much
+           * darker than either: measured, the floor dropped from (41,22,15) to
+           * (21,11,6) the moment the map went on. The rung's palette lives in the
+           * texture now; this is the material's white point, not its colour.
+           */
+          color="#ffffff"
+          map={ground.map}
+          normalMap={ground.normalMap}
+          roughnessMap={ground.roughnessMap}
+          roughness={1}
+          metalness={bossLevel === 5 ? 0.45 : 0.04}
         />
       </mesh>
 
