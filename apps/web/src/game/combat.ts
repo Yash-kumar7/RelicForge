@@ -19,13 +19,30 @@ export const COMBAT = {
     healAmount: 30,
     healCharges: 2,
   },
-  // Reach must exceed the boss's standoff distance or attacks cannot land.
+  /*
+   * Reach is what a blade can actually touch, not what a hit test will accept.
+   *
+   * These were 4.2 and 4.8 against a boss that holds station at 3.1, on the rule
+   * that reach must exceed the standoff or nothing lands. It landed, and that was
+   * the problem: a champion is 1.9 tall with an arm of roughly 0.6 and carries a
+   * sword between 1.0 and 1.3, so the tip travels to about 1.9 from the body. The
+   * boss stood a metre and a half beyond that, and every fight was fought at a
+   * distance where the sword could not physically reach it.
+   *
+   * Damage registered anyway. Health fell, numbers popped, the boss flashed, and
+   * the blade swung through empty air a metre short of anything — which is why
+   * hits felt like they were not connecting. They were not.
+   *
+   * So reach is now derived from the weapon: arm plus blade, plus the boss's own
+   * body, and the boss closes to inside it. A fight happens at the distance a
+   * sword works at.
+   */
   lightAttack: {
     damage: 25,
     windupMs: 120,
     activeMs: 140,
     recoveryMs: 180,
-    reach: 4.2,
+    reach: 2.7,
     arcDeg: 130,
   },
   /**
@@ -48,7 +65,7 @@ export const COMBAT = {
     windupMs: 420,
     activeMs: 180,
     recoveryMs: 620,
-    reach: 4.8,
+    reach: 3.0,
     arcDeg: 160,
   },
   boss: {
@@ -57,13 +74,20 @@ export const COMBAT = {
     activeMs: 260,
     recoveryMs: 900,
     damage: 22,
-    reach: 4.2,
+    /* Longer than the player's, because it is nearly three metres tall and its
+       weapon is scaled to match. Still short enough to be a reach rather than a
+       ranged attack. */
+    reach: 3.3,
     moveSpeed: 2.3,
     /**
-     * Close enough that a light attack reaches it, far enough that it is not
-     * standing inside the player. Must stay below lightAttack.reach.
+     * Inside the player's blade, not beyond it.
+     *
+     * 3.1 was chosen against a 4.2 reach and satisfied the old rule while sitting
+     * a metre past where a sword can touch. At 2.3 the boss is close enough that
+     * the tip passes through it, and far enough that the two are not standing
+     * inside one another. Must stay below lightAttack.reach.
      */
-    preferredRange: 3.1,
+    preferredRange: 2.3,
   },
 } as const;
 
