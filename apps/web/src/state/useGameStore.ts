@@ -116,6 +116,25 @@ interface GameState {
    */
   combatActive: boolean;
   /**
+   * Whether the opening camera move is still running.
+   *
+   * Its own flag rather than a phase, because nothing else about the fight
+   * changes while it plays: the arena is built, the boss is standing in it, and
+   * combat is simply not armed yet. Player reads it to leave the camera alone,
+   * the HUD reads it to stay out of the frame, and the briefing reads it to know
+   * it has been dismissed.
+   */
+  cinematic: boolean;
+  /**
+   * The 3-2-1, counted in whole numbers, null when it is not running.
+   *
+   * Between the camera handing back and combat arming. The camera move shows the
+   * room; this says the fight is about to start, which are two different jobs —
+   * dropping straight from a slow flythrough into a live boss is the same
+   * unannounced start the flythrough was added to fix, just prettier.
+   */
+  countdown: number | null;
+  /**
    * Both views, opening on the champion.
    *
    * First person frames the relic larger, and was briefly the default for that
@@ -157,6 +176,12 @@ interface GameState {
   chooseBossLevel: (level: number) => void;
   boss: () => BossLevel;
   startFight: () => void;
+  /** Hands the camera to the opening move. The countdown follows it. */
+  beginCinematic: () => void;
+  /** Ends the camera move and starts the 3-2-1. */
+  startCountdown: () => void;
+  /** One tick of the 3-2-1. Arming combat is left to the caller at zero. */
+  tickCountdown: () => void;
   armCombat: () => void;
   toggleView: () => void;
   togglePhotoMode: () => void;
@@ -210,6 +235,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   bossMaxHp: BOSS_MAX_HP,
   fightStartedAt: null,
   combatActive: false,
+  cinematic: false,
+  countdown: null,
   photoMode: false,
   view: "third",
   pausedTotalMs: 0,
@@ -243,6 +270,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       // briefing appears, or reading time would inflate fightDuration.
       fightStartedAt: null,
       combatActive: false,
+      cinematic: false,
+      countdown: null,
       photoMode: false,
       pausedTotalMs: 0,
       pausedAt: null,
@@ -251,11 +280,25 @@ export const useGameStore = create<GameState>((set, get) => ({
       };
     }),
 
+  beginCinematic: () => set({ cinematic: true, countdown: null }),
+
+  /* The camera is released here, not at zero: the player should be looking through
+     their own eyes while they read the numbers, so the view they will fight from is
+     the view they are counted into. */
+  startCountdown: () => set({ cinematic: false, countdown: 3 }),
+
+  tickCountdown: () =>
+    set((state) => (state.countdown === null ? state : { countdown: state.countdown - 1 })),
+
   armCombat: () =>
     set((state) => {
       if (state.combatActive) return state;
       return {
         combatActive: true,
+        // Whatever arms combat also ends the opening move and the count, so a
+        // skip and a finished flythrough leave the game in the same state.
+        cinematic: false,
+        countdown: null,
         /*
          * Whatever resumed the fight ends photo mode.
          *
@@ -360,6 +403,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       bossMaxHp: BOSS_MAX_HP,
       fightStartedAt: null,
       combatActive: false,
+      cinematic: false,
+      countdown: null,
       photoMode: false,
       pausedTotalMs: 0,
       pausedAt: null,

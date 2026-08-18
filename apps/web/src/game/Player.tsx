@@ -261,6 +261,17 @@ export function Player({ bossPosition, onHitBoss }: PlayerProps) {
      */
     const delta = Math.min(rawDelta, 0.05);
     const now = performance.now();
+
+    /*
+     * The opening move owns the camera, so this hand comes off it entirely.
+     *
+     * Two things writing camera.position and camera.rotation on the same frame
+     * means whichever runs last wins, and the loser's work shows up as a shudder.
+     * Read from the store rather than subscribed, because this runs every frame
+     * and a re-render per flag change is a re-render for nothing.
+     */
+    if (useGameStore.getState().cinematic) return;
+
     const fighting = phase === "FIGHTING" && combatActive;
     // Attack timing has to keep advancing after the fight, or a swing taken in
     // The swing-only path existed for the post-claim arena, which is gone.

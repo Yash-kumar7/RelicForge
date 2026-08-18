@@ -11,6 +11,7 @@ import { WeaponSocket } from "./WeaponSocket";
 import { RelicPedestal } from "./RelicPedestal";
 import { PersistRelicTransform } from "./PersistRelicTransform";
 import { Embers } from "./Embers";
+import { ArenaIntro } from "./ArenaIntro";
 import { StarterWeapon } from "./StarterWeapon";
 import { PlayerHands } from "./PlayerHands";
 import { PlayerAvatar } from "./PlayerAvatar";
@@ -28,6 +29,7 @@ import { usePendingForge } from "../state/usePendingForge";
 import { Hud } from "../ui/Hud";
 import { DefeatScreen } from "../ui/DefeatScreen";
 import { PreFightBriefing } from "../ui/PreFightBriefing";
+import { FightCountdown } from "../ui/FightCountdown";
 import { PauseOverlay } from "../ui/PauseOverlay";
 import { LiveRelicPanel } from "../ui/LiveRelicPanel";
 import { DebugOverlay } from "../debug/DebugOverlay";
@@ -270,6 +272,8 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
    */
   const carried = useLoadout((s) => s.equipped());
   const showCarried = phase === "FIGHTING" && carried !== null;
+  /* The opening camera move, which owns the camera while it runs. */
+  const cinematic = useGameStore((s) => s.cinematic);
 
   return (
     <div className="relative h-full w-full">
@@ -298,6 +302,8 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
             />
           )}
           <Embers active={phase !== "FIGHTING"} />
+          {/* Owns the camera until it hands it back. See ArenaIntro. */}
+          {cinematic && <ArenaIntro />}
 
           {showPedestal && (
             <RelicPedestal modelUrl={forge.modelUrl!} weaponClass={forge.dna!.weaponClass} />
@@ -341,6 +347,7 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
       <Hud />
       <LiveRelicPanel />
       <PreFightBriefing />
+      <FightCountdown />
       <PauseOverlay />
       <DamageFlash />
       <TelegraphWarning />

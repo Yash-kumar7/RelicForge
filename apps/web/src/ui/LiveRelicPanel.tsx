@@ -15,6 +15,8 @@ import { PLAYER_MAX_HP, useGameStore } from "../state/useGameStore";
  */
 export function LiveRelicPanel() {
   const phase = useGameStore((s) => s.phase);
+  const cinematic = useGameStore((s) => s.cinematic);
+  const countdown = useGameStore((s) => s.countdown);
   const telemetry = useGameStore((s) => s.telemetry);
   const affinity = useGameStore((s) => s.affinity);
   const playerHp = useGameStore((s) => s.playerHp);
@@ -37,7 +39,15 @@ export function LiveRelicPanel() {
     [telemetry, affinity, playerHp, fightStartedAt, bossName],
   );
 
-  if (phase !== "FIGHTING") return null;
+  /*
+   * Not over the opening move.
+   *
+   * This panel is the game's central claim and it earns its permanent corner
+   * during a fight — but during the flythrough and the count there is no telemetry
+   * yet, so it was sitting over the arena reading out the defaults of a fight that
+   * had not started.
+   */
+  if (phase !== "FIGHTING" || cinematic || countdown !== null) return null;
 
   const accent =
     projected.element === "ice"

@@ -84,6 +84,8 @@ function FightClock({ startedAt, pausedTotalMs }: { startedAt: number; pausedTot
 
 export function Hud() {
   const phase = useGameStore((s) => s.phase);
+  const cinematic = useGameStore((s) => s.cinematic);
+  const countdown = useGameStore((s) => s.countdown);
   const playerHp = useGameStore((s) => s.playerHp);
   const playerMaxHp = useGameStore((s) => s.playerMaxHp);
   const bossHp = useGameStore((s) => s.bossHp);
@@ -139,6 +141,17 @@ export function Hud() {
    * the fight it describes is real by then.
    */
   const fighting = phase === "FIGHTING" && fightStartedAt !== null;
+  /*
+   * The opening move and the count are not the fight.
+   *
+   * The bars already wait for fightStartedAt, but the two corner panels below sat
+   * outside that gate, on the reasoning that what you are holding is true whether
+   * or not the fight has begun. That was fine while the only thing before the fight
+   * was a briefing that covered the screen — over a camera move showing the arena
+   * off, two interface panels in the corners are exactly the leftover interface the
+   * comment above this warns about.
+   */
+  const opening = cinematic || countdown !== null;
   // Against the champion's own maximum, not the base constant: a Frost run has
   // 125 health, and dividing by 100 would show a full bar reading 125%.
   /*
@@ -352,6 +365,7 @@ export function Hud() {
           blade; afterwards it is the relic you just earned, named. Without
           this the weapon in your hands is never identified anywhere on screen
           outside the loadout panel. */}
+      {!opening && (
       <div className="absolute bottom-8 left-8 mt-4 w-56 border-t border-ash-800 pt-2">
         <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-stone-700">wielding</p>
         {inHand ? (
@@ -380,6 +394,7 @@ export function Hud() {
           </>
         )}
       </div>
+      )}
 
       {fighting && (
         /*

@@ -24,7 +24,9 @@ export function PreFightBriefing() {
   const combatActive = useGameStore((s) => s.combatActive);
   const bossLevel = useGameStore((s) => s.bossLevel);
   const fightStartedAt = useGameStore((s) => s.fightStartedAt);
-  const armCombat = useGameStore((s) => s.armCombat);
+  const beginCinematic = useGameStore((s) => s.beginCinematic);
+  const cinematic = useGameStore((s) => s.cinematic);
+  const countdown = useGameStore((s) => s.countdown);
 
   /*
    * The numbers the player is actually about to swing.
@@ -55,27 +57,51 @@ export function PreFightBriefing() {
    * Splitting them would mean the player clicks to dismiss, then clicks again
    * to look around, with a silent frozen frame in between.
    */
+  /*
+   * One click does both jobs, and the second job is now the opening camera move
+   * rather than the fight itself. Pointer lock still has to be taken here — it
+   * needs a user gesture, and the cinematic ends by arming combat, which is not
+   * one.
+   */
   const begin = useCallback(() => {
     const canvas = document.querySelector("canvas");
     if (canvas) void canvas.requestPointerLock();
-    armCombat();
-  }, [armCombat]);
+    beginCinematic();
+  }, [beginCinematic]);
 
   // Enter works too, so the keyboard hand does not have to move.
   useEffect(() => {
-    if (phase !== "FIGHTING" || combatActive || fightStartedAt !== null) return undefined;
+    if (phase !== "FIGHTING" || combatActive || cinematic || countdown !== null || fightStartedAt !== null)
+      return undefined;
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "Enter" || e.code === "Space") begin();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase, combatActive, fightStartedAt, begin]);
+  }, [phase, combatActive, cinematic, countdown, fightStartedAt, begin]);
 
   // Visible for exactly as long as the fight is frozen, so what is on screen
   // always matches whether the boss can actually hurt you.
   // fightStartedAt distinguishes "not begun yet" from "paused mid-fight",
   // which the PauseOverlay owns.
-  if (phase !== "FIGHTING" || combatActive || fightStartedAt !== null) return null;
+  /*
+   * Gone from the moment it is dismissed until the fight is live.
+   *
+   * Checking `cinematic` alone was not enough and it came back: the countdown
+   * clears that flag so the player can look around while being counted in, and
+   * this screen's other three conditions were all still true, so the briefing
+   * reappeared behind the "3" — the setup screen returning on top of the fight it
+   * had just handed off to. Everything between the click and the first swing has to
+   * be listed here, because "not yet begun" is now three states, not one.
+   */
+  if (
+    phase !== "FIGHTING" ||
+    combatActive ||
+    cinematic ||
+    countdown !== null ||
+    fightStartedAt !== null
+  )
+    return null;
 
   const accent = affinity === "ice" ? "text-frost-300" : affinity === "storm" ? "text-amber-200" : "text-ember-300";
 
