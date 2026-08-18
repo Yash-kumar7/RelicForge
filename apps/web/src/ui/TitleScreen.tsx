@@ -911,7 +911,6 @@ export function TitleScreen() {
                  * hides the thing the game generated, and the reason to show a
                  * boss you have not earned is so you want to earn it.
                  */
-                const locked = boss.level > highestCleared() + 1;
                 const selected = bossLevel === boss.level;
                 const lean = describeTraits(bossTraits(boss.name));
                 const pay = xpRangeFor(boss.level);
@@ -938,11 +937,9 @@ export function TitleScreen() {
                     */
                     className={[
                       "w-full border-l-2 text-left transition",
-                      locked && !selected
-                        ? "border-transparent text-stone-600 opacity-60 hover:border-ash-800 hover:opacity-100"
-                        : selected
-                          ? "border-ember-500/70 bg-gradient-to-r from-white/[0.04] to-transparent text-stone-200"
-                          : "border-transparent text-stone-500 hover:border-ash-700 hover:bg-white/[0.02]",
+                      selected
+                        ? "border-ember-500/70 bg-gradient-to-r from-white/[0.04] to-transparent text-stone-200"
+                        : "border-transparent text-stone-500 hover:border-ash-700 hover:bg-white/[0.02]",
                     ].join(" ")}
                   >
                     {/*
@@ -991,14 +988,6 @@ export function TitleScreen() {
                         {cleared && (
                           <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-emerald-600">
                             cleared
-                          </span>
-                        )}
-                        {/* Named, not just marked. "Locked" tells a player they
-                            cannot have it; the boss standing in the way tells
-                            them what to go and do about it. */}
-                        {locked && (
-                          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">
-                            beat {bossAt(boss.level - 1).title} first
                           </span>
                         )}
                         <dl className="w-32 space-y-1 font-mono text-[9px] uppercase tracking-[0.12em]">
@@ -1163,16 +1152,20 @@ export function TitleScreen() {
             */}
             {section === 2 && (() => {
               /*
-               * The ladder is enforced here, not in the list.
+               * The ladder is not enforced anywhere any more.
                *
-               * Every boss can be selected and turned around in 3D, because
-               * seeing what is waiting at the top is most of the reason to climb
-               * toward it. Only the press that starts a fight is gated, so the
-               * rule is stated once, at the moment it applies, by the control it
-               * applies to.
+               * `isUnlocked` already says every rung is reachable, and says why:
+               * four of the five arenas are content that exists, and someone
+               * evaluating this should be able to walk into the Hollow Sovereign
+               * without beating the four in front of it first. That decision was
+               * made in bosses.ts and never reached this screen, so the button
+               * went on refusing to start any fight past the next one — the game
+               * disagreed with itself, and the screen was winning.
+               *
+               * Clearing is still recorded and still shown on the rows. It marks
+               * what you have done rather than what you may do.
                */
-              const barred = bossLevel !== null && bossLevel > highestCleared() + 1;
-              const blocked = bossLevel === null || barred;
+              const blocked = bossLevel === null;
 
               return (
                 <button
@@ -1195,9 +1188,7 @@ export function TitleScreen() {
                       leaves the player to work out the rule. */}
                   {bossLevel === null
                     ? "Choose who you fight"
-                    : barred
-                      ? `Beat ${bossAt(highestCleared() + 1).title} first`
-                      : `Fight ${bossAt(bossLevel).title}`}
+                    : `Fight ${bossAt(bossLevel).title}`}
                 </button>
               );
             })()}
