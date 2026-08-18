@@ -148,7 +148,8 @@ Three 4K PBR maps re-exported as PNG land at 12-22 MB. Generated GLBs pass throu
 ```
 
 **Meshy endpoints used:** text-to-image, image-to-3d (meshy-7 + ultra), remesh,
-rigging, and balance. Five, across generation, topology, animation and metering.
+rigging, animations, retexture, image-to-image, and balance. Eight, across
+generation, topology, animation and metering.
 
 **Two API details worth stealing:**
 
@@ -213,6 +214,15 @@ recommends t-pose input and these were generated in a-pose, so one character was
 rigged first as a 5-credit test rather than regenerating the whole cast in t-pose
 for roughly 350. It worked on the first attempt.
 
+Every character also has a generated **attack** clip, and those are scrubbed
+rather than played: the clip's time is written from the same progress the hit test
+reads, so the blade cannot drift out of step with the damage whatever duration the
+clip happens to have. The player's is stretched across wind-up plus active plus
+recovery, so a faster relic plays the whole swing faster instead of playing part of
+it. The body comes from the clip and the weapon keeps its own tuned arc, because
+that arc was sized to read from ten metres and generated arm motion is
+naturalistic and small.
+
 Rigged output needs a different optimizer from static meshes, and assets are
 loaded through three levels of degradation so a fight never depends on one being
 present. *Both covered in [PRD.md §10](PRD.md#10-generated-content).*
@@ -221,16 +231,25 @@ present. *Both covered in [PRD.md §10](PRD.md#10-generated-content).*
 
 Most players assume loot comes from a table, so nothing about a boss fight signals that *how* you fight is the input. RelicForge says it once before the fight, then proves it during:
 
-- A **briefing** states the premise and lists the controls (WASD to move, mouse to look, left mouse for a light attack, right mouse for a heavy one, Space to dodge, Q to heal, V to switch between third and first person). It also gives pointer lock something to attach to, so the first click is explained rather than mysterious.
+- A **briefing** states the premise and lists the controls (WASD to move, mouse to look, left mouse for a light attack, right mouse for a heavy one, Shift to dodge, Space to jump, Q to heal, V to switch between third and first person). It also gives pointer lock something to attach to, so the first click is explained rather than mysterious. The same list lives in the loadout, on Tab, which pauses the fight so looking something up costs nothing.
 - A **live relic panel** in the corner runs the real `buildRelicDNA` against your telemetry as you fight. Commit to heavy attacks and `BALANCED` becomes `BRUTAL` in front of you. Drop below 20% health and `battle-worn` becomes `shattered`.
 
 That panel is the tutorial. Watching the projection change is more convincing than any amount of explanation, and it means the reveal at the end confirms something the player already worked out.
 
-You fight in **third person by default**, because choosing a champion and then
-never seeing it makes the choice pointless. The champion is a rigged, generated
-model swinging the real generated weapon. **V** switches to first person, where
-armoured gauntlets hold the blade in view, since a floating camera with no arms
-is not embodiment either.
+A fight opens on **four seconds of camera** rather than on the pose you will play
+from: the boss alone, then both fighters broadside with the arena between them,
+then an arc that settles behind your champion, and a 3-2-1. The broadside shot is
+the one that earns its place, because it is the only frame in the game containing
+both fighters and the size difference is the argument for the fight. The last
+keyframe is derived from the player camera's own boom maths rather than typed
+again, so the handover has no cut in it, and the clock starts when combat arms, so
+watching cannot inflate the fight duration the relic reads.
+
+You then fight in **third person by default**, because choosing a champion and
+then never seeing it makes the choice pointless. The champion is a rigged,
+generated model swinging the real generated weapon. **V** switches to first
+person, where armoured gauntlets hold the blade in view, since a floating camera
+with no arms is not embodiment either.
 
 Impact arrives on four channels at once, because any one alone reads as weak: a
 floating damage number, a boss that staggers and is knocked back, camera shake,
@@ -295,7 +314,7 @@ In production Fastify serves the built client itself, so it runs as one process 
 
 - **Two weapon classes ship** (greatsword, spear). Warhammer is implemented and in the normalizer's test corpus, but its end-resolution confidence sits at 0.09, so it stays behind a flag until that improves.
 - **Articulated weapons are out of scope.** A chained flail has multiple rigid bodies and no single principal axis; it needs different runtime semantics, not a better heuristic.
-- **Bosses walk, but that is all they animate.** Walking and idle clips are wired up. Attacks, staggers and deaths are whole-body transforms, so a boss telegraphs by moving, not by moving its arms.
+- **Staggers and deaths are still whole-body transforms.** Walk, idle and attack are generated clips, but a boss that gets hit is moved rather than animated, and a boss that dies falls by transform.
 - **The champion is cosmetic.** It swings the real generated weapon, but the choice is visual: champions do not change reach, damage or any other number the fight runs on.
 
 ## Where this goes
