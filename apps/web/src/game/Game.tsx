@@ -274,6 +274,21 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
   const showCarried = phase === "FIGHTING" && carried !== null;
   /* The opening camera move, which owns the camera while it runs. */
   const cinematic = useGameStore((s) => s.cinematic);
+  const countdown = useGameStore((s) => s.countdown);
+  /*
+   * The opening is always shot in third person, whatever the player picked.
+   *
+   * The two-shot exists to put both fighters in one frame, and in first person
+   * there is no champion in the scene to put there — the body is not drawn, so the
+   * shot would have framed an empty stretch of floor opposite the boss. Worse, what
+   * *is* drawn in first person is a pair of hands and a sword positioned at the eye,
+   * which from a camera eleven metres to the side is two gloves floating in the
+   * middle of the arena.
+   *
+   * So the body goes on and the hands come off for the length of the opening, and
+   * the player's own choice resumes the moment they have control.
+   */
+  const opening = cinematic || countdown !== null;
 
   return (
     <div className="relative h-full w-full">
@@ -290,12 +305,12 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
           <CameraShake />
           {/* Hands and a first-person blade, or the champion itself. Never
               both: two copies of the same weapon in frame. */}
-          {view === "first" && <PlayerHands />}
-          {view === "third" && <PlayerAvatar />}
+          {view === "first" && !opening && <PlayerHands />}
+          {(view === "third" || opening) && <PlayerAvatar />}
           {/* The blade you arrive with: plain, mass-produced, and exactly the
               thing a generated relic is meant to replace. */}
-          {view === "first" && !showCarried && <StarterWeapon />}
-          {view === "first" && showCarried && carried && (
+          {view === "first" && !opening && !showCarried && <StarterWeapon />}
+          {view === "first" && !opening && showCarried && carried && (
             <WeaponSocket
               modelUrl={carried.modelUrl}
               weaponClass={carried.dna.weaponClass}
