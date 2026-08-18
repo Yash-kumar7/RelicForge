@@ -315,7 +315,19 @@ export function Game({ mode = "hero" }: { mode?: "dev" | "hero" }) {
               />
             </Suspense>
           )}
-          <Environment preset="night" />
+          {/*
+            The night preset at full strength was lighting the arena more than
+            the arena was. Measured: with it on, the floor renders as pale grey
+            whatever colour the theme sets, because a large flat surface catches
+            an even wash of image light and nothing else on it can compete — the
+            coal pools read as paint on a lit plate, and the floor's grain map
+            became a visible grid. Turning it off entirely made the fight look
+            correct and the armour slightly duller.
+
+            So it stays, at a fifth: enough for metal to have something to
+            reflect, not enough to be the light in the room.
+          */}
+          <Environment preset="night" environmentIntensity={0.2} />
         </Suspense>
 
         <EffectComposer>

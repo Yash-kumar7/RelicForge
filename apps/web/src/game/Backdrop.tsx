@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { BackSide, CanvasTexture, Color } from "three";
+import { BackSide, CanvasTexture, Color, SRGBColorSpace } from "three";
 import type { ArenaTheme } from "./theme";
 import { ARENA_RADIUS } from "./arenaGeometry";
 
@@ -81,19 +81,47 @@ function skyTexture(theme: ArenaTheme, sky: Sky): CanvasTexture {
   const top = new Color(theme.fog);
   const horizon = new Color(theme[sky.from]);
 
+  /*
+   * A curve, not two straight segments.
+   *
+   * Three stops meant the colour climbed the dome in a straight line from the
+   * horizon to the zenith, and a straight line is the one shape a glow never
+   * has: measured on the first rung, a stated strength of 0.16 was still clearly
+   * orange thirty degrees up, because half that value is still orange and half
+   * the dome is what a 75 degree camera is looking at.
+   *
+   * `reach` now sets how fast it dies instead of where it stops. The tail is what
+   * matters and it has to fall off like light does, so the same nine stops draw a
+   * tight band on the rungs that want a horizon and a broad wash on the one that
+   * wants to be lit from above.
+   */
   const gradient = ctx.createLinearGradient(0, 0, 0, 256);
-  gradient.addColorStop(0, `#${top.clone().lerp(horizon, sky.overhead ?? 0).getHexString()}`);
-  gradient.addColorStop(
-    Math.max(0.01, 1 - sky.reach),
-    // A quarter of the way in, not a third: the falloff has to be steep or the
-    // colour creeps up the dome and becomes a wash rather than a horizon.
-    `#${top.clone().lerp(horizon, sky.strength * 0.25).getHexString()}`,
-  );
-  gradient.addColorStop(1, `#${top.clone().lerp(horizon, sky.strength).getHexString()}`);
+  const falloff = 2 + (1 - sky.reach) * 9;
+  const overhead = sky.overhead ?? 0;
+
+  for (let i = 0; i <= 8; i++) {
+    // 0 at the zenith, 1 at the horizon.
+    const t = i / 8;
+    const amount = overhead + (sky.strength - overhead) * Math.pow(t, falloff);
+    gradient.addColorStop(t, `#${top.clone().lerp(horizon, Math.max(0, amount)).getHexString()}`);
+  }
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 1, 256);
 
-  return new CanvasTexture(canvas);
+  const texture = new CanvasTexture(canvas);
+  /*
+   * Tagged as sRGB, which is what a canvas holds.
+   *
+   * Untagged textures are treated as linear, so every colour in this gradient was
+   * being handed to the renderer as though it were already light-linear and then
+   * encoded a second time on the way out. A near-black ember tint came out as
+   * strong orange, which is why a stated strength of 0.16 filled half the frame
+   * and why dimming the numbers never fixed it — the numbers were never the
+   * problem. Measured against a build with the dome removed, this is the change
+   * that puts the horizon back behind the fight.
+   */
+  texture.colorSpace = SRGBColorSpace;
+  return texture;
 }
 
 export function Backdrop({ level, theme }: { level: number; theme: ArenaTheme }) {
@@ -105,7 +133,19 @@ export function Backdrop({ level, theme }: { level: number; theme: ArenaTheme })
     // and open at the bottom because the floor covers that anyway.
     <mesh>
       <sphereGeometry args={[ARENA_RADIUS * 5, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
-      <meshBasicMaterial map={texture} side={BackSide} fog={false} toneMapped={false} />
+      {/*
+        Tone mapped, like everything else in the frame.
+
+        Opting out was the reason this read as a sunset. The strengths here are
+        small and the comment above them says so, but an unmapped material hands
+        its colour straight to the screen while the boss, the floor and the
+        scenery all come through ACES — so the one surface that was meant to sit
+        behind everything was the only one rendering at full value, and it filled
+        the upper half of the frame with flat orange. Measured against a build
+        with the dome removed: the arches went from shapes on a bright ground to
+        silhouettes, and the embers went from specks to sparks.
+      */}
+      <meshBasicMaterial map={texture} side={BackSide} fog={false} />
     </mesh>
   );
 }
