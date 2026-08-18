@@ -1,12 +1,13 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Euler, Group, Mesh, MeshBasicMaterial } from "three";
+import { Box3, Euler, Group, Mesh, MeshBasicMaterial, Vector3 } from "three";
 import type { WeaponClass } from "@relic/core";
-import type { AttackKind } from "./combat";
+import { attackSpec, type AttackKind } from "./combat";
 import { HeldRelicMesh } from "./HeldRelicMesh";
 import { IronSwordMesh } from "./IronSwordMesh";
 import { IRON_SCALE } from "./weaponScale";
 import { playerHandle } from "./Player";
+import { equipped } from "./equipped";
 import { swingProgress } from "./swing";
 import { bossState, bossSwing } from "./bossState";
 import { bossWeaponScale } from "./weaponScale";
@@ -66,20 +67,76 @@ function hintProps(slug: string): { hint?: OrientationHint } {
 /* Scratch, so a swing does not allocate a Euler every frame. */
 const swingEuler = new Euler();
 
+/** Prints where the blade really is, once per swing, with ?probe in the URL. */
+const PROBE =
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).has("probe");
+
 /**
  * The swing, applied at the grip.
  *
  * The group sits at the grip, so the blade turns around the hand rather than
  * about its own middle, which is the difference between a swing and a propeller.
  */
+/**
+ * The arc, tunable from the URL.
+ *
+ * These numbers decide where a swing actually travels, and the one thing that
+ * cannot be checked from the code is whether the blade ends up in the boss or in
+ * the floor. The weapon is carried tip-down, a boss stands nearly three metres
+ * tall, and its chest is around two: every one of those pulls the right answer in
+ * a different direction, and the only reliable way to find it is to watch a swing
+ * and change a number.
+ *
+ * So ?swing=lp,ly,lr,hp,hy,hr overrides all six, live, on reload. Pitch first,
+ * then yaw, then roll; light before heavy. Negative pitch drops the tip, positive
+ * lifts it, and yaw is what carries the blade across the body.
+ *
+ *   ?swing=0.16,0.58,-0.3,-0.62,0.1,-0.18   the current values, to start from
+ *
+ * Absent, the defaults below are used and nothing changes.
+ */
+const ARC = (() => {
+  /*
+   * Both arcs lift.
+   *
+   * These were negative, which drops the tip, and that was correct for a weapon
+   * held out in front. This one is carried tip-down at rest — REST_PITCH is 163
+   * degrees — and swingProgress has no backswing, so a negative pitch had the
+   * blade starting low and travelling lower. It swung into the floor, every
+   * time, and the boss it was aimed at is nearly three metres tall with its chest
+   * around two.
+   *
+   * Positive pitch raises the tip through the arc, so the cut now comes up from
+   * the carry and across into something standing above the player rather than
+   * down into the ground in front of them.
+   */
+  /*
+   * The arc carries the horizontal, and almost nothing else.
+   *
+   * Height is swingLift's job now: raised through the wind-up, driven down
+   * through the strike. When both were lifting, the blade travelled up and only
+   * up, and a cut that only rises is a scoop. Pitch here is a small downward
+   * follow-through on top of that fall, not the fall itself.
+   */
+  const light = { pitch: -0.1, yaw: 0.62, roll: -0.3 };
+  const heavy = { pitch: -0.2, yaw: 0.24, roll: -0.2 };
+  if (typeof window === "undefined") return { light, heavy };
+
+  const raw = new URLSearchParams(window.location.search).get("swing");
+  if (!raw) return { light, heavy };
+
+  const n = raw.split(",").map(Number);
+  if (n.length !== 6 || n.some((v) => !Number.isFinite(v))) return { light, heavy };
+
+  return {
+    light: { pitch: n[0]!, yaw: n[1]!, roll: n[2]! },
+    heavy: { pitch: n[3]!, yaw: n[4]!, roll: n[5]! },
+  };
+})();
+
 function applySwing(group: Group, swing: number, scale = 1, kind: AttackKind = "light"): void {
-  if (kind === "heavy") {
-    // Overhead: raised on the wind-up, driven down through the target.
-    swingEuler.set(-swing * 0.62 * scale, swing * 0.1 * scale, -swing * 0.18 * scale);
-  } else {
-    // Lateral: pulled across the body, then cut through it.
-    swingEuler.set(-swing * 0.16 * scale, swing * 0.58 * scale, -swing * 0.3 * scale);
-  }
+  const arc = kind === "heavy" ? ARC.heavy : ARC.light;
+  swingEuler.set(swing * arc.pitch * scale, swing * arc.yaw * scale, swing * arc.roll * scale);
 
   /*
    * The socket is aligned with the character, so these axes are already the
@@ -101,15 +158,83 @@ export function PlayerHandWeapon({
   accent: string;
 }) {
   const arm = useRef<Group>(null);
+  const slash = useRef<Mesh>(null);
+
+  /*
+   * Where the blade actually is, printed once per swing with ?probe.
+   *
+   * Every number in this file has been tuned by describing what a swing looked
+   * like and adjusting a coefficient, which is guessing with extra steps. This
+   * reports the only thing that matters: the world position of the weapon's tip
+   * at the moment of peak swing, and how far that is from the boss. If the gap
+   * is positive the sword cannot reach, and no arc will fix it.
+   */
+  const probed = useRef(0);
 
   useFrame(() => {
     if (arm.current) {
-      applySwing(
-        arm.current,
-        swingProgress(playerHandle.attacking),
-        1,
-        playerHandle.attacking?.kind ?? "light",
-      );
+      const swing = swingProgress(playerHandle.attacking);
+      applySwing(arm.current, swing, 1, playerHandle.attacking?.kind ?? "light");
+
+      /*
+       * Visible only while the blow is live.
+       *
+       * The same window the hit test uses, so the trail appears exactly when the
+       * swing can connect and vanishes the instant it cannot. It sweeps through
+       * its own rotation as it goes, which is what makes it read as travel
+       * rather than as a shape switching on.
+       */
+      if (slash.current) {
+        const attack = playerHandle.attacking;
+        const material = slash.current.material as MeshBasicMaterial;
+
+        if (attack) {
+          const spec = attackSpec(attack.kind, equipped.traits);
+          const since = performance.now() - attack.startedAt;
+          const live = since >= spec.windupMs && since <= spec.windupMs + spec.activeMs;
+
+          slash.current.visible = live;
+          if (live) {
+            const p = (since - spec.windupMs) / spec.activeMs;
+            slash.current.rotation.z = -1.0 + p * 2.0;
+            material.opacity = Math.sin(p * Math.PI) * 0.8;
+          }
+        } else {
+          slash.current.visible = false;
+        }
+      }
+
+      if (PROBE && playerHandle.attacking && swing > 1.6) {
+        const at = playerHandle.attacking.startedAt;
+        if (probed.current !== at) {
+          probed.current = at;
+          arm.current.updateWorldMatrix(true, true);
+
+          /* The tip, not the grip: the group is the grip, so the blade extends
+             along its local +Y by the carried length. */
+          const box = new Box3().setFromObject(arm.current);
+          const tip = new Vector3();
+          box.getCenter(tip);
+          tip.y = box.max.y;
+
+          const grip = new Vector3().setFromMatrixPosition(arm.current.matrixWorld);
+
+          console.log("[probe]", {
+            swing: swing.toFixed(2),
+            grip: `${grip.x.toFixed(2)}, ${grip.y.toFixed(2)}, ${grip.z.toFixed(2)}`,
+            tip: `${tip.x.toFixed(2)}, ${tip.y.toFixed(2)}, ${tip.z.toFixed(2)}`,
+            player: `${playerHandle.position.x.toFixed(2)}, ${playerHandle.position.z.toFixed(2)}`,
+            /* How far the tip travels from the body, which is the number that
+               decides whether a sword can touch anything at all. */
+            tipFromPlayer: Math.hypot(
+              tip.x - playerHandle.position.x,
+              tip.z - playerHandle.position.z,
+            ).toFixed(2),
+            tipHeight: tip.y.toFixed(2),
+            bladeSize: `${(box.max.x - box.min.x).toFixed(2)} x ${(box.max.y - box.min.y).toFixed(2)} x ${(box.max.z - box.min.z).toFixed(2)}`,
+          });
+        }
+      }
     }
   });
 
@@ -122,6 +247,24 @@ export function PlayerHandWeapon({
           <IronSwordMesh accent={accent} />
         </group>
       )}
+
+      {/*
+        The trail, which is what a swing is read by.
+
+        The boss has had one of these from the start and the player never did,
+        and that is the whole reason its blows are legible and yours are not: a
+        rotation competes with the body turn, the camera and everything else
+        moving, while an arc that exists for a fifth of a second and at no other
+        time can only mean one thing. The weapon went through that space.
+
+        Every arc coefficient in this file was tuned trying to solve by rotation
+        what the boss solves by drawing. Sits along the blade, so it sweeps where
+        the weapon sweeps.
+      */}
+      <mesh ref={slash} position={[0, 0.55, 0]} visible={false}>
+        <torusGeometry args={[0.75, 0.035, 6, 24, Math.PI * 0.85]} />
+        <meshBasicMaterial color="#fff0d8" transparent opacity={0} toneMapped={false} />
+      </mesh>
     </group>
   );
 }
