@@ -40,9 +40,19 @@ export function glowTexture(): CanvasTexture {
   canvas.height = size;
   const ctx = canvas.getContext("2d")!;
   const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  /*
+   * Falls off fast and then trails, which is how light on a floor behaves.
+   *
+   * The first version held 0.42 alpha out to a third of the radius, and measured
+   * on the floor that is not a falloff at all: it renders as a flat disc of
+   * colour with a soft rim, which is the painted look this texture exists to
+   * avoid. The hot part is now a fifth of the radius and everything past it is
+   * tail.
+   */
   gradient.addColorStop(0, "rgba(255,255,255,1)");
-  // Falls off fast and then trails, which is how light on a floor behaves.
-  gradient.addColorStop(0.35, "rgba(255,255,255,0.42)");
+  gradient.addColorStop(0.18, "rgba(255,255,255,0.5)");
+  gradient.addColorStop(0.42, "rgba(255,255,255,0.16)");
+  gradient.addColorStop(0.7, "rgba(255,255,255,0.04)");
   gradient.addColorStop(1, "rgba(255,255,255,0)");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, size, size);
@@ -172,13 +182,318 @@ function Pools({ pools, colour }: { pools: Pool[]; colour: string }) {
  * more than the other. The only rung where the light at ground level is warmer
  * than the light from above.
  */
+/*
+ * Down by a third across the board.
+ *
+ * These were set against a floor that rendered pale grey, because the night
+ * environment map was washing it: the pools had to be half opaque to be seen at
+ * all, and at half opaque a soft gradient is a solid ellipse. With the wash gone
+ * the floor is the dark stone it was always meant to be, so the light can be
+ * light again.
+ */
 const WARDEN_POOLS: Pool[] = [
-  { radius: 5.2, turn: 0.06, size: 7, strength: 0.5, lit: true },
-  { radius: 8.4, turn: 0.31, size: 9, strength: 0.36 },
-  { radius: 6.1, turn: 0.58, size: 6, strength: 0.44, lit: true },
-  { radius: 9.6, turn: 0.79, size: 8, strength: 0.3 },
-  { radius: 3.4, turn: 0.93, size: 5, strength: 0.34 },
+  { radius: 5.2, turn: 0.06, size: 7, strength: 0.34, lit: true },
+  { radius: 8.4, turn: 0.31, size: 9, strength: 0.24 },
+  { radius: 6.1, turn: 0.58, size: 6, strength: 0.3, lit: true },
+  { radius: 9.6, turn: 0.79, size: 8, strength: 0.2 },
+  { radius: 3.4, turn: 0.93, size: 5, strength: 0.22 },
 ];
+
+/**
+ * Ashen Warden, continued: the coals the pools are coming from.
+ *
+ * The pools were the whole rung, and a pool of light with nothing making it is a
+ * bright patch on a dark floor. Every other rung on the ladder has something
+ * built in it; this one is the first fight in the game and had the least in it,
+ * which is the wrong way round for the arena most people will ever see.
+ *
+ * A clinker rim and a hot core under each pool give the light a source. Kept
+ * ankle-low and clear of the middle, because anything that stands up inside the
+ * fight ring is the scenery-nobody-touches problem that deleted the pillars and
+ * the roots.
+ */
+function CoalBeds({ theme }: { theme: ArenaTheme }) {
+  /* Clinker, placed off the bed's own bearing so no two beds are ringed the
+     same way, and never a full ring: coals burn through where the floor is
+     weakest, not in a circle. */
+  const beds = useMemo(
+    () =>
+      WARDEN_POOLS.map((pool, i) => {
+        const angle = pool.turn * Math.PI * 2;
+        const lumps = 5 + (i % 3);
+        return {
+          key: i,
+          position: [Math.cos(angle) * pool.radius, 0, Math.sin(angle) * pool.radius] as [
+            number,
+            number,
+            number,
+          ],
+          core: pool.size * 0.11,
+          lumps: Array.from({ length: lumps }, (_, j) => {
+            const spread = ((i * 7 + j * 29) % 13) / 13;
+            const bearing = (j / lumps) * Math.PI * 2 + spread * 0.9;
+            const reach = pool.size * (0.13 + spread * 0.1);
+            return {
+              key: j,
+              position: [Math.cos(bearing) * reach, 0.04, Math.sin(bearing) * reach] as [
+                number,
+                number,
+                number,
+              ],
+              size: 0.16 + spread * 0.22,
+              rotation: spread * Math.PI,
+            };
+          }),
+        };
+      }),
+    [],
+  );
+
+  return (
+    <group>
+      {beds.map((bed) => (
+        <group key={bed.key} position={bed.position}>
+          {/*
+            The hot part, and it took a measurement to get right.
+
+            It started as a flat disc of pale ember at 85% opacity, on the theory
+            that a coal is allowed a hard edge where a pool of light is not. In
+            frame it was the worst thing on the screen: a solid orange ellipse
+            filling a third of the width when the camera came near one, which is
+            exactly the painted-marking look the rest of this file was written to
+            avoid. Sampled at 201,108,49 against a floor at 16,11,8.
+
+            The same falloff as the spill, at a fraction of the size, so the
+            middle of a bed is hotter than its edge and nothing in it has an
+            outline.
+          */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
+            <planeGeometry args={[bed.core * 2.6, bed.core * 2.6]} />
+            <meshBasicMaterial
+              map={glowTexture()}
+              color={theme.ember}
+              transparent
+              opacity={0.55}
+              depthWrite={false}
+              toneMapped={false}
+            />
+          </mesh>
+
+          {bed.lumps.map((lump) => (
+            <mesh
+              key={lump.key}
+              position={lump.position}
+              rotation={[lump.rotation * 0.3, lump.rotation, lump.rotation * 0.2]}
+              castShadow
+            >
+              {/* Burnt through and fallen in, so the pieces are slabs of floor
+                  rather than rocks. Low enough to step over: a shin-height
+                  version of this is furniture in the middle of a fight.
+
+                  Chunkier and a shade lighter than the first pass, which used
+                  the wall colour at half height: flat and near-black inside a
+                  pool of warm light is the one combination that reads as litter
+                  lying on the floor rather than as floor that has broken. */}
+              <boxGeometry args={[lump.size, lump.size * 0.8, lump.size * 0.85]} />
+              <meshStandardMaterial color={theme.pillar} roughness={0.95} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+    </group>
+  );
+}
+
+/**
+ * Ash coming down, to go with the embers going up.
+ *
+ * The air in this arena already carries embers rising toward the forge, and they
+ * all travel the same way at the same speed, so the space between the floor and
+ * the top of the frame moves as one sheet. Ash falling through them crosses it,
+ * and two directions at two speeds is the difference between a particle effect
+ * and weather.
+ *
+ * Sparse and dim on purpose: this sits behind a fight and must never be the
+ * thing the eye finds.
+ */
+function AshFall({ theme }: { theme: ArenaTheme }) {
+  const flakes = useRef<Group>(null);
+
+  const ash = useMemo(
+    () =>
+      Array.from({ length: 34 }, (_, i) => {
+        const a = ((i * 53) % 17) / 17;
+        const b = ((i * 29) % 23) / 23;
+        const angle = (i / 34) * Math.PI * 2 + a;
+        const radius = 1.5 + b * (ARENA_RADIUS + 4);
+        return {
+          key: i,
+          position: [Math.cos(angle) * radius, 0.4 + a * 11, Math.sin(angle) * radius] as [
+            number,
+            number,
+            number,
+          ],
+          size: 0.02 + b * 0.035,
+          fall: 0.22 + a * 0.3,
+        };
+      }),
+    [],
+  );
+
+  useFrame((_, delta) => {
+    if (!flakes.current) return;
+    flakes.current.children.forEach((flake, i) => {
+      flake.position.y -= delta * ash[i]!.fall;
+      if (flake.position.y < 0.15) flake.position.y = 11.5;
+    });
+  });
+
+  return (
+    <group ref={flakes}>
+      {ash.map((flake) => (
+        <mesh key={flake.key} position={flake.position}>
+          <sphereGeometry args={[flake.size, 5, 5]} />
+          <meshBasicMaterial color={theme.ember} transparent opacity={0.3} toneMapped={false} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/**
+ * Ground that keeps going, and rubble standing on it.
+ *
+ * The floor is a disc fourteen metres across and the world ended at its edge:
+ * past it the sky dome showed straight through, so the arena was a lit plate
+ * floating in front of a gradient with four arches somehow standing on nothing.
+ * Fog cannot fix that, because there was no surface for the fog to sit on.
+ *
+ * A wider plain under the disc, and broken ground between the two, so the fight
+ * floor reads as the cleared middle of somewhere larger. It also gives the
+ * arches a base and the scenery something to cast against, which is the whole
+ * reason those arches were generated.
+ */
+function ScorchedPlain({ theme }: { theme: ArenaTheme }) {
+  /*
+   * Fourteen pieces, standing up, in clumps.
+   *
+   * The first pass laid twenty-six low slabs in an even ring starting at fifteen
+   * and a half metres, and measured in frame they read as scattered black tiles
+   * lying on the floor — dropped cards, not broken ground. Two things were wrong:
+   * they were wide and flat, so from a camera at eye height there was no lit face
+   * to see, and they were evenly spread, so they read as a pattern.
+   *
+   * Taller than wide now, pushed out past seventeen metres where the fight never
+   * goes, and grouped: rubble collects where something fell over, and a gap
+   * between two heaps says more about a ruin than an even scatter ever does.
+   */
+  const rubble = useMemo(
+    () =>
+      Array.from({ length: 15 }, (_, i) => {
+        const a = ((i * 41) % 19) / 19;
+        const b = ((i * 67) % 23) / 23;
+        /*
+         * Sunk, and three to a heap.
+         *
+         * Standing them on the ground was the mistake. A box resting exactly on a
+         * dark plane at twenty metres has its base against ground the eye cannot
+         * see, and measured in frame the whole ring read as cubes hanging at the
+         * horizon — worse than the flat slabs it replaced, because now they were
+         * obviously boxes.
+         *
+         * Buried to a third of their height and overlapped in threes, no piece
+         * shows a full silhouette: what reads is a broken mass with corners
+         * coming out of it, which is what a collapsed wall looks like.
+         */
+        const heap = [0.07, 0.31, 0.58, 0.86, 0.44][i % 5]!;
+        const inHeap = Math.floor(i / 5);
+        const angle = (heap + inHeap * 0.012 + a * 0.008) * Math.PI * 2;
+        const radius = 17.4 + inHeap * 0.9 + b * 3.4;
+        const height = 0.9 + a * 2.2;
+        return {
+          key: i,
+          // A third of it is below the plain, so the base is never a straight
+          // line sitting on top of a surface.
+          position: [Math.cos(angle) * radius, height * 0.16, Math.sin(angle) * radius] as [
+            number,
+            number,
+            number,
+          ],
+          rotation: [a * 0.34 - 0.17, angle + b * 1.4, b * 0.3 - 0.15] as [number, number, number],
+          size: [1.1 + b * 1.9, height, 0.9 + a * 1.4] as [number, number, number],
+        };
+      }),
+    [],
+  );
+
+  return (
+    <group>
+      {/*
+        Set a touch below the fight floor, so the disc keeps its own edge: the
+        arena still reads as swept and the ground around it as not.
+      */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.08, 0]} receiveShadow>
+        <circleGeometry args={[46, 64]} />
+        <meshStandardMaterial color={theme.wall} roughnessMap={grainTexture()} roughness={1} />
+      </mesh>
+
+      {/*
+        Lit stone, not silhouettes.
+
+        At theme.pillar these came out as black boxes hanging on the horizon line:
+        the colour is near-black by design, the ground behind them at that distance
+        is near-black too, and there was no light out there to separate the two. So
+        they read as floating. The ambient tint is the lightest colour this rung
+        has, and it is what the vents below are throwing at them.
+      */}
+      {rubble.map((slab) => (
+        <mesh key={slab.key} position={slab.position} rotation={slab.rotation} castShadow>
+          <boxGeometry args={slab.size} />
+          <meshStandardMaterial color={theme.ambient} roughness={0.95} />
+        </mesh>
+      ))}
+
+      {/*
+        Two vents burning out past the edge.
+
+        They are the reason the horizon glows on this rung, and they underlight
+        the arches, which is the only light in the scene coming from behind the
+        player's shoulder rather than in front of it.
+      */}
+      {[
+        { turn: 0.19, radius: 18.5 },
+        { turn: 0.66, radius: 21 },
+      ].map((vent) => {
+        const angle = vent.turn * Math.PI * 2;
+        return (
+          <group
+            key={vent.turn}
+            position={[Math.cos(angle) * vent.radius, 0, Math.sin(angle) * vent.radius]}
+          >
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
+              <planeGeometry args={[9, 9]} />
+              <meshBasicMaterial
+                map={glowTexture()}
+                color={theme.forge}
+                transparent
+                opacity={0.4}
+                depthWrite={false}
+                toneMapped={false}
+              />
+            </mesh>
+            <pointLight
+              position={[0, 0.8, 0]}
+              color={theme.forge}
+              intensity={7}
+              distance={16}
+              decay={2}
+            />
+          </group>
+        );
+      })}
+    </group>
+  );
+}
 
 /**
  * Drowned Choir: the room is under water.
@@ -467,6 +782,13 @@ export function ArenaFeatures({ level, theme }: { level: number; theme: ArenaThe
     case 5:
       return <VoidField theme={theme} />;
     default:
-      return <Pools pools={WARDEN_POOLS} colour={theme.forge} />;
+      return (
+        <group>
+          <ScorchedPlain theme={theme} />
+          <Pools pools={WARDEN_POOLS} colour={theme.forge} />
+          <CoalBeds theme={theme} />
+          <AshFall theme={theme} />
+        </group>
+      );
   }
 }
