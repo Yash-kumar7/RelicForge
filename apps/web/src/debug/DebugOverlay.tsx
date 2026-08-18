@@ -95,13 +95,19 @@ export function DebugOverlay() {
     return () => clearInterval(timer);
   }, [open, forge.stage, refresh]);
 
-  if (!open) {
-    return (
-      <div className="pointer-events-none absolute bottom-2 right-2 font-mono text-[9px] uppercase tracking-widest text-stone-800">
-        ` debug
-      </div>
-    );
-  }
+  /*
+   * Nothing on screen while it is closed.
+   *
+   * A "` debug" hint sat in the corner of every fight. It is a developer tool —
+   * task ids, prompts, timings, credit balance — and advertising it to a player
+   * offers them a key that shows them the machinery behind the thing they are
+   * playing. Worse in a demo: the first thing a visitor learns about the game is
+   * that it has a diagnostics panel.
+   *
+   * The key still works, unchanged, for the one person who needs it. Same
+   * reasoning as P for screenshots: the tool stays, the advertisement goes.
+   */
+  if (!open) return null;
 
   return (
     <div className="absolute inset-0 z-20 overflow-y-auto bg-black/92 p-6 font-mono text-[11px] text-stone-400">
